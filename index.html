@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Game / Vocabulary — v1.2</title>
+  <title>Game / Vocabulary — v1.2 (stable)</title>
   <style>
     :root { --nav-top:50px; --nav-left:50px; --gap:10px; }
     html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
@@ -36,10 +36,9 @@
     .runner { width: 60px; height: 60px; animation: bob 1.6s ease-in-out infinite alternate; }
     .runner svg { display: block; }
     .runner-shape { transform-origin: 50% 50%; }
-    /* removed legacy positive spin to keep wrong-answer motion consistent */
     @keyframes rotateNeg90 { from { transform: rotate(0deg); } to { transform: rotate(-90deg); } }
     .runner-shape.spinNeg90 { animation: rotateNeg90 400ms linear 1; }
-        @keyframes bob { from { transform: translateY(-5px); } to { transform: translateY(5px); } }
+    @keyframes bob { from { transform: translateY(-5px); } to { transform: translateY(5px); } }
 
     /* Knockback on wrong answer (overlays bob) */
     @keyframes knockback {
@@ -50,7 +49,7 @@
     .runner.knock { animation: bob 1.6s ease-in-out infinite alternate, knockback 520ms cubic-bezier(0.22,0.61,0.36,1) 1; }
 
     .obstacle-anchor { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
-    .obstacle { width: 12px; height: 180px; animation: approach-loop 3s linear infinite; will-change: transform; }
+    .obstacle { width: 12px; height: 240px; animation: approach-loop 3s linear infinite; will-change: transform; }
     /* first obstacle invisible until first iteration completes */
     .obstacle.transparent { opacity: 0 !important; }
     .obstacle svg { display: block; width: 100%; height: 100%; }
@@ -58,7 +57,7 @@
 
     /* Pause flags */
     .paused .runner, .paused .obstacle { animation-play-state: paused !important; }
-    
+
     /* Overlay */
     .overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.35); z-index: 2000; }
     .overlay.show { display: flex; }
@@ -74,7 +73,27 @@
     .score { position: fixed; right: 50px; bottom: 50px; z-index: 1500; font: 700 18px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .5px; }
     .score span { display: inline-block; min-width: 24px; text-align: center; }
     body { background: #ffffff; }
-    body.inverted { background: #000000; }
+    body.inverted {
+      background-color: #000000;
+      /* Starry sky: smaller (2/3) semi-transparent white dots */
+      background-image:
+        radial-gradient(2px 2px at 12% 18%, rgba(255,255,255,.6) 1.6px, transparent 2px),
+        radial-gradient(2px 2px at 42% 62%, rgba(255,255,255,.6) 1.6px, transparent 2px),
+        radial-gradient(2.4px 2.4px at 78% 24%, rgba(255,255,255,.6) 1.8px, transparent 2.4px),
+        radial-gradient(1.6px 1.6px at 65% 83%, rgba(255,255,255,.6) 1.2px, transparent 1.6px),
+        radial-gradient(2px 2px at 28% 76%, rgba(255,255,255,.6) 1.6px, transparent 2px);
+      background-size: 200px 200px, 260px 260px, 320px 320px, 180px 180px, 240px 240px;
+      background-repeat: repeat;
+      /* animate stars moving right-to-left */
+      background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
+      animation: stars-scroll 6s linear infinite;
+    }
+    @keyframes stars-scroll {
+      from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
+      to   { background-position: -200px 0, -260px 0, -320px 0, -180px 0, -240px 0; }
+    }
+    /* Hide stars while dialog is visible (we add .paused on body when quiz is shown) */
+    body.inverted.paused { background-image: none !important; animation: none !important; }
     .app { filter: none; min-height: 100vh; width: 100%; }
     body.inverted .app { filter: invert(1); }
 
@@ -104,15 +123,15 @@
           </div>
           <div class="obstacle-anchor" aria-hidden="true">
             <div class="obstacle transparent">
-              <svg viewBox="0 0 12 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <svg viewBox="0 0 12 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <defs>
                   <filter id="wobble-stroke-obs" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
                     <feTurbulence type="fractalNoise" baseFrequency=".25" numOctaves="1" seed="5" result="noise"/>
                     <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
                   </filter>
                 </defs>
-                <rect x="1" y="1" width="10" height="178" fill="#fff"/>
-                <rect x="1" y="1" width="10" height="178" fill="none" stroke="#000" stroke-width="2" filter="url(#wobble-stroke-obs)"/>
+                <rect x="1" y="1" width="10" height="238" fill="#fff"/>
+                <rect x="1" y="1" width="10" height="238" fill="none" stroke="#000" stroke-width="2" filter="url(#wobble-stroke-obs)"/>
               </svg>
             </div>
           </div>
@@ -144,7 +163,7 @@
   (function(){
     /* ====== Small helpers ====== */
     const $ = (s, r=document) => r.querySelector(s);
-        const focusEnd = (el) => { el && el.focus && el.focus(); const r=document.createRange(); r.selectNodeContents(el); r.collapse(false); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); };
+    const focusEnd = (el) => { el && el.focus && el.focus(); const r=document.createRange(); r.selectNodeContents(el); r.collapse(false); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); };
 
     // === Fuzzy matching helpers (RU/EN letters, small typos allowed) ===
     const normalizeText = (s) => (s||'').toLowerCase().replace(/ё/g,'е');
@@ -171,8 +190,9 @@
       const trs = Array.from(new Set(splitWords(translation)));
       for (const iv of ins){
         for (const tv of trs){
-          const d = levenshtein(iv, tv);
           const thr = tv.length <= 4 ? 1 : 2; // allow small typos
+          if (Math.abs(iv.length - tv.length) > thr) continue; // cheap reject
+          const d = levenshtein(iv, tv);
           if (iv===tv || d<=thr) return true;
         }
       }
@@ -198,28 +218,51 @@
     /* ====== Data ====== */
     const SPEAKER_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" stroke="black" fill="none"/><path d="M16 8a5 5 0 0 1 0 8" stroke="black" fill="none"/><path d="M18 6a8 8 0 0 1 0 12" stroke="black" fill="none"/></svg>';
 
-    const INITIAL_WORDS = [
-      ['maieutica (n)','майевтика']
-    ];
+    const INITIAL_WORDS = [ ['maieutica (n)','майевтика'] ];
     const WORDS = INITIAL_WORDS.slice();
-    // purge stored counters for removed words (direct localStorage, no okStore dependency)
-    try {
-      const keep = new Set(WORDS.map(([w])=> (w||'').trim().toLowerCase()));
-      const data = JSON.parse(localStorage.getItem('vocabOk')||'{}');
-      let touched=false; for (const k of Object.keys(data)) { if (!keep.has(k)) { delete data[k]; touched=true; } }
-      if (touched) localStorage.setItem('vocabOk', JSON.stringify(data));
-    } catch(_) {}
+    const VOCAB_KEY = 'vocabList';
+    function saveVocab(){ try { localStorage.setItem(VOCAB_KEY, JSON.stringify(WORDS)); } catch(_){} }
+    function loadVocab(){
+      try{
+        const raw = localStorage.getItem(VOCAB_KEY);
+        const arr = JSON.parse(raw || '[]');
+        // Accept only non-empty valid arrays of [word, translation]
+        if (Array.isArray(arr) && arr.length>0 && arr.every(r=>Array.isArray(r) && r.length>=2)){
+          WORDS.length = 0;
+          arr.forEach(([w,t])=> WORDS.push([String(w), String(t)]));
+          return true;
+        }
+      }catch(_){ /* ignore and seed */ }
+      // Fallback (missing/invalid/empty): re-seed with INITIAL_WORDS and persist once
+      WORDS.length = 0;
+      INITIAL_WORDS.forEach(([w,t])=> WORDS.push([w,t]));
+      saveVocab();
+      return false;
+    }
 
     /* ====== okStore ====== */
     const OK_KEY='vocabOk';
-    const okStore = {
-      _(){ try { return JSON.parse(localStorage.getItem(OK_KEY)||'{}'); } catch(_) { return {}; } },
-      save(o){ localStorage.setItem(OK_KEY, JSON.stringify(o)); },
-      key(w){ return (w||'').trim().toLowerCase(); },
-      get(w){ const o=this._(); return o[this.key(w)]|0; },
-      inc(w,by=1){ const o=this._(); const k=this.key(w); o[k]=(o[k]|0)+by; this.save(o); },
-      del(w){ const o=this._(); delete o[this.key(w)]; this.save(o); }
-    };
+    const okStore = (()=>{
+      const key = (w)=> (w||'').trim().toLowerCase();
+      const load = ()=>{ try { return JSON.parse(localStorage.getItem(OK_KEY)||'{}'); } catch(_) { return {}; } };
+      const save = (o)=>{ localStorage.setItem(OK_KEY, JSON.stringify(o)); };
+      return {
+        key,
+        _ : load,
+        save,
+        get(w){ const o=load(); return o[key(w)]|0; },
+        inc(w,by=1){ const o=load(); const k=key(w); o[k]=(o[k]|0)+by; save(o); },
+        del(w){ const o=load(); delete o[key(w)]; save(o); }
+      };
+    })();
+    function purgeOrphanOk(){
+      try{
+        const keep = new Set(WORDS.map(([w])=> okStore.key(w)));
+        const data = okStore._();
+        let touched=false; for(const k of Object.keys(data)){ if(!keep.has(k)){ delete data[k]; touched=true; } }
+        if (touched) okStore.save(data);
+      }catch(_){ }
+    }
 
     /* ====== Vocabulary render & events ====== */
     const vocabEl = $('#vocab');
@@ -253,7 +296,7 @@
       const commit = ()=>{
         const w=(wCell.textContent||'').trim();
         const t=(tCell.textContent||'').trim();
-        if (w && t){ if (!WORDS.find(([x])=>x===w)) WORDS.unshift([w,t]); updateVocabView(); }
+        if (w && t){ if (!WORDS.find(([x])=>x===w)) WORDS.unshift([w,t]); saveVocab(); updateVocabView(); }
       };
       wCell.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); tCell.focus(); } });
       tCell.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); commit(); } });
@@ -261,6 +304,21 @@
       wCell.focus();
     }
     fabAdd.addEventListener('click', insertEditableRow);
+
+    // Commit any draft editable rows on unload (to persist accidental refresh)
+    function commitDraftRows(){
+      const drafts = Array.from(vocabEl.querySelectorAll('.vrow'));
+      for (const row of drafts){
+        const wCell = row.querySelector('[data-edit=word]');
+        const tCell = row.querySelector('[data-edit=trans]');
+        if (!wCell || !tCell) continue;
+        const w=(wCell.textContent||'').trim();
+        const t=(tCell.textContent||'').trim();
+        if (w && t && !WORDS.find(([x])=>x===w)) { WORDS.unshift([w,t]); }
+      }
+      if (drafts.length) { saveVocab(); }
+    }
+    window.addEventListener('beforeunload', commitDraftRows);
 
     // Inline edit for existing rows (click on word/translation)
     function startInlineEdit(cell, type){
@@ -287,6 +345,7 @@
             WORDS[idx][1] = txt;
           }
         }
+        saveVocab();
         updateVocabView();
         cleanup();
       };
@@ -297,7 +356,7 @@
       cell.addEventListener('keydown', onKey);
     }
 
-    // Delegated events: delete/speak
+    // Delegated events: delete/speak/edit
     vocabEl.addEventListener('click', (e)=>{
       const row = e.target.closest('.vrow'); if(!row) return;
       // Delete
@@ -305,20 +364,27 @@
         const word = row.dataset.word || row.querySelector('.cell.word')?.textContent?.trim()||'';
         okStore.del(word);
         const idx = WORDS.findIndex(([w])=>w===word); if (idx>-1) WORDS.splice(idx,1);
+        saveVocab();
         updateVocabView();
         return;
       }
-      // Speak
+      // Speak (placeholder)
       if (e.target.closest('.icon-btn.speak')){
         const word = row.dataset.word || row.querySelector('.cell.word')?.textContent?.trim()||'';
         alert('Произнести: ' + word);
         return;
       }
       // Inline edit word / translation
-      const wCell = e.target.closest('.cell.word');
-      if (wCell){ startInlineEdit(wCell, 'word'); return; }
-      const tCell = e.target.closest('.cell.trans');
-      if (tCell){ startInlineEdit(tCell, 'trans'); return; }
+      const wCell = e.target.closest('.cell.word'); if (wCell){ startInlineEdit(wCell, 'word'); return; }
+      const tCell = e.target.closest('.cell.trans'); if (tCell){ startInlineEdit(tCell, 'trans'); return; }
+    });
+
+    // Cross-tab sync: if localStorage changes in another tab, refresh view here
+    window.addEventListener('storage', (e)=>{
+      if (e.key===VOCAB_KEY) { loadVocab(); updateVocabView(); }
+      if (e.key===OK_KEY)     { updateVocabView(); }
+      if (e.key==='vocabTotals') { loadTotals(); renderScore(); }
+      
     });
 
     /* ====== Game state ====== */
@@ -328,15 +394,17 @@
     obstacleEl.classList.add('transparent');
     const clearFirst = ()=>{ obstacleEl.classList.remove('transparent'); obstacleEl.removeEventListener('animationiteration', clearFirst); };
     obstacleEl.addEventListener('animationiteration', clearFirst);
+    // Fallback: if the CSS iteration event didn't arrive (e.g. tab was backgrounded), unhide after ~1 cycle
+    setTimeout(()=>{ if (obstacleEl.classList.contains('transparent')) clearFirst(); }, 3500);
     const overlay = $('#quizOverlay');
     const quizWordEl = $('#quizWord');
     const quizInputCE = $('#quizInputCE');
+
     const okEl=$('#ok'), failEl=$('#fail');
     let ok=0, fail=0; const renderScore=()=>{ okEl.textContent=ok; failEl.textContent=fail; };
     const TOTALS_KEY='vocabTotals';
-    const loadTotals=()=>{ try{ const t=JSON.parse(localStorage.getItem(TOTALS_KEY)||'{}'); ok=t.ok|0; fail=t.fail|0; }catch(_){}}
+    const loadTotals=()=>{ try{ const t=JSON.parse(localStorage.getItem(TOTALS_KEY)||'{}'); ok=t.ok|0; fail=t.fail|0; }catch(_){}};
     const saveTotals=()=>{ localStorage.setItem(TOTALS_KEY, JSON.stringify({ok, fail})); };
-
     // Weighted pick: rarer for higher ok
     function pickWord(){
       const list = WORDS.filter(([w,t])=>w&&t);
@@ -349,8 +417,7 @@
 
     let askedThisRun=false, currentQA=null;
     let cooldownUntil = 0;
-    let revealTimer=null;
-    let revealMode=null;
+    let revealTimer=null; let revealMode=null;
 
     function playWrongSequence(){
       const svg = document.querySelector('.runner-shape');
@@ -373,22 +440,30 @@
       askedThisRun = false;
     }
 
-
     function showQuiz(){
       askedThisRun=true; currentQA = pickWord();
       quizWordEl.textContent=currentQA.w;
+      // hard freeze to avoid overshoot
+      obstacleEl.style.animationPlayState = 'paused';
+      runnerEl.style.animationPlayState   = 'paused';
       document.body.classList.add('paused');
       overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false');
-      setTimeout(()=>focusEnd(quizInputCE),0);
+      requestAnimationFrame(()=>focusEnd(quizInputCE));
     }
-    function hideQuiz(){ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); quizInputCE.textContent=''; document.body.classList.remove('paused'); }
+    function hideQuiz(){
+      overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true');
+      quizInputCE.textContent='';
+      document.body.classList.remove('paused');
+      // resume
+      obstacleEl.style.animationPlayState = '';
+      runnerEl.style.animationPlayState   = '';
+    }
 
     // Answer handling
     quizInputCE.addEventListener('keydown', (e)=>{
       if(e.key==='Enter'){
         e.preventDefault();
-        // If we're already showing the correct answer, Enter should just dismiss the card
-        // and continue the game WITHOUT changing the inverted theme/state.
+        // If we're already showing the correct answer, Enter just dismisses
         if (quizInputCE.classList.contains('showing-correct')) {
           if (revealTimer) { clearTimeout(revealTimer); revealTimer = null; }
           quizInputCE.classList.remove('showing-correct');
@@ -402,26 +477,25 @@
         if(!currentQA){ hideQuiz(); return; }
         const val=(quizInputCE.textContent||'').trim();
         if (isFuzzyCorrect(val, currentQA.t)){
-          ok++; okStore.inc(currentQA.w,1); renderScore(); saveTotals(); updateVocabView();
+          ok++; okStore.inc(currentQA.w,1); renderScore(); saveTotals(); updateVocabView(); 
           if (document.body.classList.contains('inverted')) document.body.classList.remove('inverted');
           const exactFull = normCmp(val) === normCmp(currentQA.t);
           if (exactFull) {
-            
             hideQuiz();
             askedThisRun = false;
             cooldownUntil = performance.now() + 400;
+            
           } else {
             // partially-correct: show the full correct translation before continuing
             quizInputCE.textContent = currentQA.t;
             quizInputCE.classList.add('showing-correct');
             revealMode = 'ok';
+            
             revealTimer = setTimeout(()=>{
               quizInputCE.classList.remove('showing-correct');
               hideQuiz();
-              revealMode = null;
-              revealTimer = null;
-              askedThisRun = false;
-              cooldownUntil = performance.now() + 400;
+              revealMode = null; revealTimer = null;
+              askedThisRun = false; cooldownUntil = performance.now() + 400;
             }, 2900);
           }
         } else {
@@ -430,6 +504,7 @@
           quizInputCE.textContent = currentQA.t;
           quizInputCE.classList.add('showing-correct');
           revealMode = 'wrong';
+          
           revealTimer = setTimeout(()=>{
             quizInputCE.classList.remove('showing-correct');
             hideQuiz();
@@ -457,14 +532,34 @@
       requestAnimationFrame(loop);
     }
 
-    // Score init + render vocab
-    loadTotals(); renderScore(); updateVocabView();
+    // Init
+    loadTotals();
+    loadVocab();
+    purgeOrphanOk();
+    renderScore();
+    updateVocabView();
+    
 
     // Focus forwarding inside dialog
-    $('.dialog').addEventListener('click', ()=>focusEnd(quizInputCE));
+    const dlg = document.querySelector('.dialog');
+    dlg && dlg.addEventListener('click', ()=>focusEnd(quizInputCE));
 
     // Start
     loop(); setPage('game');
+
+    /* ====== Tiny self-tests (non-blocking) ====== */
+    try {
+      console.assert(normalizeText('Ёж')==='еж','normalizeText ё->е');
+      console.assert(levenshtein('test','test')===0,'lev 0');
+      console.assert(isFuzzyCorrect('майевтика','майевтика')===true,'fuzzy exact');
+      console.assert(isFuzzyCorrect('маевтика','майевтика')===true,'fuzzy 1 typo');
+      console.assert(isFuzzyCorrect('soccer','майевтика')===false,'fuzzy mismatch');
+      // okStore sanity
+      const __k='__tmp__'; const before=okStore.get(__k); okStore.inc(__k,2); console.assert(okStore.get(__k)===before+2,'okStore inc'); okStore.del(__k); console.assert(okStore.get(__k)===0,'okStore del');
+      // rowHTML should include okcount cell
+      const testRow = rowHTML('maieutica (n)','майевтика');
+      console.assert(/okcount/.test(testRow),'rowHTML okcount');
+    } catch(e) { /* noop */ }
   })();
   </script>
 </body>
