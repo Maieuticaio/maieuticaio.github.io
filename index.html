@@ -333,6 +333,9 @@
     const quizInputCE = $('#quizInputCE');
     const okEl=$('#ok'), failEl=$('#fail');
     let ok=0, fail=0; const renderScore=()=>{ okEl.textContent=ok; failEl.textContent=fail; };
+    const TOTALS_KEY='vocabTotals';
+    const loadTotals=()=>{ try{ const t=JSON.parse(localStorage.getItem(TOTALS_KEY)||'{}'); ok=t.ok|0; fail=t.fail|0; }catch(_){}}
+    const saveTotals=()=>{ localStorage.setItem(TOTALS_KEY, JSON.stringify({ok, fail})); };
 
     // Weighted pick: rarer for higher ok
     function pickWord(){
@@ -399,7 +402,7 @@
         if(!currentQA){ hideQuiz(); return; }
         const val=(quizInputCE.textContent||'').trim();
         if (isFuzzyCorrect(val, currentQA.t)){
-          ok++; okStore.inc(currentQA.w,1); renderScore(); updateVocabView();
+          ok++; okStore.inc(currentQA.w,1); renderScore(); saveTotals(); updateVocabView();
           if (document.body.classList.contains('inverted')) document.body.classList.remove('inverted');
           const exactFull = normCmp(val) === normCmp(currentQA.t);
           if (exactFull) {
@@ -422,7 +425,7 @@
             }, 2900);
           }
         } else {
-          fail++; renderScore(); document.body.classList.add('inverted');
+          fail++; renderScore(); saveTotals(); document.body.classList.add('inverted');
           // show correct answer on the card before continuing
           quizInputCE.textContent = currentQA.t;
           quizInputCE.classList.add('showing-correct');
@@ -455,7 +458,7 @@
     }
 
     // Score init + render vocab
-    renderScore(); updateVocabView();
+    loadTotals(); renderScore(); updateVocabView();
 
     // Focus forwarding inside dialog
     $('.dialog').addEventListener('click', ()=>focusEnd(quizInputCE));
