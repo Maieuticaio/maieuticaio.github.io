@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Game / Vocabulary — v1.2</title>
+  <style>
+    :root { --nav-top:50px; --nav-left:50px; --gap:10px; }
+    html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
+
+    /* ===== Nav ===== */
+    .nav { position: absolute; top: var(--nav-top); left: var(--nav-left); display: flex; gap: var(--gap); align-items: center; z-index: 1000; }
+    .ph { width: 140px; height: 44px; display: grid; place-items: center; border-radius: 8px; border: 1px solid rgba(0,0,0,.15); background: #fff; cursor: pointer; user-select: none; font-weight: 600; letter-spacing: .2px; }
+    .ph.active { background: repeating-conic-gradient(#e5e5e5 0 8deg, #f7f7f7 8deg 16deg); }
+
+    .page { padding: 140px 24px 24px 50px; }
+    .hidden { display: none; }
+
+    /* ===== Vocabulary ===== */
+    .vocab { position: absolute; top: calc(var(--nav-top) + 120px); left: 60px; right: 60px; }
+    .vrow { display: grid; grid-template-columns: 375px 100px 375px 50px auto; align-items: center; height: 70px; }
+    .vrow + .vrow { border-top: 1px solid rgba(0,0,0,.08); }
+    .cell.word { font-weight: 600; }
+    .cell.trans { color: rgba(0,0,0,.75); }
+    .cell.okcount { width: 50px; justify-self: end; text-align: right; font: 12px/1 ui-monospace, Menlo, Consolas, monospace; opacity: .9; }
+    .icon-btn { width: 30px; height: 30px; display: grid; place-items: center; background: transparent; border: none; padding: 0; cursor: pointer; line-height: 0; }
+    .icon-btn.speak { justify-self: center; }
+    .icon-btn.delete { font-size: 18px; grid-column: 5; justify-self: end; }
+
+    #page-vocab { position: relative; }
+    .fab-add { position: absolute; right: 50px; bottom: 50px; width: 56px; height: 56px; border-radius: 50%; background: #fff; border: 1px solid rgba(0,0,0,.15); display: grid; place-items: center; cursor: pointer; transition: transform .08s ease; }
+    .fab-add:active { transform: scale(1.1); }
+
+    /* ===== Game ===== */
+    .game-stage { position: fixed; inset: 0; display: grid; place-items: center; }
+    .runner { width: 60px; height: 60px; animation: bob 1.6s ease-in-out infinite alternate; }
+    .runner svg { display: block; }
+    .runner-shape { transform-origin: 50% 50%; }
+    /* removed legacy positive spin to keep wrong-answer motion consistent */
+    @keyframes rotateNeg90 { from { transform: rotate(0deg); } to { transform: rotate(-90deg); } }
+    .runner-shape.spinNeg90 { animation: rotateNeg90 400ms linear 1; }
+        @keyframes bob { from { transform: translateY(-5px); } to { transform: translateY(5px); } }
+
+    /* Knockback on wrong answer (overlays bob) */
+    @keyframes knockback {
+      0%   { transform: translateX(0); }
+      35%  { transform: translateX(-50px); }
+      100% { transform: translateX(0); }
+    }
+    .runner.knock { animation: bob 1.6s ease-in-out infinite alternate, knockback 520ms cubic-bezier(0.22,0.61,0.36,1) 1; }
+
+    .obstacle-anchor { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+    .obstacle { width: 12px; height: 180px; animation: approach-loop 3s linear infinite; will-change: transform; }
+    /* first obstacle invisible until first iteration completes */
+    .obstacle.transparent { opacity: 0 !important; }
+    .obstacle svg { display: block; width: 100%; height: 100%; }
+    @keyframes approach-loop { 0% { transform: translateX(55vw); } 100% { transform: translateX(-55vw); } }
+
+    /* Pause flags */
+    .paused .runner, .paused .obstacle { animation-play-state: paused !important; }
+    
+    /* Overlay */
+    .overlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.35); z-index: 2000; }
+    .overlay.show { display: flex; }
+    .overlay, .dialog { pointer-events: auto; }
+    .dialog { width: 600px; height: 400px; background: #fff; border: 1px solid rgba(0,0,0,.15); border-radius: 12px; display: grid; grid-template-rows: 1fr auto 1fr; padding: 24px; box-shadow: 0 12px 40px rgba(0,0,0,.2); }
+    .dialog .word { align-self: end; text-align: center; font-size: 40px; font-weight: 700; letter-spacing: .5px; }
+    .input-ce { align-self: start; justify-self: center; font: 18px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: transparent; border: none; outline: none; padding: 0; margin-top: 20px; min-height: 32px; white-space: pre-wrap; text-align: center; display: inline-block; }
+    @keyframes caretBlink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+    .input-ce::after { content: "_"; display: inline-block; animation: caretBlink 1s steps(2, end) infinite; }
+    .input-ce.showing-correct::after { content: ""; }
+
+    /* Score + Theme invert */
+    .score { position: fixed; right: 50px; bottom: 50px; z-index: 1500; font: 700 18px/1 ui-monospace, Menlo, Consolas, monospace; letter-spacing: .5px; }
+    .score span { display: inline-block; min-width: 24px; text-align: center; }
+    body { background: #ffffff; }
+    body.inverted { background: #000000; }
+    .app { filter: none; min-height: 100vh; width: 100%; }
+    body.inverted .app { filter: invert(1); }
+
+      </style>
+</head>
+<body>
+  <div class="app">
+    <div id="nav" class="nav" aria-label="Навигация по страницам">
+      <div id="btn-game" class="ph active" role="button" tabindex="0" aria-pressed="true">Game</div>
+      <div id="btn-vocab" class="ph" role="button" tabindex="0" aria-pressed="false">Vocabulary</div>
+    </div>
+
+    <main>
+      <section id="page-game" class="page">
+        <div class="game-stage">
+          <div class="runner" aria-label="running square">
+            <svg class="runner-shape" width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+              <defs>
+                <filter id="wobble-stroke" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                  <feTurbulence type="fractalNoise" baseFrequency=".25" numOctaves="1" seed="3" result="noise"/>
+                  <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+                </filter>
+              </defs>
+              <rect x="1" y="1" width="58" height="58" fill="#fff"/>
+              <rect x="1" y="1" width="58" height="58" fill="none" stroke="#000" stroke-width="2" filter="url(#wobble-stroke)"/>
+            </svg>
+          </div>
+          <div class="obstacle-anchor" aria-hidden="true">
+            <div class="obstacle transparent">
+              <svg viewBox="0 0 12 180" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <filter id="wobble-stroke-obs" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+                    <feTurbulence type="fractalNoise" baseFrequency=".25" numOctaves="1" seed="5" result="noise"/>
+                    <feDisplacementMap in="SourceGraphic" in2="noise" scale="2" xChannelSelector="R" yChannelSelector="G"/>
+                  </filter>
+                </defs>
+                <rect x="1" y="1" width="10" height="178" fill="#fff"/>
+                <rect x="1" y="1" width="10" height="178" fill="none" stroke="#000" stroke-width="2" filter="url(#wobble-stroke-obs)"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="overlay" id="quizOverlay" aria-hidden="true">
+            <div class="dialog" role="dialog" aria-modal="true">
+              <div class="word" id="quizWord">word</div>
+              <div id="quizInputCE" class="input-ce" contenteditable="true" role="textbox" aria-label="Введите перевод и нажмите Enter" spellcheck="false" tabindex="0"></div>
+              <div></div>
+            </div>
+          </div>
+          <div class="score" id="score"><span id="ok">0</span>&nbsp;&nbsp;<span id="fail">0</span></div>
+        </div>
+      </section>
+
+      <section id="page-vocab" class="page hidden">
+        <div class="vocab" id="vocab"></div>
+        <button id="fabAdd" class="fab-add" aria-label="Добавить слово">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="10.5" fill="white" stroke="rgba(0,0,0,.15)"/>
+            <path d="M12 7v10M7 12h10" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </section>
+    </main>
+  </div>
+
+  <script>
+  (function(){
+    /* ====== Small helpers ====== */
+    const $ = (s, r=document) => r.querySelector(s);
+        const focusEnd = (el) => { el && el.focus && el.focus(); const r=document.createRange(); r.selectNodeContents(el); r.collapse(false); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); };
+
+    // === Fuzzy matching helpers (RU/EN letters, small typos allowed) ===
+    const normalizeText = (s) => (s||'').toLowerCase().replace(/ё/g,'е');
+    const splitWords = (s) => normalizeText(s).match(/[a-zа-я]+/g) || [];
+    const levenshtein = (a,b)=>{
+      const m=a.length, n=b.length; if(!m) return n; if(!n) return m;
+      const dp=new Array(n+1); for(let j=0;j<=n;j++) dp[j]=j;
+      for(let i=1;i<=m;i++){
+        let prev=dp[0]++, cur;
+        for(let j=1;j<=n;j++){
+          cur = Math.min(
+            dp[j] + 1,
+            dp[j-1] + 1,
+            prev + (a[i-1]===b[j-1]?0:1)
+          );
+          prev = dp[j]; dp[j] = cur;
+        }
+      }
+      return dp[n];
+    };
+    const isFuzzyCorrect = (input, translation)=>{
+      const ins = splitWords(input);
+      if (ins.length===0) return false;
+      const trs = Array.from(new Set(splitWords(translation)));
+      for (const iv of ins){
+        for (const tv of trs){
+          const d = levenshtein(iv, tv);
+          const thr = tv.length <= 4 ? 1 : 2; // allow small typos
+          if (iv===tv || d<=thr) return true;
+        }
+      }
+      return false;
+    };
+    const normCmp = (s)=> normalizeText(s).replace(/[^a-zа-я0-9]+/g,' ').trim();
+
+    /* ====== Nav ====== */
+    const btnGame=$('#btn-game'), btnVocab=$('#btn-vocab');
+    const pageGame=$('#page-game'), pageVocab=$('#page-vocab');
+    function setPage(page){
+      const isGame = page==='game';
+      btnGame.classList.toggle('active', isGame); btnVocab.classList.toggle('active', !isGame);
+      btnGame.setAttribute('aria-pressed', isGame?'true':'false'); btnVocab.setAttribute('aria-pressed', isGame?'false':'true');
+      pageGame.classList.toggle('hidden', !isGame); pageVocab.classList.toggle('hidden', isGame);
+      if (isGame) document.body.classList.remove('paused');
+    }
+    btnGame.addEventListener('click', ()=>setPage('game'));
+    btnVocab.addEventListener('click', ()=>setPage('vocab'));
+    const keyHandler = (p)=> (e)=>{ if (e.key==='Enter'||e.key===' ') { e.preventDefault(); setPage(p); } };
+    btnGame.addEventListener('keydown', keyHandler('game')); btnVocab.addEventListener('keydown', keyHandler('vocab'));
+
+    /* ====== Data ====== */
+    const SPEAKER_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" stroke="black" fill="none"/><path d="M16 8a5 5 0 0 1 0 8" stroke="black" fill="none"/><path d="M18 6a8 8 0 0 1 0 12" stroke="black" fill="none"/></svg>';
+
+    const INITIAL_WORDS = [
+      ['maieutica (n)','майевтика']
+    ];
+    const WORDS = INITIAL_WORDS.slice();
+    // purge stored counters for removed words (direct localStorage, no okStore dependency)
+    try {
+      const keep = new Set(WORDS.map(([w])=> (w||'').trim().toLowerCase()));
+      const data = JSON.parse(localStorage.getItem('vocabOk')||'{}');
+      let touched=false; for (const k of Object.keys(data)) { if (!keep.has(k)) { delete data[k]; touched=true; } }
+      if (touched) localStorage.setItem('vocabOk', JSON.stringify(data));
+    } catch(_) {}
+
+    /* ====== okStore ====== */
+    const OK_KEY='vocabOk';
+    const okStore = {
+      _(){ try { return JSON.parse(localStorage.getItem(OK_KEY)||'{}'); } catch(_) { return {}; } },
+      save(o){ localStorage.setItem(OK_KEY, JSON.stringify(o)); },
+      key(w){ return (w||'').trim().toLowerCase(); },
+      get(w){ const o=this._(); return o[this.key(w)]|0; },
+      inc(w,by=1){ const o=this._(); const k=this.key(w); o[k]=(o[k]|0)+by; this.save(o); },
+      del(w){ const o=this._(); delete o[this.key(w)]; this.save(o); }
+    };
+
+    /* ====== Vocabulary render & events ====== */
+    const vocabEl = $('#vocab');
+    function rowHTML(w,t){
+      return `<div class="vrow" data-word="${w}">
+        <div class="cell word">${w}</div>
+        <button class="cell icon-btn speak" aria-label="Произнести ${w}">${SPEAKER_SVG}</button>
+        <div class="cell trans">${t}</div>
+        <div class="cell okcount">${okStore.get(w)}</div>
+        <button class="cell icon-btn delete" aria-label="Удалить ${w}">×</button>
+      </div>`;
+    }
+    function renderVocab(list){ vocabEl.innerHTML = list.map(([w,t])=>rowHTML(w,t)).join(''); }
+    function updateVocabView(){
+      const sorted = WORDS.slice().sort((a,b)=>{ const oa=okStore.get(a[0]), ob=okStore.get(b[0]); return oa!==ob? oa-ob : a[0].localeCompare(b[0]); });
+      renderVocab(sorted);
+    }
+
+    // Add new blank row for input and commit on Enter/blur
+    const fabAdd = $('#fabAdd');
+    function insertEditableRow(){
+      const row = document.createElement('div'); row.className='vrow'; row.innerHTML = `
+        <div class="cell word" contenteditable="true" data-edit="word"></div>
+        <button class="cell icon-btn speak" aria-label="Произнести">${SPEAKER_SVG}</button>
+        <div class="cell trans" contenteditable="true" data-edit="trans"></div>
+        <div class="cell okcount">0</div>
+        <button class="cell icon-btn delete" aria-label="Удалить">×</button>`;
+      vocabEl.prepend(row);
+      const wCell = row.querySelector('[data-edit=word]');
+      const tCell = row.querySelector('[data-edit=trans]');
+      const commit = ()=>{
+        const w=(wCell.textContent||'').trim();
+        const t=(tCell.textContent||'').trim();
+        if (w && t){ if (!WORDS.find(([x])=>x===w)) WORDS.unshift([w,t]); updateVocabView(); }
+      };
+      wCell.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); tCell.focus(); } });
+      tCell.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); commit(); } });
+      wCell.addEventListener('blur', commit); tCell.addEventListener('blur', commit);
+      wCell.focus();
+    }
+    fabAdd.addEventListener('click', insertEditableRow);
+
+    // Inline edit for existing rows (click on word/translation)
+    function startInlineEdit(cell, type){
+      if (!cell || cell.isContentEditable) return;
+      const row = cell.closest('.vrow');
+      const oldWord = row?.dataset.word || row.querySelector('.cell.word')?.textContent?.trim() || '';
+      const oldText = cell.textContent;
+      cell.setAttribute('contenteditable','true');
+      focusEnd(cell);
+      const cleanup = ()=>{ cell.removeAttribute('contenteditable'); cell.removeEventListener('blur', onBlur); cell.removeEventListener('keydown', onKey); };
+      const commit = ()=>{
+        const txt = (cell.textContent||'').trim();
+        if (!txt){ cell.textContent = oldText; cleanup(); return; }
+        const idx = WORDS.findIndex(([w])=>w===oldWord);
+        if (idx>-1){
+          if (type==='word'){
+            const newWord = txt;
+            if (newWord !== oldWord){
+              WORDS[idx][0] = newWord;
+              const cnt = okStore.get(oldWord);
+              if (cnt){ okStore.del(oldWord); okStore.inc(newWord, cnt); }
+            }
+          } else {
+            WORDS[idx][1] = txt;
+          }
+        }
+        updateVocabView();
+        cleanup();
+      };
+      const cancel = ()=>{ cell.textContent = oldText; cleanup(); };
+      const onBlur = ()=> commit();
+      const onKey = (e)=>{ if (e.key==='Enter'){ e.preventDefault(); commit(); } else if (e.key==='Escape'){ e.preventDefault(); cancel(); } };
+      cell.addEventListener('blur', onBlur);
+      cell.addEventListener('keydown', onKey);
+    }
+
+    // Delegated events: delete/speak
+    vocabEl.addEventListener('click', (e)=>{
+      const row = e.target.closest('.vrow'); if(!row) return;
+      // Delete
+      if (e.target.closest('.icon-btn.delete')){
+        const word = row.dataset.word || row.querySelector('.cell.word')?.textContent?.trim()||'';
+        okStore.del(word);
+        const idx = WORDS.findIndex(([w])=>w===word); if (idx>-1) WORDS.splice(idx,1);
+        updateVocabView();
+        return;
+      }
+      // Speak
+      if (e.target.closest('.icon-btn.speak')){
+        const word = row.dataset.word || row.querySelector('.cell.word')?.textContent?.trim()||'';
+        alert('Произнести: ' + word);
+        return;
+      }
+      // Inline edit word / translation
+      const wCell = e.target.closest('.cell.word');
+      if (wCell){ startInlineEdit(wCell, 'word'); return; }
+      const tCell = e.target.closest('.cell.trans');
+      if (tCell){ startInlineEdit(tCell, 'trans'); return; }
+    });
+
+    /* ====== Game state ====== */
+    const runnerEl = $('.runner');
+    const obstacleEl = $('.obstacle');
+    // Make the very first obstacle transparent until it completes the first loop
+    obstacleEl.classList.add('transparent');
+    const clearFirst = ()=>{ obstacleEl.classList.remove('transparent'); obstacleEl.removeEventListener('animationiteration', clearFirst); };
+    obstacleEl.addEventListener('animationiteration', clearFirst);
+    const overlay = $('#quizOverlay');
+    const quizWordEl = $('#quizWord');
+    const quizInputCE = $('#quizInputCE');
+    const okEl=$('#ok'), failEl=$('#fail');
+    let ok=0, fail=0; const renderScore=()=>{ okEl.textContent=ok; failEl.textContent=fail; };
+
+    // Weighted pick: rarer for higher ok
+    function pickWord(){
+      const list = WORDS.filter(([w,t])=>w&&t);
+      if(!list.length) return {w:'word', t:'слово'};
+      const weights = list.map(([w])=> 1 / (okStore.get(w) + 1));
+      const tot = weights.reduce((a,b)=>a+b,0) || 1; let r = Math.random()*tot;
+      for (let i=0;i<list.length;i++){ r-=weights[i]; if (r<=0) return { w:list[i][0], t:list[i][1] }; }
+      const last=list[list.length-1]; return { w:last[0], t:last[1] };
+    }
+
+    let askedThisRun=false, currentQA=null;
+    let cooldownUntil = 0;
+    let revealTimer=null;
+    let revealMode=null;
+
+    function playWrongSequence(){
+      const svg = document.querySelector('.runner-shape');
+      if (svg) {
+        svg.classList.remove('spinNeg90'); void svg.offsetWidth; svg.classList.add('spinNeg90');
+        svg.addEventListener('animationend', ()=> svg.classList.remove('spinNeg90'), { once:true });
+      }
+      // knockback of the runner (50px back and return)
+      runnerEl.classList.add('knock');
+      const onKnockEnd = (e)=>{ if (e.animationName==='knockback'){ runnerEl.classList.remove('knock'); runnerEl.removeEventListener('animationend', onKnockEnd); } };
+      runnerEl.addEventListener('animationend', onKnockEnd);
+      // instantly hide current obstacle, then restart it from the initial position
+      obstacleEl.style.opacity = '0';
+      obstacleEl.style.animation = 'none';
+      void obstacleEl.offsetWidth; // reflow to reset
+      obstacleEl.style.animation = '';
+      // show again immediately at the start position (standard motion)
+      requestAnimationFrame(()=>{ obstacleEl.style.opacity = '1'; });
+      // allow next obstacle to trigger a new quiz immediately (we reset animation to start)
+      askedThisRun = false;
+    }
+
+
+    function showQuiz(){
+      askedThisRun=true; currentQA = pickWord();
+      quizWordEl.textContent=currentQA.w;
+      document.body.classList.add('paused');
+      overlay.classList.add('show'); overlay.setAttribute('aria-hidden','false');
+      setTimeout(()=>focusEnd(quizInputCE),0);
+    }
+    function hideQuiz(){ overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true'); quizInputCE.textContent=''; document.body.classList.remove('paused'); }
+
+    // Answer handling
+    quizInputCE.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter'){
+        e.preventDefault();
+        // If we're already showing the correct answer, Enter should just dismiss the card
+        // and continue the game WITHOUT changing the inverted theme/state.
+        if (quizInputCE.classList.contains('showing-correct')) {
+          if (revealTimer) { clearTimeout(revealTimer); revealTimer = null; }
+          quizInputCE.classList.remove('showing-correct');
+          hideQuiz();
+          if (revealMode === 'wrong') { playWrongSequence(); }
+          revealMode = null;
+          askedThisRun = false;
+          cooldownUntil = performance.now() + 400;
+          return;
+        }
+        if(!currentQA){ hideQuiz(); return; }
+        const val=(quizInputCE.textContent||'').trim();
+        if (isFuzzyCorrect(val, currentQA.t)){
+          ok++; okStore.inc(currentQA.w,1); renderScore(); updateVocabView();
+          if (document.body.classList.contains('inverted')) document.body.classList.remove('inverted');
+          const exactFull = normCmp(val) === normCmp(currentQA.t);
+          if (exactFull) {
+            
+            hideQuiz();
+            askedThisRun = false;
+            cooldownUntil = performance.now() + 400;
+          } else {
+            // partially-correct: show the full correct translation before continuing
+            quizInputCE.textContent = currentQA.t;
+            quizInputCE.classList.add('showing-correct');
+            revealMode = 'ok';
+            revealTimer = setTimeout(()=>{
+              quizInputCE.classList.remove('showing-correct');
+              hideQuiz();
+              revealMode = null;
+              revealTimer = null;
+              askedThisRun = false;
+              cooldownUntil = performance.now() + 400;
+            }, 2900);
+          }
+        } else {
+          fail++; renderScore(); document.body.classList.add('inverted');
+          // show correct answer on the card before continuing
+          quizInputCE.textContent = currentQA.t;
+          quizInputCE.classList.add('showing-correct');
+          revealMode = 'wrong';
+          revealTimer = setTimeout(()=>{
+            quizInputCE.classList.remove('showing-correct');
+            hideQuiz();
+            playWrongSequence();
+            revealTimer = null;
+          }, 2900);
+        }
+      }
+    });
+
+    // Collision/trigger detection (20px before meet + robustness)
+    function loop(){
+      const r1 = runnerEl.getBoundingClientRect();
+      const r2 = obstacleEl.getBoundingClientRect();
+      const gap = r2.left - r1.right; // >0 when obstacle to the right
+      const approaching = r2.left >= r1.right - 1;
+      const shouldPrompt = approaching && gap <= 20 && gap >= 0;
+      const nearMiss = r1.right > r2.left && r1.left < r2.left + 5;
+      const cooled = performance.now() >= cooldownUntil;
+      if (!askedThisRun && cooled && (shouldPrompt || nearMiss)) showQuiz();
+      const passedLeft = r2.right < r1.left - 5;
+      const farRight = r2.left > r1.right + innerWidth*0.6;
+      const offLeft = r2.right < -20;
+      if ((askedThisRun && passedLeft && !overlay.classList.contains('show')) || farRight || offLeft) askedThisRun=false;
+      requestAnimationFrame(loop);
+    }
+
+    // Score init + render vocab
+    renderScore(); updateVocabView();
+
+    // Focus forwarding inside dialog
+    $('.dialog').addEventListener('click', ()=>focusEnd(quizInputCE));
+
+    // Start
+    loop(); setPage('game');
+  })();
+  </script>
+</body>
+</html>
