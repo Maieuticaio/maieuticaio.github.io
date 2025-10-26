@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Game / Vocabulary — v1.2 (stable)</title>
+  <title>Game / Vocabulary — v1.3</title>
   <style>
-    :root { --nav-top:50px; --nav-left:50px; --gap:10px; }
+    :root { --nav-top:50px; --nav-left:50px; --gap:10px; --ph-h:44px; }
     html, body { height: 100%; margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; }
 
     /* ===== Nav ===== */
@@ -20,6 +20,10 @@
     .vocab { position: absolute; top: calc(var(--nav-top) + 120px); left: 60px; right: 60px; }
     .vrow { display: grid; grid-template-columns: 375px 100px 375px 50px auto; align-items: center; height: 70px; }
     .vrow + .vrow { border-top: 1px solid rgba(0,0,0,.08); }
+    /* highlight for freshly imported rows */
+    .vrow.new { background: #fffbe6; }
+    @keyframes flashNew { 0% { background:#fff3c4; } 100% { background:#fffbe6; } }
+    .vrow.new { animation: flashNew 1s ease-out 1; }
     .cell.word { font-weight: 600; }
     .cell.trans { color: rgba(0,0,0,.75); }
     .cell.okcount { width: 50px; justify-self: end; text-align: right; font: 12px/1 ui-monospace, Menlo, Consolas, monospace; opacity: .9; }
@@ -28,8 +32,10 @@
     .icon-btn.delete { font-size: 18px; grid-column: 5; justify-self: end; }
 
     #page-vocab { position: relative; }
-    .fab-add { position: absolute; right: 50px; bottom: 50px; width: 56px; height: 56px; border-radius: 50%; background: #fff; border: 1px solid rgba(0,0,0,.15); display: grid; place-items: center; cursor: pointer; transition: transform .08s ease; }
-    .fab-add:active { transform: scale(1.1); }
+    .fab-round { position: fixed; top: calc(var(--nav-top) + (var(--ph-h) / 2) - 28px); width: 56px; height: 56px; border-radius: 50%; background: #fff; border: 1px solid rgba(0,0,0,.15); display: grid; place-items: center; cursor: pointer; transition: transform .08s ease; z-index: 1200; }
+    .fab-add { right: 50px; }
+    .fab-list { right: calc(50px + 56px + 10px); }
+    .fab-round:active { transform: scale(1.1); }
 
     /* ===== Game ===== */
     .game-stage { position: fixed; inset: 0; display: grid; place-items: center; }
@@ -75,7 +81,6 @@
     body { background: #ffffff; }
     body.inverted {
       background-color: #000000;
-      /* Starry sky: smaller (2/3) semi-transparent white dots */
       background-image:
         radial-gradient(2px 2px at 12% 18%, rgba(255,255,255,.6) 1.6px, transparent 2px),
         radial-gradient(2px 2px at 42% 62%, rgba(255,255,255,.6) 1.6px, transparent 2px),
@@ -84,7 +89,6 @@
         radial-gradient(2px 2px at 28% 76%, rgba(255,255,255,.6) 1.6px, transparent 2px);
       background-size: 200px 200px, 260px 260px, 320px 320px, 180px 180px, 240px 240px;
       background-repeat: repeat;
-      /* animate stars moving right-to-left */
       background-position: 0 0, 0 0, 0 0, 0 0, 0 0;
       animation: stars-scroll 6s linear infinite;
     }
@@ -92,12 +96,17 @@
       from { background-position: 0 0, 0 0, 0 0, 0 0, 0 0; }
       to   { background-position: -200px 0, -260px 0, -320px 0, -180px 0, -240px 0; }
     }
-    /* Hide stars while dialog is visible (we add .paused on body when quiz is shown) */
     body.inverted.paused { background-image: none !important; animation: none !important; }
     .app { filter: none; min-height: 100vh; width: 100%; }
     body.inverted .app { filter: invert(1); }
 
-      </style>
+    /* ===== Import Dialog (list) ===== */
+    .dialog-import { width: 600px; height: 400px; background: #fff; border: 1px solid rgba(0,0,0,.15); border-radius: 12px; box-shadow: 0 12px 40px rgba(0,0,0,.2); position: relative; display: flex; flex-direction: column; padding: 16px; }
+    .dialog-import .dia-icon { position: absolute; top: 10px; width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 1px solid rgba(0,0,0,.15); display: grid; place-items: center; cursor: pointer; }
+    .dialog-import .dia-ok { right: 46px; }
+    .dialog-import .dia-close { right: 10px; }
+    .dialog-import .import-text { flex: 1; margin-top: 8px; resize: none; width: 100%; border: none; outline: none; font: 16px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+  </style>
 </head>
 <body>
   <div class="app">
@@ -149,13 +158,29 @@
 
       <section id="page-vocab" class="page hidden">
         <div class="vocab" id="vocab"></div>
-        <button id="fabAdd" class="fab-add" aria-label="Добавить слово">
+        <button id="fabList" class="fab-round fab-list" aria-label="Показать список">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="10.5" fill="white" stroke="rgba(0,0,0,.15)"/>
+            <path d="M8 8h8M8 12h8M8 16h8" stroke="#000" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button id="fabAdd" class="fab-round fab-add" aria-label="Добавить слово">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <circle cx="12" cy="12" r="10.5" fill="white" stroke="rgba(0,0,0,.15)"/>
             <path d="M12 7v10M7 12h10" stroke="#000" stroke-width="2" stroke-linecap="round"/>
           </svg>
         </button>
       </section>
+
+      <!-- Import Text Dialog -->
+      <div class="overlay" id="listOverlay" aria-hidden="true">
+        <div class="dialog-import" role="dialog" aria-modal="true" aria-label="Импорт слов">
+          <button id="listOk" class="dia-icon dia-ok" title="Готово" aria-label="Готово">✓</button>
+          <button id="listClose" class="dia-icon dia-close" title="Закрыть" aria-label="Закрыть">✕</button>
+          <textarea id="listText" class="import-text" placeholder="Вставьте список слов. Один в строке.
+Формат: word (pos) — перевод"></textarea>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -200,6 +225,29 @@
     };
     const normCmp = (s)=> normalizeText(s).replace(/[^a-zа-я0-9]+/g,' ').trim();
 
+    /* ===== Speech (Web Speech API) ===== */
+    const synth = window.speechSynthesis;
+    let cachedVoices = [];
+    function refreshVoices(){ try { cachedVoices = synth.getVoices(); } catch(_) { cachedVoices = []; } }
+    refreshVoices();
+    if (typeof synth !== 'undefined' && 'onvoiceschanged' in synth) { synth.onvoiceschanged = refreshVoices; }
+    function detectLang(s){ return /[а-яё]/i.test(s) ? 'ru-RU' : 'en-US'; }
+    function speakWord(text){
+      try{
+        if (!text) return;
+        const utt = new SpeechSynthesisUtterance(text);
+        const lang = detectLang(text);
+        utt.lang = lang;
+        utt.rate = 0.95;
+        utt.pitch = 1.0;
+        const exact = cachedVoices.find(v=>v.lang === lang);
+        const prefix = cachedVoices.find(v=> (v.lang||'').startsWith(lang.split('-')[0]));
+        utt.voice = exact || prefix || cachedVoices[0] || null;
+        synth.cancel();
+        synth.speak(utt);
+      } catch(err){ console.error('TTS error', err); }
+    }
+
     /* ====== Nav ====== */
     const btnGame=$('#btn-game'), btnVocab=$('#btn-vocab');
     const pageGame=$('#page-game'), pageVocab=$('#page-vocab');
@@ -220,20 +268,20 @@
 
     const INITIAL_WORDS = [ ['maieutica (n)','майевтика'] ];
     const WORDS = INITIAL_WORDS.slice();
+    let LAST_IMPORTED = []; // words recently added via import dialog
+    let RETRY_QUEUE = []; // short-term queue for mistaken words: {w,t,delay}
     const VOCAB_KEY = 'vocabList';
     function saveVocab(){ try { localStorage.setItem(VOCAB_KEY, JSON.stringify(WORDS)); } catch(_){} }
     function loadVocab(){
       try{
         const raw = localStorage.getItem(VOCAB_KEY);
         const arr = JSON.parse(raw || '[]');
-        // Accept only non-empty valid arrays of [word, translation]
         if (Array.isArray(arr) && arr.length>0 && arr.every(r=>Array.isArray(r) && r.length>=2)){
           WORDS.length = 0;
           arr.forEach(([w,t])=> WORDS.push([String(w), String(t)]));
           return true;
         }
-      }catch(_){ /* ignore and seed */ }
-      // Fallback (missing/invalid/empty): re-seed with INITIAL_WORDS and persist once
+      }catch(_){}
       WORDS.length = 0;
       INITIAL_WORDS.forEach(([w,t])=> WORDS.push([w,t]));
       saveVocab();
@@ -277,8 +325,18 @@
     }
     function renderVocab(list){ vocabEl.innerHTML = list.map(([w,t])=>rowHTML(w,t)).join(''); }
     function updateVocabView(){
-      const sorted = WORDS.slice().sort((a,b)=>{ const oa=okStore.get(a[0]), ob=okStore.get(b[0]); return oa!==ob? oa-ob : a[0].localeCompare(b[0]); });
-      renderVocab(sorted);
+      // Place last imported words first (in input order), then the rest sorted as before
+      const byWord = new Map(WORDS.map(([w,t])=>[w,t]));
+      const rest = WORDS.filter(([w])=> !LAST_IMPORTED.includes(w));
+      const sortedRest = rest.slice().sort((a,b)=>{ const oa=okStore.get(a[0]), ob=okStore.get(b[0]); return oa!==ob? oa-ob : a[0].localeCompare(b[0]); });
+      const first = LAST_IMPORTED.map(w=> [w, byWord.get(w)]).filter(([,t])=>typeof t!=="undefined");
+      const finalList = first.concat(sortedRest);
+      renderVocab(finalList);
+      // highlight newly imported
+      LAST_IMPORTED.forEach(w=>{
+        const row = document.querySelector(`.vrow[data-word="${w.replace(/"/g,'\"')}"]`);
+        if (row) row.classList.add('new');
+      });
     }
 
     // Add new blank row for input and commit on Enter/blur
@@ -359,7 +417,6 @@
     // Delegated events: delete/speak/edit
     vocabEl.addEventListener('click', (e)=>{
       const row = e.target.closest('.vrow'); if(!row) return;
-      // Delete
       if (e.target.closest('.icon-btn.delete')){
         const word = row.dataset.word || row.querySelector('.cell.word')?.textContent?.trim()||'';
         okStore.del(word);
@@ -368,33 +425,27 @@
         updateVocabView();
         return;
       }
-      // Speak (placeholder)
       if (e.target.closest('.icon-btn.speak')){
         const word = row.dataset.word || row.querySelector('.cell.word')?.textContent?.trim()||'';
-        alert('Произнести: ' + word);
+        speakWord(word);
         return;
       }
-      // Inline edit word / translation
       const wCell = e.target.closest('.cell.word'); if (wCell){ startInlineEdit(wCell, 'word'); return; }
       const tCell = e.target.closest('.cell.trans'); if (tCell){ startInlineEdit(tCell, 'trans'); return; }
     });
 
-    // Cross-tab sync: if localStorage changes in another tab, refresh view here
     window.addEventListener('storage', (e)=>{
       if (e.key===VOCAB_KEY) { loadVocab(); updateVocabView(); }
       if (e.key===OK_KEY)     { updateVocabView(); }
       if (e.key==='vocabTotals') { loadTotals(); renderScore(); }
-      
     });
 
     /* ====== Game state ====== */
     const runnerEl = $('.runner');
     const obstacleEl = $('.obstacle');
-    // Make the very first obstacle transparent until it completes the first loop
     obstacleEl.classList.add('transparent');
     const clearFirst = ()=>{ obstacleEl.classList.remove('transparent'); obstacleEl.removeEventListener('animationiteration', clearFirst); };
     obstacleEl.addEventListener('animationiteration', clearFirst);
-    // Fallback: if the CSS iteration event didn't arrive (e.g. tab was backgrounded), unhide after ~1 cycle
     setTimeout(()=>{ if (obstacleEl.classList.contains('transparent')) clearFirst(); }, 3500);
     const overlay = $('#quizOverlay');
     const quizWordEl = $('#quizWord');
@@ -405,8 +456,14 @@
     const TOTALS_KEY='vocabTotals';
     const loadTotals=()=>{ try{ const t=JSON.parse(localStorage.getItem(TOTALS_KEY)||'{}'); ok=t.ok|0; fail=t.fail|0; }catch(_){}};
     const saveTotals=()=>{ localStorage.setItem(TOTALS_KEY, JSON.stringify({ok, fail})); };
-    // Weighted pick: rarer for higher ok
     function pickWord(){
+      // 1) If there is a queued mistaken word whose delay reached 0 — show it first
+      const readyIdx = RETRY_QUEUE.findIndex(it => (it && (it.delay|0) <= 0));
+      if (readyIdx > -1) {
+        const it = RETRY_QUEUE.splice(readyIdx, 1)[0];
+        return { w: it.w, t: it.t };
+      }
+      // 2) Otherwise use weighted random by mastery (okStore)
       const list = WORDS.filter(([w,t])=>w&&t);
       if(!list.length) return {w:'word', t:'слово'};
       const weights = list.map(([w])=> 1 / (okStore.get(w) + 1));
@@ -425,25 +482,23 @@
         svg.classList.remove('spinNeg90'); void svg.offsetWidth; svg.classList.add('spinNeg90');
         svg.addEventListener('animationend', ()=> svg.classList.remove('spinNeg90'), { once:true });
       }
-      // knockback of the runner (50px back and return)
       runnerEl.classList.add('knock');
       const onKnockEnd = (e)=>{ if (e.animationName==='knockback'){ runnerEl.classList.remove('knock'); runnerEl.removeEventListener('animationend', onKnockEnd); } };
       runnerEl.addEventListener('animationend', onKnockEnd);
-      // instantly hide current obstacle, then restart it from the initial position
       obstacleEl.style.opacity = '0';
       obstacleEl.style.animation = 'none';
-      void obstacleEl.offsetWidth; // reflow to reset
+      void obstacleEl.offsetWidth;
       obstacleEl.style.animation = '';
-      // show again immediately at the start position (standard motion)
       requestAnimationFrame(()=>{ obstacleEl.style.opacity = '1'; });
-      // allow next obstacle to trigger a new quiz immediately (we reset animation to start)
       askedThisRun = false;
     }
 
     function showQuiz(){
-      askedThisRun=true; currentQA = pickWord();
-      quizWordEl.textContent=currentQA.w;
-      // hard freeze to avoid overshoot
+      askedThisRun=true;
+      // Decrease delay counters for all scheduled retries (one step per asked card)
+      RETRY_QUEUE.forEach(it=>{ if (it.delay>0) it.delay--; });
+      currentQA = pickWord();
+      quizWordEl.textContent = currentQA.w;
       obstacleEl.style.animationPlayState = 'paused';
       runnerEl.style.animationPlayState   = 'paused';
       document.body.classList.add('paused');
@@ -454,16 +509,13 @@
       overlay.classList.remove('show'); overlay.setAttribute('aria-hidden','true');
       quizInputCE.textContent='';
       document.body.classList.remove('paused');
-      // resume
       obstacleEl.style.animationPlayState = '';
       runnerEl.style.animationPlayState   = '';
     }
 
-    // Answer handling
     quizInputCE.addEventListener('keydown', (e)=>{
       if(e.key==='Enter'){
         e.preventDefault();
-        // If we're already showing the correct answer, Enter just dismisses
         if (quizInputCE.classList.contains('showing-correct')) {
           if (revealTimer) { clearTimeout(revealTimer); revealTimer = null; }
           quizInputCE.classList.remove('showing-correct');
@@ -484,13 +536,10 @@
             hideQuiz();
             askedThisRun = false;
             cooldownUntil = performance.now() + 400;
-            
           } else {
-            // partially-correct: show the full correct translation before continuing
             quizInputCE.textContent = currentQA.t;
             quizInputCE.classList.add('showing-correct');
             revealMode = 'ok';
-            
             revealTimer = setTimeout(()=>{
               quizInputCE.classList.remove('showing-correct');
               hideQuiz();
@@ -500,11 +549,16 @@
           }
         } else {
           fail++; renderScore(); saveTotals(); document.body.classList.add('inverted');
-          // show correct answer on the card before continuing
+          // Schedule this word to reappear after 1..3 other cards
+          if (currentQA && currentQA.w) {
+            const existing = RETRY_QUEUE.find(it => it.w === currentQA.w);
+            const d = Math.floor(Math.random()*3) + 1; // 1..3
+            if (existing) { existing.delay = Math.min(existing.delay, d); }
+            else { RETRY_QUEUE.push({ w: currentQA.w, t: currentQA.t, delay: d }); }
+          }
           quizInputCE.textContent = currentQA.t;
           quizInputCE.classList.add('showing-correct');
           revealMode = 'wrong';
-          
           revealTimer = setTimeout(()=>{
             quizInputCE.classList.remove('showing-correct');
             hideQuiz();
@@ -515,11 +569,10 @@
       }
     });
 
-    // Collision/trigger detection (20px before meet + robustness)
     function loop(){
       const r1 = runnerEl.getBoundingClientRect();
       const r2 = obstacleEl.getBoundingClientRect();
-      const gap = r2.left - r1.right; // >0 when obstacle to the right
+      const gap = r2.left - r1.right;
       const approaching = r2.left >= r1.right - 1;
       const shouldPrompt = approaching && gap <= 20 && gap >= 0;
       const nearMiss = r1.right > r2.left && r1.left < r2.left + 5;
@@ -531,35 +584,60 @@
       if ((askedThisRun && passedLeft && !overlay.classList.contains('show')) || farRight || offLeft) askedThisRun=false;
       requestAnimationFrame(loop);
     }
-
-    // Init
+    // Init — normal boot: keep user's history in localStorage
     loadTotals();
     loadVocab();
     purgeOrphanOk();
     renderScore();
     updateVocabView();
-    
 
-    // Focus forwarding inside dialog
+    
     const dlg = document.querySelector('.dialog');
     dlg && dlg.addEventListener('click', ()=>focusEnd(quizInputCE));
 
-    // Start
     loop(); setPage('game');
 
-    /* ====== Tiny self-tests (non-blocking) ====== */
-    try {
-      console.assert(normalizeText('Ёж')==='еж','normalizeText ё->е');
-      console.assert(levenshtein('test','test')===0,'lev 0');
-      console.assert(isFuzzyCorrect('майевтика','майевтика')===true,'fuzzy exact');
-      console.assert(isFuzzyCorrect('маевтика','майевтика')===true,'fuzzy 1 typo');
-      console.assert(isFuzzyCorrect('soccer','майевтика')===false,'fuzzy mismatch');
-      // okStore sanity
-      const __k='__tmp__'; const before=okStore.get(__k); okStore.inc(__k,2); console.assert(okStore.get(__k)===before+2,'okStore inc'); okStore.del(__k); console.assert(okStore.get(__k)===0,'okStore del');
-      // rowHTML should include okcount cell
-      const testRow = rowHTML('maieutica (n)','майевтика');
-      console.assert(/okcount/.test(testRow),'rowHTML okcount');
-    } catch(e) { /* noop */ }
+    /* ===== List dialog wiring ===== */
+    const fabList = document.getElementById('fabList');
+    const listOverlay = document.getElementById('listOverlay');
+    const listText = document.getElementById('listText');
+    const listOk = document.getElementById('listOk');
+    const listClose = document.getElementById('listClose');
+
+    function showListDialog(){
+      listOverlay.classList.add('show');
+      listOverlay.setAttribute('aria-hidden','false');
+      listText.value='';
+      listText.focus();
+    }
+    function hideListDialog(){
+      listOverlay.classList.remove('show');
+      listOverlay.setAttribute('aria-hidden','true');
+    }
+    function importFromRaw(text){
+      const lines = String(text || '').split(/\r?\n+/).map(s => s.trim()).filter(Boolean);
+      let added = 0; const newOnes = [];
+      for (let line of lines){
+        // Нормализуем редкие виды тире к обычному эм-тире
+        line = line.replace(/[\u2012\u2013\u2014\u2015]/g, '—');
+        // Поддерживаем: —, –, -, :, ;, |, таб, а также -> и =>
+        let m = line.match(/^(.*?)\s*(?:—|–|-|:|;|\||->|=>|\t)\s*(.+)$/);
+        if (!m) m = line.match(/^(.*?)\s{2,}(.+)$/); // фолбэк: 2+ пробелов
+        if (!m) continue;
+        const w = m[1].trim();
+        const t = m[2].trim();
+        if (!w || !t) continue;
+        if (!WORDS.find(([x]) => x === w)) { WORDS.unshift([w, t]); newOnes.push(w); added++; }
+      }
+      LAST_IMPORTED = newOnes;
+      if (added){ saveVocab(); updateVocabView(); setPage('vocab'); }
+      return added;
+    }
+    fabList && fabList.addEventListener('click', showListDialog);
+    listClose && listClose.addEventListener('click', hideListDialog);
+    listOk && listOk.addEventListener('click', ()=>{ importFromRaw(listText.value); hideListDialog(); });
+    window.addEventListener('keydown', (e)=>{ if (e.key==='Escape' && listOverlay.classList.contains('show')) hideListDialog(); });
+    listOverlay && listOverlay.addEventListener('click', (e)=>{ if (e.target===listOverlay) hideListDialog(); });
   })();
   </script>
 </body>
