@@ -577,31 +577,50 @@
   </script>
 
   <script>
-  // === 4) АДАПТАЦИЯ ПОД МОБИЛЬНУЮ КЛАВИАТУРУ (фиксируем по layout-viewport) ===
+  // === 4) АДАПТАЦИЯ ПОД МОБИЛЬНУЮ КЛАВИАТУРУ (жёсткая фиксация, без сдвигов) ===
   (function(){
     const root = document.documentElement;
-    const BASE_SCALE = 0.8;   // фиксированный масштаб анимации
-    const BASE_TY    = -100;  // фиксированный сдвиг анимации вверх
 
-    function lockToLayoutViewport(){
-      // Базируемся на layout viewport (innerHeight при загрузке/повороте),
-      // не реагируем на visualViewport (клавиатура)
-      const baseH = window.innerHeight;
+    // 1) Базовые параметры положения
+    const BASE_SCALE = 0.8;
+    const BASE_TY    = -150; // ↑ Подняли анимацию ещё на 50px (было -100)
+    const QUIZ_SHIFT = -50;  // ↑ Подняли слово/квиз на 50px вверх
+
+    // 2) Фиксируем базовую высоту один раз (layout viewport), чтобы клавиатура её не меняла
+    const BASE_W = window.innerWidth;
+    const BASE_H = Math.max(window.innerHeight, document.documentElement.clientHeight);
+
+    function applyFixed(){
       root.style.setProperty('--viz-scale', String(BASE_SCALE));
       root.style.setProperty('--viz-translateY', BASE_TY + 'px');
-      root.style.setProperty('--viz-top', (baseH * 0.5) + 'px');
-      root.style.setProperty('--quiz-top', (baseH * 0.5) + 'px');
+      root.style.setProperty('--viz-top', (BASE_H * 0.5) + 'px');
+      root.style.setProperty('--quiz-top', (BASE_H * 0.5 + QUIZ_SHIFT) + 'px');
     }
 
-    // Инициализация
-    lockToLayoutViewport();
+    // 3) Никогда не реагируем на появление клавиатуры: игнорируем resize, если ширина не изменилась значительно
+    function onResize(){
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      // Если поменялась только высота (клавиатура), игнорируем
+      if (Math.abs(w - BASE_W) < 30) return;
+      // Если реально поменялась ориентация/ширина — обновим базовые значения
+      root.style.setProperty('--viz-scale', String(BASE_SCALE));
+      root.style.setProperty('--viz-translateY', BASE_TY + 'px');
+      root.style.setProperty('--viz-top', (h * 0.5) + 'px');
+      root.style.setProperty('--quiz-top', (h * 0.5 + QUIZ_SHIFT) + 'px');
+    }
 
-    // Обновляем только при смене ориентации/жёстком ресайзе, но НЕ при появлении клавиатуры
-    let rAF = 0;
-    function onResize(){ cancelAnimationFrame(rAF); rAF = requestAnimationFrame(lockToLayoutViewport); }
-    window.addEventListener('orientationchange', ()=> setTimeout(lockToLayoutViewport, 300));
-    // На Android некоторые браузеры шлют resize при смене UI — слегка фильтруем
+    // 4) Инициализация и защита от автопрокруток
+    applyFixed();
     window.addEventListener('resize', onResize);
+    window.addEventListener('orientationchange', ()=> setTimeout(onResize, 300));
+
+    // На некоторых устройствах фокус может пытаться проскроллить страницу — возвращаем в 0,0
+    const qi = document.getElementById('quizInput');
+    if(qi){
+      qi.addEventListener('focus', ()=> setTimeout(()=> window.scrollTo({top:0,left:0,behavior:'instant'}), 0));
+      qi.addEventListener('blur',  ()=> setTimeout(()=> window.scrollTo({top:0,left:0,behavior:'instant'}), 0));
+    }
   })();
   </script>
 
