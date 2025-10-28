@@ -26,7 +26,7 @@
     }
     svg { width: min(92vw, 520px); height: auto; display: block; }
     /* фиксируем визуализацию по центру экрана, чтобы не прыгала при появлении клавиатуры */
-    svg.viz{ position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) translateY(var(--viz-translateY, -100px)) scale(var(--viz-scale, .8)); transform-origin: center; }
+    svg.viz{ position: fixed; top: var(--viz-top, 50%); left: 50%; transform: translate(-50%, -50%) translateY(var(--viz-translateY, -100px)) scale(var(--viz-scale, .8)); transform-origin: center; }
     .ink { fill: none; stroke: #000; stroke-width: 3; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 
     /* ВЫЕЗЖАЮЩИЙ СЛОВАРЬ */
@@ -71,7 +71,7 @@
 
     /* Позиционирование анимации и квиза */
     svg.viz{ position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) translateY(var(--viz-translateY, -100px)) scale(var(--viz-scale, .8)); transform-origin: center; }
-    .quiz{ position:fixed; top:50%; left:50%; transform:translate(-50%, 0); width:min(92vw,520px); margin:0; }
+    .quiz{ position:fixed; top: var(--quiz-top, 50%); left:50%; transform:translate(-50%, 0); width:min(92vw,520px); margin:0; }
     .word .speakQuiz{ position:relative; top:2px; width:28px; height:28px; border:none; background:transparent; display:grid; place-items:center; cursor:pointer; outline:none; }
     .word .speakQuiz svg{ width:18px; height:18px; display:block; }
 
@@ -577,55 +577,31 @@
   </script>
 
   <script>
-  // === 4) АДАПТАЦИЯ ПОД МОБИЛЬНУЮ КЛАВИАТУРУ ===
+  // === 4) АДАПТАЦИЯ ПОД МОБИЛЬНУЮ КЛАВИАТУРУ (фиксируем по layout-viewport) ===
   (function(){
     const root = document.documentElement;
-    const quiz = document.querySelector('.quiz');
-    const input = document.getElementById('quizInput');
-
-    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
-
     const BASE_SCALE = 0.8;   // фиксированный масштаб анимации
     const BASE_TY    = -100;  // фиксированный сдвиг анимации вверх
 
-    function applyLayout(){
-      // фиксированные значения — ничего не двигаем при появлении клавиатуры
-      root.style.setProperty('--viz-scale', '0.8');
-      root.style.setProperty('--viz-translateY', '-100px');
-      // .quiz зафиксирована через position:fixed (top:50%), поэтому не трогаем top в JS
-    }{
-      const vv = window.visualViewport;
-      const vh = vv ? vv.height : window.innerHeight;
-      const fullH = window.innerHeight;
-      const pageTop = vv ? vv.pageTop : window.scrollY || 0;
-
-      const typing = document.activeElement === input;
-
-      // Центруем блок квиза относительно видимой области, но НЕ дергаем при наборе текста
-      if(!typing){
-        const quizTop = Math.round(pageTop + vh * 0.5);
-        quiz.style.top = quizTop + 'px';
-      }
-
-      // Во время открытой клавиатуры не трогаем анимацию — оставляем на месте
-      const keyboardOpen = vv ? (fullH - vh) > 120 : typing;
-      if(keyboardOpen){
-        root.style.setProperty('--viz-scale', BASE_SCALE.toFixed(3));
-        root.style.setProperty('--viz-translateY', BASE_TY + 'px');
-        return;
-      }
-
-
-      // Когда клавиатуры нет — можно подстраивать масштаб под высоту окна (как раньше)
-      const targetScale = (vh * 0.45) / 500;
-      const s = clamp(Math.min(BASE_SCALE, targetScale), 0.5, BASE_SCALE);
-      root.style.setProperty('--viz-scale', s.toFixed(3));
-      const ty = (s < 0.7) ? -70 : BASE_TY;
-      root.style.setProperty('--viz-translateY', ty + 'px');
+    function lockToLayoutViewport(){
+      // Базируемся на layout viewport (innerHeight при загрузке/повороте),
+      // не реагируем на visualViewport (клавиатура)
+      const baseH = window.innerHeight;
+      root.style.setProperty('--viz-scale', String(BASE_SCALE));
+      root.style.setProperty('--viz-translateY', BASE_TY + 'px');
+      root.style.setProperty('--viz-top', (baseH * 0.5) + 'px');
+      root.style.setProperty('--quiz-top', (baseH * 0.5) + 'px');
     }
 
-    // отключаем реакцию на visualViewport/resize, чтобы ничего не сдвигалось при клавиатуре
-    applyLayout();
+    // Инициализация
+    lockToLayoutViewport();
+
+    // Обновляем только при смене ориентации/жёстком ресайзе, но НЕ при появлении клавиатуры
+    let rAF = 0;
+    function onResize(){ cancelAnimationFrame(rAF); rAF = requestAnimationFrame(lockToLayoutViewport); }
+    window.addEventListener('orientationchange', ()=> setTimeout(lockToLayoutViewport, 300));
+    // На Android некоторые браузеры шлют resize при смене UI — слегка фильтруем
+    window.addEventListener('resize', onResize);
   })();
   </script>
 
