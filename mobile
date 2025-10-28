@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Словарь • Шагающий многогранник</title>
+  <style>
+    :root{
+      --accent:#0a84ff;
+      --muted:#6b7280;
+      --drawer-w:84vw;
+      --drawer-max:420px;
+      --handle:36px;
+    }
+    html, body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 12px;
+      background: #fff;
+      position: relative; /* для абсолютного позиционирования квиза */
+      margin:0;
+      height:100%;
+    }
+    svg { width: min(92vw, 520px); height: auto; display: block; }
+    .ink { fill: none; stroke: #000; stroke-width: 3; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+
+    /* ВЫЕЗЖАЮЩИЙ СЛОВАРЬ */
+    .drawer{position:fixed;top:0;right:0;height:100%;width:min(var(--drawer-w),var(--drawer-max));
+      transform:translateX(calc(100% - var(--handle)));transition:transform .28s ease;
+      background:#fff;border-left:1px solid #e5e7eb;box-shadow:-10px 0 30px rgba(0,0,0,.08);z-index:10}
+    .drawer.open{transform:translateX(0)}
+    .drawer .handle{position:absolute;left:calc(-1 * var(--handle));top:40%;width:var(--handle);height:72px;background:#000;border-radius:36px 0 0 36px;display:flex;align-items:center;justify-content:center;touch-action:none}
+    .drawer .handle::after{content:"";display:block;border:2px solid #fff;border-left:0;border-top:0;width:10px;height:10px;transform:rotate(135deg);transition:transform .2s ease}
+    .drawer.open .handle::after{transform:rotate(-45deg)}
+    .drawer .sheet{display:flex;flex-direction:column;height:100%}
+    .drawer header{padding:14px 16px 10px;font-weight:700;display:flex;align-items:center;justify-content:space-between}
+    .addBtn{width:32px;height:32px;border:1px solid #e5e7eb;border-radius:10px;background:#f8f9fb;display:grid;place-items:center;cursor:pointer}
+    .addBtn svg{width:16px;height:16px;transition:transform .2s ease}
+    .addBtn.open svg{transform:rotate(45deg)}
+    .list{padding:0 16px 24px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px}
+    .item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;border:1px solid #eee;border-radius:12px;background:#fff}
+    .item strong{font-weight:700}
+    .play{width:36px;height:36px;border-radius:10px;border:1px solid #e5e7eb;background:transparent;display:grid;place-items:center}
+    .play:hover{background:#f8f9fb}
+    .play svg{width:18px;height:18px;display:block}
+
+    /* ИНЛАЙН-ВВОД СПИСКОМ */
+    .addrow{display:none;gap:8px;padding:8px 16px 0;margin-bottom:12px}
+    .addrow textarea{width:100%;min-height:88px;padding:10px;border:1px solid #e5e7eb;border-radius:10px;font-size:16px;resize:vertical}
+    .addrow button{padding:10px 12px;border-radius:10px;border:1px solid #e5e7eb;background:#f8f9fb;cursor:pointer}
+    .addrow button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+    /* КВИЗ*/
+    .word{ text-align:center; font-weight:700; font-size:20px; margin:4px 0 10px; position:relative; }
+    .word::after{ content:""; position:absolute; left:50%; transform:translateX(-50%); top:100%; margin-top:10px; width:2px; height:22px; background:#2563eb; animation: caretBlink 1s step-end infinite; border-radius:1px; }
+    @keyframes caretBlink{ 0%,49%{ opacity:1 } 50%,100%{ opacity:0 } }
+    .inputrow{ display:flex; gap:8px; }
+    .inputrow input{ flex:1; padding:12px; border:none; border-radius:0; font-size:20px; background:#fff; outline:none; box-shadow:none; text-align:center; caret-color:#2563eb; }
+    .muted{ color:var(--muted); font-size:14px; }
+
+    /* Позиционирование анимации и квиза */
+    svg.viz{ transform: translateY(var(--viz-translateY, -100px)) scale(var(--viz-scale, .8)); transform-origin: top center; }
+    .quiz{ position:absolute; top:50vh; left:50%; transform:translateX(-50%); width:min(92vw,520px); margin:0; }
+
+    /* мелкий отклик при добавлении */
+    #list.flash-add{ outline: 2px solid rgba(10,132,255,.25); outline-offset: 2px; transition: outline-color .3s; }
+  </style>
+</head>
+<body>
+  <!-- Верхняя визуализация: линия и шаговая фигура -->
+  <svg class="viz" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Линия 400 пикселей, нарисованная от руки">
+    <defs>
+      <filter id="squiggleX" filterUnits="userSpaceOnUse" x="-80" y="-120" width="560" height="680">
+        <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="1" seed="3" result="noise">
+          <animate attributeName="baseFrequency" dur="1.6s" values="0.02;0.028;0.02" repeatCount="indefinite" />
+        </feTurbulence>
+        <feColorMatrix in="noise" type="matrix" result="noiseX"
+          values="1 0 0 0 0
+                  0 0 0 0 0
+                  0 0 1 0 0
+                  0 0 0 1 0" />
+        <feDisplacementMap in="SourceGraphic" in2="noiseX" xChannelSelector="R" yChannelSelector="G" scale="1.6" />
+      </filter>
+    </defs>
+    <g id="lineWrap">
+      <!-- Линия-основание (невидимая, для геометрии) -->
+      <line class="ink" x1="0" y1="300" x2="400" y2="300" style="stroke: transparent;" />
+    </g>
+    <g id="boxWrap" filter="url(#squiggleX)">
+      <g id="shape">
+        <polygon id="poly" class="ink" style="fill:#fff" points="" />
+      </g>
+    </g>
+  </svg>
+
+  <div class="quiz">
+    <div id="quizWord" class="word"></div>
+    <div class="inputrow">
+      <input id="quizInput" type="text" autocomplete="off" enterkeyhint="done" autocapitalize="none" autocorrect="off" spellcheck="false" />
+    </div>
+    <div id="quizFeedback" class="muted" style="margin-top:6px"></div>
+  </div>
+
+  <!-- Выезжающее окно слов справа -->
+  <aside id="drawer" class="drawer" aria-label="Список слов">
+    <div class="handle" id="handle" role="button" aria-label="Открыть словарь"></div>
+    <div class="sheet">
+      <header>Словарь <button id="addWordBtn" class="addBtn" title="Добавить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button></header>
+      <div class="addrow" id="addRow">
+        <textarea id="addBulk" placeholder="Вводи один или несколько элементов. Примеры:\nserendipity - счастливое случайное открытие\npetrichor - запах земли после дождя\nliminal — пороговый; gossamer — тончайшая паутинка"></textarea>
+        <button id="addSave" class="primary">Добавить</button>
+      </div>
+      <div id="list" class="list"></div>
+    </div>
+  </aside>
+
+  <script>
+  // === 1) АНИМАЦИЯ ФИГУРЫ, ШАГАЮЩЕЙ ПО ЛИНИИ ===
+  (function(){
+    const boxWrap = document.getElementById('boxWrap');
+    const polyEl = document.getElementById('poly');
+
+    const CX = 200;          // центр по X
+    const lineY = 300;       // высота опорной линии
+    const strokeShape = 3;   // толщина контура фигуры
+    const strokeLine  = 3;   // толщина линии-основания
+
+    // Время фигуры как у квадрата (константно для любой n)
+    const BASE_ROTATE = 650;
+    const BASE_PAUSE  = 200;
+    const BASE_PER_STEP = BASE_ROTATE + BASE_PAUSE; // 850
+    const BASE_STEPS   = 4;
+    const TOTAL_PER_SHAPE = BASE_PER_STEP * BASE_STEPS; // 3400 мс
+
+    // Радиус до вершин, под квадрат 100x100 (полудиагональ)
+    const Rv = 70.710678;    // ≈ 50 * sqrt(2)
+
+    let sides = 4;           // старт: квадрат
+    const maxSides = 30;     // до тридцатиугольника, затем снова квадрат
+    let angle = 0;           // текущий угол (в градусах)
+    let pts = [];            // точки (центр в (0,0))
+
+    function buildPointsN(n){
+      const start = -Math.PI/2; // вершина сверху
+      const arr = [];
+      for(let i=0;i<n;i++){
+        const a = start + i * (2*Math.PI/n);
+        arr.push([Rv*Math.cos(a), Rv*Math.sin(a)]);
+      }
+      return arr;
+    }
+
+    function updatePolygon(){
+      const pointsAttr = pts.map(([x,y]) => `${x.toFixed(3)},${y.toFixed(3)}`).join(' ');
+      polyEl.setAttribute('points', pointsAttr);
+    }
+
+    function maxYAtAngle(angleDeg){
+      const rad = angleDeg * Math.PI/180;
+      const s = Math.sin(rad), c = Math.cos(rad);
+      let maxY = -Infinity;
+      for(const [x,y] of pts){
+        const yp = x*s + y*c; // y' = x*sin + y*cos
+        if(yp > maxY) maxY = yp;
+      }
+      return maxY;
+    }
+
+    function setTransform(angleDeg){
+      const maxY = maxYAtAngle(angleDeg);
+      const centerY = lineY - (strokeLine/2) - (maxY + strokeShape/2);
+      boxWrap.setAttribute('transform', `translate(${CX}, ${centerY}) rotate(${angleDeg})`);
+    }
+
+    function easeInOutSine(t){ return 0.5 - 0.5*Math.cos(Math.PI*t); }
+
+    function animateAngle(fromDeg, toDeg, duration){
+      return new Promise(resolve => {
+        const t0 = performance.now();
+        function frame(t){
+          const p = Math.min(1, (t - t0)/duration);
+          const ang = fromDeg + (toDeg - fromDeg)*easeInOutSine(p);
+          setTransform(ang);
+          if(p < 1) requestAnimationFrame(frame); else resolve();
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+
+    // Морф n -> n+1: вставим точку посредине ребра 0-1, чтобы выровнять длины массивов
+    function makeMorphPair(n){
+      const A = buildPointsN(n);
+      const B = buildPointsN(n+1);
+      const mid01 = [(A[0][0]+A[1][0])/2, (A[0][1]+A[1][1])/2];
+      const Aeq = [A[0], mid01, ...A.slice(1)]; // длина = n+1
+      const Beq = B;
+      return [Aeq, Beq];
+    }
+
+    function animateMorph(Aeq, Beq, duration){
+      return new Promise(resolve => {
+        const t0 = performance.now();
+        function frame(t){
+          const p = Math.min(1, (t - t0)/duration);
+          const e = easeInOutSine(p);
+          pts = Aeq.map((pA, i) => {
+            const pB = Beq[i];
+            return [ pA[0] + (pB[0]-pA[0])*e, pA[1] + (pB[1]-pA[1])*e ];
+          });
+          updatePolygon();
+          setTransform(angle);
+          if(p < 1) requestAnimationFrame(frame); else resolve();
+        }
+        requestAnimationFrame(frame);
+      });
+    }
+
+    async function walk(){
+      while(true){
+        pts = buildPointsN(sides);
+        updatePolygon();
+        setTransform(angle);
+
+        const step = 360 / sides;
+        const perStep  = TOTAL_PER_SHAPE / sides;             // мс на перекат
+        const rotateMs = perStep * (BASE_ROTATE / BASE_PER_STEP);
+        const pauseMs  = perStep * (BASE_PAUSE  / BASE_PER_STEP);
+        for(let i=0;i<sides;i++){
+          const next = angle + step;
+          await animateAngle(angle, next, rotateMs);
+          angle = next;
+          if (i < sides - 1) { await new Promise(r=>setTimeout(r, pauseMs)); }
+        }
+
+        const nextSides = (sides < maxSides) ? (sides + 1) : 4;
+        const [Aeq, Beq] = makeMorphPair(sides);
+        await animateMorph(Aeq, Beq, 700);
+        pts = Beq;
+        sides = nextSides;
+        angle = angle % 360;
+      }
+    }
+
+    pts = buildPointsN(sides);
+    updatePolygon();
+    setTransform(angle);
+    walk();
+  })();
+  </script>
+
+  <script>
+  // === 2) МИНИ-КВИЗ (ожидает инициализации словаря) ===
+  (function(){
+    const quizWord = document.getElementById('quizWord');
+    const quizInput = document.getElementById('quizInput');
+    const quizFeedback = document.getElementById('quizFeedback');
+    function initWhenReady(){
+      if(!window.__vocabData || !window.__vocabData.length){ return setTimeout(initWhenReady, 50); }
+      let i = 0;
+      function setCard(){
+        quizWord.textContent = window.__vocabData[i].term;
+        quizInput.value = '';
+        quizFeedback.textContent = '';
+      }
+      function submit(){
+        const expected = (window.__vocabData[i].tr||'').trim().toLowerCase();
+        const got = (quizInput.value||'').trim().toLowerCase();
+        if(!got) return;
+        if(got === expected){
+          quizFeedback.textContent = 'Верно';
+          quizFeedback.style.color = '#22c55e';
+          i = (i+1) % window.__vocabData.length;
+          setTimeout(setCard, 350);
+        } else {
+          quizFeedback.textContent = `Неверно. Правильный перевод: ${window.__vocabData[i].tr||''}`;
+          quizFeedback.style.color = '#ef4444';
+        }
+      }
+      quizInput.addEventListener('keydown', e=>{ if(e.key === 'Enter'){ e.preventDefault(); submit(); } });
+      const quizBox = document.querySelector('.quiz');
+      quizInput.addEventListener('focus', ()=> quizBox.classList.add('typing'));
+      quizInput.addEventListener('blur',  ()=> quizBox.classList.remove('typing'));
+      setCard();
+      setTimeout(()=>quizInput.focus(), 0);
+    }
+    initWhenReady();
+  })();
+  </script>
+
+  <script>
+  // === 3) СЛОВАРЬ + ОЗВУЧКА + ДРАГ-ШТОРКА ===
+  (function(){
+    const list = document.getElementById('list');
+    const LS_KEY = 'vocabV2';
+    const defaults = [
+      { term:'serendipity', tr:'счастливое случайное открытие' },
+      { term:'petrichor', tr:'запах земли после дождя' },
+      { term:'liminal', tr:'пороговый, промежуточный' },
+      { term:'gossamer', tr:'тончайшая паутинка; невесомая ткань' },
+      { term:'sonder', tr:'осознание сложной внутренней жизни у каждого' }
+    ];
+
+    // данные
+    window.__vocabData = (function(){
+      try{ const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : defaults; }
+      catch(_){ return defaults; }
+    })();
+
+    function speak(text, lang='en-US'){
+      if(!('speechSynthesis' in window)) return;
+      const u = new SpeechSynthesisUtterance(text); u.lang=lang; speechSynthesis.speak(u);
+    }
+
+    function render(){
+      list.innerHTML='';
+      window.__vocabData.forEach(w=>{
+        const row=document.createElement('div'); row.className='item';
+        const left=document.createElement('div'); left.innerHTML=`<strong>${w.term}</strong> — ${w.tr||''}`;
+        const play=document.createElement('button'); play.className='play'; play.title='Прослушать';
+        play.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 10h3l4-3v10l-4-3H4z"/>
+          <path d="M16 9c1.5 1.5 1.5 4.5 0 6"/>
+          <path d="M18 7c3 3 3 7 0 10"/>
+        </svg>`;
+        play.onclick=()=>speak(w.term);
+        row.appendChild(left); row.appendChild(play); list.appendChild(row);
+      });
+    }
+    render();
+
+    // ПЛЮС → инлайн-ввод списком
+    const addWordBtn = document.getElementById('addWordBtn');
+    const addRow = document.getElementById('addRow');
+    const addBulk = document.getElementById('addBulk');
+    const addSave = document.getElementById('addSave');
+
+    function toggleAdd(open){ addRow.style.display = open ? 'grid' : 'none'; if(open){ setTimeout(()=>addBulk.focus(),0); } }
+    function saveLS(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(window.__vocabData)); }catch(_){} }
+
+    function parsePair(s){
+      const t=(s||'').trim(); if(!t) return null;
+      const bySep=t.split(/\s*[-—–:]\s*/); if(bySep.length>=2){ const term=bySep.shift(); const tr=bySep.join(' - '); return {term, tr}; }
+      const byWs=t.split(/\s{2,}|\t/);   if(byWs.length>=2){ return {term:byWs[0], tr:byWs.slice(1).join(' ')} }
+      return {term:t, tr:''};
+    }
+
+    function addList(){
+      const raw=(addBulk.value||'').trim();
+      if(!raw) return;
+      const lines = raw.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean); // ✅ фикс: корректная регэксп
+      let added = 0;
+      for(const line of lines){ const pair = parsePair(line); if(pair && pair.term){ window.__vocabData.push(pair); added++; } }
+      if(!added) return;
+      saveLS();
+      render();
+      addBulk.value='';
+      addBulk.focus();
+      list.classList.add('flash-add'); setTimeout(()=>list.classList.remove('flash-add'), 300);
+    }
+
+    if(addWordBtn){ addWordBtn.addEventListener('click', ()=>{ const open = addRow.style.display!=='grid'; toggleAdd(open); addWordBtn.classList.toggle('open', open); }); }
+    if(addSave){ addSave.addEventListener('click', addList); }
+    if(addBulk){ addBulk.addEventListener('keydown', e=>{ if((e.metaKey||e.ctrlKey) && e.key==='Enter'){ e.preventDefault(); addList(); } }); }
+
+    // Шторка (клик и свайп от правого края)
+    const drawer = document.getElementById('drawer');
+    const handle = document.getElementById('handle');
+    let open=false, startX=null, startTx=0;
+    const HANDLE_W = 36;
+    function drawerW(){ return Math.min(window.innerWidth*0.84, 420); }
+    function closedTx(){ return drawerW() - HANDLE_W; }
+    function setTx(x){ drawer.style.transition='none'; drawer.style.transform=`translateX(${x}px)`; }
+    function snap(){ drawer.style.transition='transform .28s ease'; drawer.classList.toggle('open', open); drawer.style.transform=open?'translateX(0)':`translateX(${closedTx()}px)`; }
+    function onDown(x){ open=drawer.classList.contains('open'); startX=x; startTx=open?0:closedTx(); drawer.style.willChange='transform'; }
+    function onMove(x){ if(startX==null) return; const dx=startX-x; let tx=startTx+dx; tx=Math.max(0, Math.min(closedTx(), tx)); setTx(tx); }
+    function onUp(x){ if(startX==null) return; const dx=startX-x; const tx=startTx+dx; open = tx < closedTx()/2; startX=null; drawer.style.willChange='auto'; snap(); }
+    handle.addEventListener('click',()=>{ open=!drawer.classList.contains('open'); snap(); });
+    handle.addEventListener('touchstart',e=>onDown(e.touches[0].clientX),{passive:true});
+    handle.addEventListener('touchmove',e=>onMove(e.touches[0].clientX),{passive:true});
+    handle.addEventListener('touchend',e=>onUp(e.changedTouches[0].clientX));
+    let edgeDown=false;
+    window.addEventListener('touchstart',e=>{ const x=e.touches[0].clientX; if(window.innerWidth - x < 18 && !drawer.classList.contains('open')){ edgeDown=true; onDown(x); } },{passive:true});
+    window.addEventListener('touchmove',e=>{ if(edgeDown) onMove(e.touches[0].clientX); },{passive:true});
+    window.addEventListener('touchend',e=>{ if(edgeDown){ onUp(e.changedTouches[0].clientX); edgeDown=false; } });
+    drawer.classList.remove('open'); drawer.style.transform=`translateX(${closedTx()}px)`;
+    window.addEventListener('resize',()=>{ if(!drawer.classList.contains('open')) drawer.style.transform=`translateX(${closedTx()}px)`; });
+  })();
+  </script>
+
+  <script>
+  // === 4) АДАПТАЦИЯ ПОД МОБИЛЬНУЮ КЛАВИАТУРУ ===
+  (function(){
+    const root = document.documentElement;
+    const quiz = document.querySelector('.quiz');
+    const input = document.getElementById('quizInput');
+
+    function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+    function applyLayout(){
+      const vv = window.visualViewport;
+      const vh = vv ? vv.height : window.innerHeight;
+      const pageTop = vv ? vv.pageTop : window.scrollY || 0;
+
+      const quizTop = Math.round(pageTop + vh * 0.5);
+      quiz.style.top = quizTop + 'px';
+
+      const targetScale = (vh * 0.45) / 500;
+      const s = clamp(Math.min(0.8, targetScale), 0.5, 0.8);
+      root.style.setProperty('--viz-scale', s.toFixed(3));
+      const ty = (s < 0.7) ? -70 : -100;
+      root.style.setProperty('--viz-translateY', ty + 'px');
+    }
+
+    if(window.visualViewport){
+      visualViewport.addEventListener('resize', applyLayout);
+      visualViewport.addEventListener('scroll', applyLayout);
+    }
+    window.addEventListener('resize', applyLayout);
+    window.addEventListener('scroll', applyLayout, {passive:true});
+    input.addEventListener('focus', applyLayout);
+    input.addEventListener('blur', applyLayout);
+    applyLayout();
+  })();
+  </script>
+
+  <script>
+  // === 5) МИНИ-ТЕСТЫ (для устойчивости будущих правок) ===
+  (function(){
+    function assert(name, cond){ if(!cond){ console.error('❌ Test failed:', name); throw new Error('Test failed: '+name); } else { console.log('✅', name); } }
+    // Тест разбиения списка
+    const raw = "apple - яблоко\nbanana — банан; cat: кот\n  dog  собака\tfish – рыба\nsolo";
+    const parts = raw.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean);
+    assert('split /[;\n]+/ count', parts.length === 5);
+    // Тест парсинга форматов
+    function parsePair(s){
+      const t=(s||'').trim(); if(!t) return null;
+      const bySep=t.split(/\s*[-—–:]\s*/); if(bySep.length>=2){ const term=bySep.shift(); const tr=bySep.join(' - '); return {term, tr}; }
+      const byWs=t.split(/\s{2,}|\t/);   if(byWs.length>=2){ return {term:byWs[0], tr:byWs.slice(1).join(' ')} }
+      return {term:t, tr:''};
+    }
+    const cases = [
+      ['apple - яблоко','яблоко'],
+      ['banana — банан','банан'],
+      ['cat: кот','кот'],
+      ['dog  собака','собака'],
+      ['fish\tрыба','рыба'],
+      ['solo','']
+    ];
+    cases.forEach(([src, tr], i)=>{ const p=parsePair(src); assert('parse '+i, p && p.term && p.tr===tr); });
+    console.log('✅ All parsing tests passed');
+  })();
+  </script>
+</body>
+</html>
