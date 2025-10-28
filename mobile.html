@@ -35,13 +35,14 @@
     .drawer .handle::after{content:"";display:block;border:2px solid #fff;border-left:0;border-top:0;width:10px;height:10px;transform:rotate(135deg);transition:transform .2s ease}
     .drawer.open .handle::after{transform:rotate(-45deg)}
     .drawer .sheet{display:flex;flex-direction:column;height:100%}
-    .drawer header{padding:14px 16px 10px;font-weight:700;display:flex;align-items:center;justify-content:space-between}
-    .addBtn{width:32px;height:32px;border:1px solid #e5e7eb;border-radius:10px;background:#f8f9fb;display:grid;place-items:center;cursor:pointer}
+    .drawer header{position:relative;padding:14px 16px 10px;font-weight:700;display:flex;align-items:center;justify-content:flex-start}
+    .addBtn{position:absolute;right:28px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:none;background:transparent;border-radius:10px;display:grid;place-items:center;cursor:pointer;box-shadow:none;outline:none}
     .addBtn svg{width:16px;height:16px;transition:transform .2s ease}
     .addBtn.open svg{transform:rotate(45deg)}
     .list{padding:0 16px 24px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px}
     .item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;border:1px solid #eee;border-radius:12px;background:#fff}
     .item strong{font-weight:700}
+    .stats{color:var(--muted);font-size:12px;margin-left:6px}
     .play{width:36px;height:36px;border-radius:10px;border:1px solid #e5e7eb;background:transparent;display:grid;place-items:center}
     .play:hover{background:#f8f9fb}
     .play svg{width:18px;height:18px;display:block}
@@ -58,10 +59,11 @@
 
     /* КВИЗ*/
     .word{ text-align:center; font-weight:700; font-size:20px; margin:4px 0 10px; position:relative; }
-    .word::after{ content:""; position:absolute; left:50%; transform:translateX(-50%); top:100%; margin-top:10px; width:2px; height:22px; background:#2563eb; animation: caretBlink 1s step-end infinite; border-radius:1px; }
+    .word::after{ display:none !important; }
     @keyframes caretBlink{ 0%,49%{ opacity:1 } 50%,100%{ opacity:0 } }
     .inputrow{ display:flex; gap:8px; }
-    .inputrow input{ flex:1; padding:12px; border:none; border-radius:0; font-size:20px; background:#fff; outline:none; box-shadow:none; text-align:center; caret-color:#2563eb; }
+    .inputrow input{ flex:1; padding:12px; border:none; border-radius:0; font-size:16px; background:#fff; outline:none; box-shadow:none; text-align:center; caret-color:#2563eb; }
+    .inputrow input.showAnswer{ color: var(--muted); }
     .muted{ color:var(--muted); font-size:14px; }
 
     /* Позиционирование анимации и квиза */
@@ -70,6 +72,8 @@
 
     /* мелкий отклик при добавлении */
     #list.flash-add{ outline: 2px solid rgba(10,132,255,.25); outline-offset: 2px; transition: outline-color .3s; }
+      /* Прятать фальш-курсор, когда вводим ответ */
+    .quiz.typing .word::after, .quiz:focus-within .word::after{ display:none; }
   </style>
 </head>
 <body>
@@ -145,6 +149,7 @@
     const maxSides = 30;     // до тридцатиугольника, затем снова квадрат
     let angle = 0;           // текущий угол (в градусах)
     let pts = [];            // точки (центр в (0,0))
+    window.__pendingDelta = window.__pendingDelta || 0;  // глобальный счетчик запросов морфа  // запрос изменения числа граней: -1 или +1
 
     function buildPointsN(n){
       const start = -Math.PI/2; // вершина сверху
@@ -202,6 +207,20 @@
       const Beq = B;
       return [Aeq, Beq];
     }
+    // Универсальный equalizer для n -> m, где |m-n|=1
+    function makeMorphPairAny(n, m){
+      if(m === n+1){ return makeMorphPair(n); }
+      if(m === n-1){
+        const A = buildPointsN(n);
+        const B = buildPointsN(m);
+        const mid01 = [(B[0][0]+B[1][0])/2, (B[0][1]+B[1][1])/2];
+        const Beq = [B[0], mid01, ...B.slice(1)]; // длина = n
+        const Aeq = A; // уже длиной n
+        return [Aeq, Beq];
+      }
+      // fallback: без морфа
+      return [buildPointsN(n), buildPointsN(n)];
+    }
 
     function animateMorph(Aeq, Beq, duration){
       return new Promise(resolve => {
@@ -227,7 +246,7 @@
         updatePolygon();
         setTransform(angle);
 
-        const step = 360 / sides;
+        let step = 360 / sides;
         const perStep  = TOTAL_PER_SHAPE / sides;             // мс на перекат
         const rotateMs = perStep * (BASE_ROTATE / BASE_PER_STEP);
         const pauseMs  = perStep * (BASE_PAUSE  / BASE_PER_STEP);
@@ -236,14 +255,22 @@
           await animateAngle(angle, next, rotateMs);
           angle = next;
           if (i < sides - 1) { await new Promise(r=>setTimeout(r, pauseMs)); }
-        }
 
-        const nextSides = (sides < maxSides) ? (sides + 1) : 4;
-        const [Aeq, Beq] = makeMorphPair(sides);
-        await animateMorph(Aeq, Beq, 700);
-        pts = Beq;
-        sides = nextSides;
-        angle = angle % 360;
+          // Если запросили изменение числа граней — морфим один раз после шага
+          if(window.__pendingDelta !== 0){
+            const delta = (window.__pendingDelta>0?1:-1);
+            const target = Math.max(3, Math.min(maxSides, sides + delta));
+            if(target !== sides){
+              const [Aeq, Beq] = makeMorphPairAny(sides, target);
+              await animateMorph(Aeq, Beq, 700);
+              pts = Beq;
+              sides = target;
+              // пересчёт шага/таймингов после изменения n
+              step = 360 / sides;
+            }
+            window.__pendingDelta = 0;
+          }
+        }
       }
     }
 
@@ -255,43 +282,153 @@
   </script>
 
   <script>
-  // === 2) МИНИ-КВИЗ (ожидает инициализации словаря) ===
-  (function(){
-    const quizWord = document.getElementById('quizWord');
-    const quizInput = document.getElementById('quizInput');
-    const quizFeedback = document.getElementById('quizFeedback');
-    function initWhenReady(){
-      if(!window.__vocabData || !window.__vocabData.length){ return setTimeout(initWhenReady, 50); }
-      let i = 0;
-      function setCard(){
-        quizWord.textContent = window.__vocabData[i].term;
-        quizInput.value = '';
-        quizFeedback.textContent = '';
+// === 2) МИНИ-КВИЗ (фаззи-проверка, показ правильного ответа, очередь повторов) ===
+(function(){
+  const quizWord = document.getElementById('quizWord');
+  const quizInput = document.getElementById('quizInput');
+  const quizFeedback = document.getElementById('quizFeedback');
+  if(!quizWord || !quizInput) return;
+
+  // Очередь повторов: вернуть ошибочные слова через 2–3 задания
+  const __defer = {
+    queue: [], // { idx, left }
+    schedule(idx){ this.queue.push({ idx, left: 2 + Math.floor(Math.random()*2) }); },
+    tick(){ this.queue.forEach(d=>{ if(d.left>0) d.left--; }); },
+    popDue(){ const k=this.queue.findIndex(d=>d.left<=0); if(k>=0){ const it=this.queue[k]; this.queue.splice(k,1); return it.idx; } return null; }
+  };
+
+  function pickNextIndex(){
+    const due = __defer.popDue(); if(due!=null) return due;
+    let bestScore = -Infinity, bestIdx = 0;
+    for(let i=0;i<window.__vocabData.length;i++){
+      const w = window.__vocabData[i];
+      const s = (w.bad|0) - (w.ok|0);
+      if(s > bestScore){ bestScore = s; bestIdx = i; }
+    }
+    return bestIdx;
+  }
+
+  function initWhenReady(){
+    if(!window.__vocabData || !window.__vocabData.length){ return setTimeout(initWhenReady, 50); }
+    let idx = pickNextIndex();
+
+    // не повторять то же слово сразу после ответа
+    let lastIdx = -1;
+
+    function setCard(){
+      __defer.tick();
+      // выбрать следующее, избегая немедленного повторения предыдущего
+      let next = pickNextIndex();
+      if(window.__vocabData.length > 1 && next === lastIdx){
+        let best = -Infinity, bestIdx = next;
+        for(let i=0;i<window.__vocabData.length;i++){
+          if(i === lastIdx) continue;
+          const w = window.__vocabData[i];
+          const s = (w.bad|0) - (w.ok|0);
+          if(s > best){ best = s; bestIdx = i; }
+        }
+        next = bestIdx;
       }
-      function submit(){
-        const expected = (window.__vocabData[i].tr||'').trim().toLowerCase();
-        const got = (quizInput.value||'').trim().toLowerCase();
-        if(!got) return;
-        if(got === expected){
-          quizFeedback.textContent = 'Верно';
-          quizFeedback.style.color = '#22c55e';
-          i = (i+1) % window.__vocabData.length;
-          setTimeout(setCard, 350);
-        } else {
-          quizFeedback.textContent = `Неверно. Правильный перевод: ${window.__vocabData[i].tr||''}`;
-          quizFeedback.style.color = '#ef4444';
+      idx = next;
+      lastIdx = idx;
+      quizWord.textContent = window.__vocabData[idx].term;
+      quizInput.readOnly = false;
+      quizInput.classList.remove('showAnswer');
+      quizInput.value = '';
+      quizFeedback.textContent = '';
+    }
+
+    // Хелперы без регэкспов: нормализация, Левенштейн, 80% и варианты через split
+    function clean(s){
+      s = String(s||'').toLowerCase();
+      var chars = ['.',',','!','?','"','\'','`','(',')','[',']'];
+      for(var i=0;i<chars.length;i++){ s = s.split(chars[i]).join(' '); }
+      s = s.trim();
+      while(s.indexOf('  ')>=0) s = s.split('  ').join(' ');
+      return s;
+    }
+    function lev(a,b){
+      var m=a.length,n=b.length; if(!m||!n) return Math.max(m,n);
+      var dp=new Array(n+1); for(var j=0;j<=n;j++) dp[j]=j;
+      for(var i=1;i<=m;i++){
+        var prev=dp[0]; dp[0]=i;
+        for(var j2=1;j2<=n;j2++){
+          var tmp=dp[j2]; var cost = a.charAt(i-1)===b.charAt(j2-1)?0:1;
+          dp[j2] = Math.min(dp[j2]+1, dp[j2-1]+1, prev+cost);
+          prev=tmp;
         }
       }
-      quizInput.addEventListener('keydown', e=>{ if(e.key === 'Enter'){ e.preventDefault(); submit(); } });
-      const quizBox = document.querySelector('.quiz');
-      quizInput.addEventListener('focus', ()=> quizBox.classList.add('typing'));
-      quizInput.addEventListener('blur',  ()=> quizBox.classList.remove('typing'));
-      setCard();
-      setTimeout(()=>quizInput.focus(), 0);
+      return dp[n];
     }
-    initWhenReady();
-  })();
-  </script>
+    function sim(a,b){ a=clean(a); b=clean(b); var L=Math.max(a.length,b.length)||1; return 1-(lev(a,b)/L); }
+    function splitVariants(tr){
+      var base=String(tr||'');
+      var acc=[]; base.split(';').forEach(function(a){ a.split(',').forEach(function(b){ b.split('/').forEach(function(c){ c.split('|').forEach(function(d){ acc.push(d.trim().toLowerCase()); }); }); }); });
+      if(!acc.length) acc=[base.trim().toLowerCase()];
+      return acc.filter(Boolean);
+    }
+    function fuzzyOK(input,tr){
+      var x=clean(input);
+      var vars=splitVariants(tr);
+      // 1) фраза целиком
+      for(var i=0;i<vars.length;i++){ if(sim(x, vars[i])>=0.8) return true; }
+      if(!vars.length && sim(x, tr)>=0.8) return true;
+      // 2) хотя бы одно слово из перевода (и из ответа) ≥80%
+      var inWords=x.split(' ').filter(Boolean);
+      var MINLEN=3;
+      var targets = (vars.length? vars : [clean(tr)]);
+      for(var t=0;t<targets.length;t++){
+        var vWords = targets[t].split(' ').filter(Boolean);
+        for(var iw=0;iw<inWords.length;iw++){ var wIn=inWords[iw]; if(wIn.length<MINLEN) continue;
+          for(var vw=0;vw<vWords.length;vw++){ var wTr=vWords[vw]; if(wTr.length<MINLEN) continue;
+            if( sim(wIn, wTr) >= 0.8 ) return true;
+          }
+        }
+      }
+      return false;
+    }
+
+    function submit(){
+      const w = window.__vocabData[idx];
+      const got = (quizInput.value||'').trim(); if(!got) return;
+      const correct = fuzzyOK(got, w.tr);
+      const answerText = String(w.tr||'');
+      const okDelay = 800, badDelay = 1200;
+      if(correct){
+        w.ok = (w.ok|0) + 1;
+        if(window.__saveVocab) window.__saveVocab();
+        if(window.__renderVocab) window.__renderVocab();
+        // показать полный ответ прямо в поле
+        quizInput.readOnly = true;
+        quizInput.classList.add('showAnswer');
+        quizInput.value = answerText;
+        if(window.__queueMorph) window.__queueMorph(+1);
+        setTimeout(()=>{ setCard(); quizInput.focus(); }, okDelay);
+      } else {
+        w.bad = (w.bad|0) + 1;
+        if(window.__saveVocab) window.__saveVocab();
+        if(window.__renderVocab) window.__renderVocab();
+        // показать правильный ответ прямо в поле
+        quizInput.readOnly = true;
+        quizInput.classList.add('showAnswer');
+        quizInput.value = answerText;
+        if(window.__queueMorph) window.__queueMorph(-1);
+        __defer.schedule(idx);
+        setTimeout(()=>{ setCard(); quizInput.focus(); }, badDelay);
+      }
+    }
+
+    quizInput.addEventListener('keydown', e=>{ if(e.key === 'Enter'){ e.preventDefault(); submit(); } });
+    const quizBox = document.querySelector('.quiz');
+    quizInput.addEventListener('focus', ()=> quizBox.classList.add('typing'));
+    quizInput.addEventListener('blur',  ()=> quizBox.classList.remove('typing'));
+
+    setCard();
+    setTimeout(()=>quizInput.focus(), 0);
+  }
+  initWhenReady();
+})();
+</script>
 
   <script>
   // === 3) СЛОВАРЬ + ОЗВУЧКА + ДРАГ-ШТОРКА ===
@@ -299,11 +436,11 @@
     const list = document.getElementById('list');
     const LS_KEY = 'vocabV2';
     const defaults = [
-      { term:'serendipity', tr:'счастливое случайное открытие' },
-      { term:'petrichor', tr:'запах земли после дождя' },
-      { term:'liminal', tr:'пороговый, промежуточный' },
-      { term:'gossamer', tr:'тончайшая паутинка; невесомая ткань' },
-      { term:'sonder', tr:'осознание сложной внутренней жизни у каждого' }
+      { term:'serendipity', tr:'счастливое случайное открытие', ok:0, bad:0 },
+      { term:'petrichor', tr:'запах земли после дождя', ok:0, bad:0 },
+      { term:'liminal', tr:'пороговый, промежуточный', ok:0, bad:0 },
+      { term:'gossamer', tr:'тончайшая паутинка; невесомая ткань', ok:0, bad:0 },
+      { term:'sonder', tr:'осознание сложной внутренней жизни у каждого', ok:0, bad:0 }
     ];
 
     // данные
@@ -311,15 +448,19 @@
       try{ const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : defaults; }
       catch(_){ return defaults; }
     })();
+    // нормализация полей статистики
+    window.__vocabData = window.__vocabData.map(w=>({ term:w.term, tr:w.tr||'', ok: (w.ok|0), bad: (w.bad|0) }));
 
     function speak(text, lang='en-US'){
       if(!('speechSynthesis' in window)) return;
       const u = new SpeechSynthesisUtterance(text); u.lang=lang; speechSynthesis.speak(u);
     }
+    function score(w){ return (w.bad|0) - (w.ok|0); }
 
     function render(){
       list.innerHTML='';
-      window.__vocabData.forEach(w=>{
+      const sorted = [...window.__vocabData].sort((a,b)=> ((b.bad|0)-(b.ok|0)) - ((a.bad|0)-(a.ok|0)) || a.term.localeCompare(b.term));
+      sorted.forEach(w=>{
         const row=document.createElement('div'); row.className='item';
         const left=document.createElement('div'); left.innerHTML=`<strong>${w.term}</strong> — ${w.tr||''}`;
         const play=document.createElement('button'); play.className='play'; play.title='Прослушать';
@@ -332,6 +473,8 @@
         row.appendChild(left); row.appendChild(play); list.appendChild(row);
       });
     }
+    // экспорт и начальный рендер
+    window.__renderVocab = render;
     render();
 
     // ПЛЮС → инлайн-ввод списком
@@ -355,6 +498,14 @@
       }
     }
     function saveLS(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(window.__vocabData)); }catch(_){} }
+    window.__saveVocab = saveLS;
+    // Экспорт запроса изменения числа граней
+    window.__pendingDelta = window.__pendingDelta || 0;
+    window.__queueMorph = function(delta){
+      const d = (delta>0?1:-1);
+      const cur = (window.__pendingDelta||0) + d;
+      window.__pendingDelta = Math.max(-1, Math.min(1, cur));
+    }
 
     function parsePair(s){
       const t=(s||'').trim(); if(!t) return null;
@@ -368,7 +519,7 @@
       if(!raw) return;
       const lines = raw.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean); // ✅ фикс: корректная регэксп
       let added = 0;
-      for(const line of lines){ const pair = parsePair(line); if(pair && pair.term){ window.__vocabData.push(pair); added++; } }
+      for(const line of lines){ const pair = parsePair(line); if(pair && pair.term){ window.__vocabData.push({term:pair.term, tr:pair.tr||'', ok:0, bad:0}); added++; } }
       if(!added) return;
       saveLS();
       render();
@@ -425,17 +576,22 @@
       const fullH = window.innerHeight;
       const pageTop = vv ? vv.pageTop : window.scrollY || 0;
 
-      // Центруем блок квиза относительно видимой области (учитывает клавиатуру)
-      const quizTop = Math.round(pageTop + vh * 0.5);
-      quiz.style.top = quizTop + 'px';
+      const typing = document.activeElement === input;
 
-      // ❗ Во время открытой клавиатуры НЕ трогаем анимацию — оставляем на месте
-      const keyboardOpen = vv ? (fullH - vh) > 120 : !!document.activeElement && document.activeElement === input;
+      // Центруем блок квиза относительно видимой области, но НЕ дергаем при наборе текста
+      if(!typing){
+        const quizTop = Math.round(pageTop + vh * 0.5);
+        quiz.style.top = quizTop + 'px';
+      }
+
+      // Во время открытой клавиатуры не трогаем анимацию — оставляем на месте
+      const keyboardOpen = vv ? (fullH - vh) > 120 : typing;
       if(keyboardOpen){
         root.style.setProperty('--viz-scale', BASE_SCALE.toFixed(3));
         root.style.setProperty('--viz-translateY', BASE_TY + 'px');
         return;
       }
+
 
       // Когда клавиатуры нет — можно подстраивать масштаб под высоту окна (как раньше)
       const targetScale = (vh * 0.45) / 500;
@@ -484,5 +640,6 @@
     console.log('✅ All parsing tests passed');
   })();
   </script>
+
 </body>
 </html>
