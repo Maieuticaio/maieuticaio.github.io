@@ -28,10 +28,10 @@
 
     /* ВЫЕЗЖАЮЩИЙ СЛОВАРЬ */
     .drawer{position:fixed;top:0;right:0;height:100%;width:min(var(--drawer-w),var(--drawer-max));
-      transform:translateX(calc(100% - var(--handle)));transition:transform .28s ease;
+      transform:translateX(100%);transition:transform .28s ease;
       background:#fff;border-left:1px solid #e5e7eb;box-shadow:-10px 0 30px rgba(0,0,0,.08);z-index:10}
     .drawer.open{transform:translateX(0)}
-    .drawer .handle{position:absolute;left:calc(-1 * var(--handle));top:40%;width:var(--handle);height:72px;background:#000;border-radius:36px 0 0 36px;display:flex;align-items:center;justify-content:center;touch-action:none}
+    .drawer .handle{position:absolute;left:calc(-0.5 * var(--handle));top:40%;width:var(--handle);height:var(--handle);background:#000;border-radius:50%;display:flex;align-items:center;justify-content:center;touch-action:none}
     .drawer .handle::after{content:"";display:block;border:2px solid #fff;border-left:0;border-top:0;width:10px;height:10px;transform:rotate(135deg);transition:transform .2s ease}
     .drawer.open .handle::after{transform:rotate(-45deg)}
     .drawer .sheet{display:flex;flex-direction:column;height:100%}
@@ -48,7 +48,11 @@
 
     /* ИНЛАЙН-ВВОД СПИСКОМ */
     .addrow{display:none;gap:8px;padding:8px 16px 0;margin-bottom:12px}
-    .addrow textarea{width:100%;min-height:88px;padding:10px;border:1px solid #e5e7eb;border-radius:10px;font-size:16px;resize:vertical}
+    .addrow textarea{width:100%;max-width:100%;min-height:48px;padding:12px;border:1px solid #e5e7eb;border-radius:12px;font-size:16px;line-height:1.4;background:#fff;box-shadow:none;outline:none;box-sizing:border-box;display:block;resize:none}
+    .addrow textarea::placeholder{color:#6b7280;opacity:1}
+    .addrow textarea:focus{outline:none;box-shadow:none;border-color:#e5e7eb}
+    .addrow textarea::placeholder{color:#6b7280;opacity:1}
+    .addrow textarea:focus{outline:none;box-shadow:none;border-color:#e5e7eb}
     .addrow button{padding:10px 12px;border-radius:10px;border:1px solid #e5e7eb;background:#f8f9fb;cursor:pointer}
     .addrow button.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 
@@ -109,7 +113,7 @@
     <div class="sheet">
       <header>Словарь <button id="addWordBtn" class="addBtn" title="Добавить"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button></header>
       <div class="addrow" id="addRow">
-        <textarea id="addBulk" placeholder="Вводи один или несколько элементов. Примеры:\nserendipity - счастливое случайное открытие\npetrichor - запах земли после дождя\nliminal — пороговый; gossamer — тончайшая паутинка"></textarea>
+        <textarea id="addBulk" placeholder="Введи одно или несколько слов в формате \"слово - перевод\""></textarea>
         <button id="addSave" class="primary">Добавить</button>
       </div>
       <div id="list" class="list"></div>
@@ -336,7 +340,20 @@
     const addBulk = document.getElementById('addBulk');
     const addSave = document.getElementById('addSave');
 
-    function toggleAdd(open){ addRow.style.display = open ? 'grid' : 'none'; if(open){ setTimeout(()=>addBulk.focus(),0); } }
+    // авто-высота textarea под содержимое
+    function autosizeTextarea(){
+      if(!addBulk) return;
+      addBulk.style.height = 'auto';
+      const cap = Math.floor(window.innerHeight * 0.5); // не выше половины экрана
+      addBulk.style.height = Math.min(addBulk.scrollHeight, cap) + 'px';
+    }
+
+    function toggleAdd(open){
+      addRow.style.display = open ? 'grid' : 'none';
+      if(open){
+        setTimeout(()=>{ addBulk.focus(); autosizeTextarea(); },0);
+      }
+    }
     function saveLS(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(window.__vocabData)); }catch(_){} }
 
     function parsePair(s){
@@ -362,15 +379,16 @@
 
     if(addWordBtn){ addWordBtn.addEventListener('click', ()=>{ const open = addRow.style.display!=='grid'; toggleAdd(open); addWordBtn.classList.toggle('open', open); }); }
     if(addSave){ addSave.addEventListener('click', addList); }
+    if(addBulk){ addBulk.addEventListener('input', autosizeTextarea); window.addEventListener('resize', autosizeTextarea); }
     if(addBulk){ addBulk.addEventListener('keydown', e=>{ if((e.metaKey||e.ctrlKey) && e.key==='Enter'){ e.preventDefault(); addList(); } }); }
 
     // Шторка (клик и свайп от правого края)
     const drawer = document.getElementById('drawer');
     const handle = document.getElementById('handle');
     let open=false, startX=null, startTx=0;
-    const HANDLE_W = 36;
+    const HANDLE_W = 18; // пол-ручки: наружу торчит только полукруг (радиус 18px)
     function drawerW(){ return Math.min(window.innerWidth*0.84, 420); }
-    function closedTx(){ return drawerW() - HANDLE_W; }
+    function closedTx(){ return drawerW(); }
     function setTx(x){ drawer.style.transition='none'; drawer.style.transform=`translateX(${x}px)`; }
     function snap(){ drawer.style.transition='transform .28s ease'; drawer.classList.toggle('open', open); drawer.style.transform=open?'translateX(0)':`translateX(${closedTx()}px)`; }
     function onDown(x){ open=drawer.classList.contains('open'); startX=x; startTx=open?0:closedTx(); drawer.style.willChange='transform'; }
@@ -384,7 +402,7 @@
     window.addEventListener('touchstart',e=>{ const x=e.touches[0].clientX; if(window.innerWidth - x < 18 && !drawer.classList.contains('open')){ edgeDown=true; onDown(x); } },{passive:true});
     window.addEventListener('touchmove',e=>{ if(edgeDown) onMove(e.touches[0].clientX); },{passive:true});
     window.addEventListener('touchend',e=>{ if(edgeDown){ onUp(e.changedTouches[0].clientX); edgeDown=false; } });
-    drawer.classList.remove('open'); drawer.style.transform=`translateX(${closedTx()}px)`;
+    drawer.classList.remove('open'); drawer.style.transform=`translateX(${closedTx()}px)`; // fully hide drawer, only half-circle handle visible
     window.addEventListener('resize',()=>{ if(!drawer.classList.contains('open')) drawer.style.transform=`translateX(${closedTx()}px)`; });
   })();
   </script>
@@ -398,18 +416,32 @@
 
     function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
 
+    const BASE_SCALE = 0.8;   // фиксированный масштаб анимации
+    const BASE_TY    = -100;  // фиксированный сдвиг анимации вверх
+
     function applyLayout(){
       const vv = window.visualViewport;
       const vh = vv ? vv.height : window.innerHeight;
+      const fullH = window.innerHeight;
       const pageTop = vv ? vv.pageTop : window.scrollY || 0;
 
+      // Центруем блок квиза относительно видимой области (учитывает клавиатуру)
       const quizTop = Math.round(pageTop + vh * 0.5);
       quiz.style.top = quizTop + 'px';
 
+      // ❗ Во время открытой клавиатуры НЕ трогаем анимацию — оставляем на месте
+      const keyboardOpen = vv ? (fullH - vh) > 120 : !!document.activeElement && document.activeElement === input;
+      if(keyboardOpen){
+        root.style.setProperty('--viz-scale', BASE_SCALE.toFixed(3));
+        root.style.setProperty('--viz-translateY', BASE_TY + 'px');
+        return;
+      }
+
+      // Когда клавиатуры нет — можно подстраивать масштаб под высоту окна (как раньше)
       const targetScale = (vh * 0.45) / 500;
-      const s = clamp(Math.min(0.8, targetScale), 0.5, 0.8);
+      const s = clamp(Math.min(BASE_SCALE, targetScale), 0.5, BASE_SCALE);
       root.style.setProperty('--viz-scale', s.toFixed(3));
-      const ty = (s < 0.7) ? -70 : -100;
+      const ty = (s < 0.7) ? -70 : BASE_TY;
       root.style.setProperty('--viz-translateY', ty + 'px');
     }
 
