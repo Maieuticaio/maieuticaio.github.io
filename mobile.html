@@ -72,6 +72,10 @@
     /* Позиционирование анимации и квиза */
     svg.viz{ position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) translateY(var(--viz-translateY, -100px)) scale(var(--viz-scale, .8)); transform-origin: center; }
     .quiz{ position:fixed; top: var(--quiz-top, 50%); left:50%; transform:translate(-50%, 0); width:min(92vw,520px); margin:0; }
+    /* Отдельный слой только для поля ввода — двигаем его относительно клавиатуры */
+    #inputDock{ position:fixed; left:50%; transform:translateX(-50%); width:min(92vw,520px); bottom: var(--dock-bottom, 24px); }
+    #inputDock .inputrow{ display:flex; gap:8px; }
+    #inputDock .muted{ color:var(--muted); font-size:14px; margin-top:6px; }
     .word .speakQuiz{ position:relative; top:2px; width:28px; height:28px; border:none; background:transparent; display:grid; place-items:center; cursor:pointer; outline:none; }
     .word .speakQuiz svg{ width:18px; height:18px; display:block; }
 
@@ -119,10 +123,14 @@
         </svg>
       </button>
     </div>
+    </div><!-- /.quiz (слово + иконка) -->
+
+  <div id="inputDock">
     <div class="inputrow">
       <input id="quizInput" type="text" autocomplete="off" enterkeyhint="done" autocapitalize="none" autocorrect="off" spellcheck="false" />
     </div>
-    <div id="quizFeedback" class="muted" style="margin-top:6px"></div>
+    <div id="quizFeedback" class="muted"></div>
+  </div
   </div>
 
   <!-- Выезжающее окно слов справа -->
@@ -577,16 +585,15 @@
   </script>
 
   <script>
-  // === 4) АДАПТАЦИЯ ПОД МОБИЛЬНУЮ КЛАВИАТУРУ (жёсткая фиксация, без сдвигов) ===
+  // === 4) АДАПТАЦИЯ ПОД МОБИЛЬНУЮ КЛАВИАТУРУ — разделённые слои ===
   (function(){
     const root = document.documentElement;
 
-    // 1) Базовые параметры положения
+    // Верхний слой: фигура + слово — фиксируем к базовой высоте
     const BASE_SCALE = 0.8;
-    const BASE_TY    = -150; // ↑ Подняли анимацию ещё на 50px (было -100)
-    const QUIZ_SHIFT = -50;  // ↑ Подняли слово/квиз на 50px вверх
+    const BASE_TY    = -150; // анимация вверх
+    const QUIZ_SHIFT = -50;  // слово вверх
 
-    // 2) Фиксируем базовую высоту один раз (layout viewport), чтобы клавиатура её не меняла
     const BASE_W = window.innerWidth;
     const BASE_H = Math.max(window.innerHeight, document.documentElement.clientHeight);
 
@@ -597,29 +604,45 @@
       root.style.setProperty('--quiz-top', (BASE_H * 0.5 + QUIZ_SHIFT) + 'px');
     }
 
-    // 3) Никогда не реагируем на появление клавиатуры: игнорируем resize, если ширина не изменилась значительно
-    function onResize(){
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-      // Если поменялась только высота (клавиатура), игнорируем
-      if (Math.abs(w - BASE_W) < 30) return;
-      // Если реально поменялась ориентация/ширина — обновим базовые значения
-      root.style.setProperty('--viz-scale', String(BASE_SCALE));
-      root.style.setProperty('--viz-translateY', BASE_TY + 'px');
-      root.style.setProperty('--viz-top', (h * 0.5) + 'px');
-      root.style.setProperty('--quiz-top', (h * 0.5 + QUIZ_SHIFT) + 'px');
+    // Нижний слой: только поле ввода — поднимаем относительно клавиатуры (visualViewport)
+    function updateDock(){
+      if(window.visualViewport){
+        const vv = window.visualViewport;
+        // насколько клавиатура «съела» высоты
+        const eaten = Math.max(0, BASE_H - vv.height);
+        const pad = 16; // минимальный отступ снизу
+        root.style.setProperty('--dock-bottom', (pad + eaten) + 'px');
+      } else {
+        root.style.setProperty('--dock-bottom', '24px');
+      }
     }
 
-    // 4) Инициализация и защита от автопрокруток
     applyFixed();
+    updateDock();
+
+    // Не реагируем перестановкой верхнего слоя на появление клавиатуры
+    function onResize(){
+      const w = window.innerWidth; const h = window.innerHeight;
+      if(Math.abs(w - BASE_W) >= 30){
+        // реальный ресайз/ориентация
+        root.style.setProperty('--viz-top', (h*0.5) + 'px');
+        root.style.setProperty('--quiz-top', (h*0.5 + QUIZ_SHIFT) + 'px');
+      }
+      updateDock();
+    }
+
     window.addEventListener('resize', onResize);
     window.addEventListener('orientationchange', ()=> setTimeout(onResize, 300));
+    if(window.visualViewport){
+      visualViewport.addEventListener('resize', updateDock);
+      visualViewport.addEventListener('scroll', updateDock);
+    }
 
-    // На некоторых устройствах фокус может пытаться проскроллить страницу — возвращаем в 0,0
+    // Страховка от автопрокрутки
     const qi = document.getElementById('quizInput');
     if(qi){
-      qi.addEventListener('focus', ()=> setTimeout(()=> window.scrollTo({top:0,left:0,behavior:'instant'}), 0));
-      qi.addEventListener('blur',  ()=> setTimeout(()=> window.scrollTo({top:0,left:0,behavior:'instant'}), 0));
+      qi.addEventListener('focus', ()=> setTimeout(()=> window.scrollTo(0,0), 0));
+      qi.addEventListener('blur',  ()=> setTimeout(()=> window.scrollTo(0,0), 0));
     }
   })();
   </script>
