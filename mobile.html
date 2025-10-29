@@ -24,9 +24,9 @@
       height:100lvh; /* фиксируем высоту под большую вьюпорт-высоту, чтобы клавиатура не сдвигала макет */
       overflow:hidden;
     }
-    svg { width: min(92vw, 520px); height: auto; display: block; }
+    svg { display:block; }
     /* фиксируем визуализацию по центру экрана, чтобы не прыгала при появлении клавиатуры */
-    svg.viz{ position: fixed; top: var(--viz-top, 100px); left: 50%; transform: translateX(-50%) scale(var(--viz-scale, .8)); transform-origin: center; }
+    svg.viz{ position:relative; left:50%; transform:translateX(-50%) scale(var(--viz-scale, .6)); transform-origin:center; width:100%; height:auto; margin:0; }
     .ink { fill: none; stroke: #000; stroke-width: 3; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 
     /* ВЫЕЗЖАЮЩИЙ СЛОВАРЬ */
@@ -43,7 +43,12 @@
     .addBtn svg{width:16px;height:16px;transition:transform .2s ease}
     .addBtn.open svg{transform:rotate(45deg)}
     .list{padding:0 16px 24px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px}
-    .item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;border:1px solid #eee;border-radius:12px;background:#fff}
+    .item{position:relative;display:flex;align-items:stretch;gap:0;padding:0;border:1px solid #eee;border-radius:12px;background:#fff;overflow:hidden}
+    .item .content{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px;flex:1;transition:transform .18s ease}
+    .item .del{position:absolute;right:0;top:0;bottom:0;width:56px;background:#fff;color:#000;display:grid;place-items:center;cursor:pointer;border:none;box-shadow:none}
+    .item .del svg{width:18px;height:18px;display:block}
+    .item strong{font-weight:700}
+    .item.swiped .content{transform:translateX(-72px)}
     .item strong{font-weight:700}
     .stats{color:var(--muted);font-size:12px;margin-left:6px}
     .play{width:36px;height:36px;border-radius:10px;border:1px solid #e5e7eb;background:transparent;display:grid;place-items:center}
@@ -62,16 +67,18 @@
 
     /* КВИЗ*/
     .word{ text-align:center; font-weight:700; font-size:20px; margin:4px 0 10px; position:relative; display:flex; align-items:center; justify-content:center; gap:15px; }
+    .word .label{display:inline-block;}
     .word::after{ display:none !important; }
     @keyframes caretBlink{ 0%,49%{ opacity:1 } 50%,100%{ opacity:0 } }
-    .inputrow{ display:flex; gap:8px; }
+    .inputrow{ display:flex; gap:8px; margin-top:10px; }
     .inputrow input{ flex:1; padding:12px; border:none; border-radius:0; font-size:16px; background:#fff; outline:none; box-shadow:none; text-align:center; caret-color:#2563eb; }
     .inputrow input.showAnswer{ color: var(--muted); }
     .muted{ color:var(--muted); font-size:14px; }
 
     /* Позиционирование анимации и квиза */
-    svg.viz{ position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) translateY(var(--viz-translateY, -100px)) scale(var(--viz-scale, .8)); transform-origin: center; }
-    .quiz{ position:fixed; top: var(--quiz-top, 280px); left:50%; transform:translate(-50%, 0); width:min(92vw,520px); margin:0; }
+    #block{ position:fixed; top: var(--block-top, 100px); left:50%; transform:translateX(-50%); width:min(92vw,520px); z-index:5; }
+    svg.viz{ position:relative; left:50%; transform:translateX(-50%) scale(var(--viz-scale, .8)); transform-origin:center; width:100%; height:auto; }
+    .quiz{ position:relative; width:100%; margin-top:0; }
     .word .speakQuiz{ position:relative; top:2px; width:28px; height:28px; border:none; background:transparent; display:grid; place-items:center; cursor:pointer; outline:none; }
     .word .speakQuiz svg{ width:18px; height:18px; display:block; }
 
@@ -82,8 +89,9 @@
   </style>
 </head>
 <body>
+  <div id="block">
   <!-- Верхняя визуализация: линия и шаговая фигура -->
-  <svg class="viz" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Линия 400 пикселей, нарисованная от руки">
+  <svg class="viz" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Линия 400 пикселей, нарисованная от руки">
     <defs>
       <filter id="squiggleX" filterUnits="userSpaceOnUse" x="-80" y="-120" width="560" height="680">
         <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="1" seed="3" result="noise">
@@ -99,7 +107,7 @@
     </defs>
     <g id="lineWrap">
       <!-- Линия-основание (невидимая, для геометрии) -->
-      <line class="ink" x1="0" y1="300" x2="400" y2="300" style="stroke: transparent;" />
+      <line class="ink" x1="0" y1="160" x2="400" y2="160" style="stroke: transparent;" />
     </g>
     <g id="boxWrap" filter="url(#squiggleX)">
       <g id="shape">
@@ -124,6 +132,7 @@
     </div>
     <div id="quizFeedback" class="muted" style="margin-top:6px"></div>
   </div>
+</div>
 
   <!-- Выезжающее окно слов справа -->
   <aside id="drawer" class="drawer" aria-label="Список слов">
@@ -145,7 +154,7 @@
     const polyEl = document.getElementById('poly');
 
     const CX = 200;          // центр по X
-    const lineY = 300;       // высота опорной линии
+    const lineY = 160;       // высота опорной линии
     const strokeShape = 3;   // толщина контура фигуры
     const strokeLine  = 3;   // толщина линии-основания
 
@@ -203,6 +212,7 @@
       return new Promise(resolve => {
         const t0 = performance.now();
         function frame(t){
+          if(document.hidden){ requestAnimationFrame(frame); return; }
           const p = Math.min(1, (t - t0)/duration);
           const ang = fromDeg + (toDeg - fromDeg)*easeInOutSine(p);
           setTransform(ang);
@@ -211,8 +221,7 @@
         requestAnimationFrame(frame);
       });
     }
-
-    // Морф n -> n+1: вставим точку посредине ребра 0-1, чтобы выровнять длины массивов
+// Морф n -> n+1: вставим точку посредине ребра 0-1, чтобы выровнять длины массивов
     function makeMorphPair(n){
       const A = buildPointsN(n);
       const B = buildPointsN(n+1);
@@ -240,6 +249,7 @@
       return new Promise(resolve => {
         const t0 = performance.now();
         function frame(t){
+          if(document.hidden){ requestAnimationFrame(frame); return; }
           const p = Math.min(1, (t - t0)/duration);
           const e = easeInOutSine(p);
           pts = Aeq.map((pA, i) => {
@@ -253,8 +263,7 @@
         requestAnimationFrame(frame);
       });
     }
-
-    async function walk(){
+async function walk(){
       while(true){
         pts = buildPointsN(sides);
         updatePolygon();
@@ -296,13 +305,13 @@
   </script>
 
   <script>
-// === 2) МИНИ-КВИЗ (фаззи-проверка, показ правильного ответа, очередь повторов) ===
+// === 2) МИНИ-КВИЗ (фаззи-проверка, показ правильного ответа, очередь повторов) — FIXED ===
 (function(){
   const quizWord = document.getElementById('quizWord');
   const quizLabel = document.querySelector('#quizWord .label');
   const quizInput = document.getElementById('quizInput');
   const quizFeedback = document.getElementById('quizFeedback');
-  if(!quizWord || !quizInput) return;
+  if(!quizWord || !quizInput || !quizLabel) return;
 
   // Очередь повторов: вернуть ошибочные слова через 2–3 задания
   const __defer = {
@@ -315,7 +324,7 @@
   function pickNextIndex(){
     const due = __defer.popDue(); if(due!=null) return due;
     let bestScore = -Infinity, bestIdx = 0;
-    for(let i=0;i<window.__vocabData.length;i++){
+    for(let i=0;i<(window.__vocabData?window.__vocabData.length:0);i++){
       const w = window.__vocabData[i];
       const s = (w.bad|0) - (w.ok|0);
       if(s > bestScore){ bestScore = s; bestIdx = i; }
@@ -326,11 +335,23 @@
   function initWhenReady(){
     // локальный озвучиватель
     function speakTerm(text, lang='en-US'){ if(!('speechSynthesis' in window)) return; const u=new SpeechSynthesisUtterance(text); u.lang=lang; speechSynthesis.speak(u); }
-    const speakBtn = document.getElementById('speakQuiz'); if(speakBtn){ speakBtn.addEventListener('click', ()=>{ const t=(quizLabel.textContent||'').trim(); if(t) speakTerm(t); }); }
-    if(!window.__vocabData || !window.__vocabData.length){ return setTimeout(initWhenReady, 50); }
-    let idx = pickNextIndex();
+    const speakBtn = document.getElementById('speakQuiz');
+    if(speakBtn && !speakBtn.dataset.bound){
+      speakBtn.dataset.bound = '1';
+      speakBtn.addEventListener('click', ()=>{
+        const t=(quizLabel.textContent||'').trim();
+        if(!t) return;
+        if('speechSynthesis' in window){ try{ speechSynthesis.cancel(); }catch(_){} }
+        speakTerm(t);
+      });
+    }
 
-    // не повторять то же слово сразу после ответа
+    if(!window.__vocabData || !window.__vocabData.length){
+      document.addEventListener('vocab-ready', initWhenReady, { once:true });
+      return;
+    }
+
+    let idx = -1;
     let lastIdx = -1;
 
     function setCard(){
@@ -393,7 +414,7 @@
       if(!vars.length && sim(x, tr)>=0.8) return true;
       // 2) хотя бы одно слово из перевода (и из ответа) ≥80%
       var inWords=x.split(' ').filter(Boolean);
-      var MINLEN=3;
+      var MINLEN=2;
       var targets = (vars.length? vars : [clean(tr)]);
       for(var t=0;t<targets.length;t++){
         var vWords = targets[t].split(' ').filter(Boolean);
@@ -416,7 +437,6 @@
         w.ok = (w.ok|0) + 1;
         if(window.__saveVocab) window.__saveVocab();
         if(window.__renderVocab) window.__renderVocab();
-        // показать полный ответ прямо в поле
         quizInput.readOnly = true;
         quizInput.classList.add('showAnswer');
         quizInput.value = answerText;
@@ -426,7 +446,6 @@
         w.bad = (w.bad|0) + 1;
         if(window.__saveVocab) window.__saveVocab();
         if(window.__renderVocab) window.__renderVocab();
-        // показать правильный ответ прямо в поле
         quizInput.readOnly = true;
         quizInput.classList.add('showAnswer');
         quizInput.value = answerText;
@@ -444,6 +463,7 @@
     setCard();
     setTimeout(()=>quizInput.focus(), 0);
   }
+
   initWhenReady();
 })();
 </script>
@@ -480,7 +500,9 @@
       const sorted = [...window.__vocabData].sort((a,b)=> ((b.bad|0)-(b.ok|0)) - ((a.bad|0)-(a.ok|0)) || a.term.localeCompare(b.term));
       sorted.forEach(w=>{
         const row=document.createElement('div'); row.className='item';
-        const left=document.createElement('div'); left.innerHTML=`<strong>${w.term}</strong> — ${w.tr||''}`;
+        // content (шевелится при свайпе)
+        const content=document.createElement('div'); content.className='content';
+        const left=document.createElement('div'); left.innerHTML = `<strong>${w.term}</strong> — ${w.tr||''}`;
         const play=document.createElement('button'); play.className='play'; play.title='Прослушать';
         play.innerHTML=`<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M4 10h3l4-3v10l-4-3H4z"/>
@@ -488,12 +510,41 @@
           <path d="M18 7c3 3 3 7 0 10"/>
         </svg>`;
         play.onclick=()=>speak(w.term);
-        row.appendChild(left); row.appendChild(play); list.appendChild(row);
+        content.appendChild(left); content.appendChild(play);
+        row.appendChild(content);
+
+        const del=document.createElement('button'); del.className='del'; del.title='Удалить слово';
+        del.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/>
+        </svg>`;
+        del.onclick=()=>{
+          const k = window.__vocabData.findIndex(v=> v.term===w.term && v.tr===w.tr);
+          if(k>=0){ window.__vocabData.splice(k,1); saveLS(); render(); }
+        };
+        row.appendChild(del);
+
+        // свайп-логика
+        let sx=null, cur=0, opened=false; const MAX=72;
+        function setX(x){ content.style.transform=`translateX(${x}px)`; }
+        function onStart(x){ sx=x; row.style.willChange='transform'; }
+        function onMove(x){ if(sx==null) return; const dx=x-sx; cur = Math.max(-MAX, Math.min(0, dx)); setX(opened? (-MAX + dx) : cur); }
+        function onEnd(){ if(sx==null) return; const final = opened ? cur - MAX : cur; opened = (final <= -MAX*0.5); row.classList.toggle('swiped', opened); setX(opened? -MAX : 0); sx=null; cur=0; row.style.willChange='auto'; }
+        row.addEventListener('touchstart',e=>onStart(e.touches[0].clientX),{passive:true});
+        row.addEventListener('touchmove', e=>{ onMove(e.touches[0].clientX); },{passive:true});
+        row.addEventListener('touchend', ()=>onEnd());
+        row.addEventListener('mousedown', e=>{ onStart(e.clientX); window.addEventListener('mousemove', onMouseMove); window.addEventListener('mouseup', onMouseUp, {once:true}); });
+        function onMouseMove(e){ onMove(e.clientX); }
+        function onMouseUp(){ onEnd(); window.removeEventListener('mousemove', onMouseMove); }
+
+        list.appendChild(row);
       });
     }
+
     // экспорт и начальный рендер
     window.__renderVocab = render;
     render();
+    try{ document.dispatchEvent(new CustomEvent('vocab-ready')); }catch(_){}
 
     // ПЛЮС → инлайн-ввод списком
     const addWordBtn = document.getElementById('addWordBtn');
@@ -537,7 +588,10 @@
       if(!raw) return;
       const lines = raw.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean); // ✅ фикс: корректная регэксп
       let added = 0;
-      for(const line of lines){ const pair = parsePair(line); if(pair && pair.term){ window.__vocabData.push({term:pair.term, tr:pair.tr||'', ok:0, bad:0}); added++; } }
+      for(const line of lines){ const pair = parsePair(line); if(pair && pair.term){ (function(){
+          const exists = window.__vocabData.findIndex(v=> v.term.trim().toLowerCase()===pair.term.trim().toLowerCase() && (v.tr||'').trim().toLowerCase()===(pair.tr||'').trim().toLowerCase());
+          if(exists<0){ window.__vocabData.push({term:pair.term, tr:pair.tr||'', ok:0, bad:0}); added++; }
+        })(); added++; } }
       if(!added) return;
       saveLS();
       render();
@@ -577,33 +631,24 @@
   </script>
 
   <script>
-  // === 4) ПРИВЯЗКА К ВЕРХУ ВИДИМОГО ОКНА (visualViewport):
-  // Держим анимацию на 100px от верхней границы экрана, слово — ниже на GAP_BETWEEN
+  // === 4) Привязка блока (анимация + слово + поле) к верху видимого окна ===
   (function(){
     const root = document.documentElement;
-    const GAP_TOP = 100;        // расстояние от верха до начала анимации
-    const GAP_BETWEEN = 260;    // вертикальный зазор между анимацией и словом
-    const SCALE = 0.8;
+    const GAP_TOP = 100;   // весь блок на 100px от верхней границы экрана
+    const SCALE = 0.6;     // масштаб анимации внутри блока
 
     function place(){
       const vv = window.visualViewport;
-      const off = vv ? vv.offsetTop : 0; // сколько «съела» клавиатура/адресная строка
-      const vizTop = off + GAP_TOP;
-      const quizTop = vizTop + GAP_BETWEEN;
-      root.style.setProperty('--viz-top', vizTop + 'px');
-      root.style.setProperty('--quiz-top', quizTop + 'px');
+      const off = vv ? vv.offsetTop : 0;
+      const top = off + GAP_TOP;
+      root.style.setProperty('--block-top', top + 'px');
       root.style.setProperty('--viz-scale', String(SCALE));
     }
-
-    // инициализация
     place();
-
-    // обновлять на любые изменения visual viewport (клавиатура/адресная строка)
     if(window.visualViewport){
       visualViewport.addEventListener('resize', ()=>requestAnimationFrame(place));
       visualViewport.addEventListener('scroll', ()=>requestAnimationFrame(place));
     }
-    // и при обычном ресайзе/ориентации
     window.addEventListener('resize', ()=>requestAnimationFrame(place));
     window.addEventListener('orientationchange', ()=>setTimeout(place, 300));
   })();
