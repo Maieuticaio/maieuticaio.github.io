@@ -1,443 +1,532 @@
 <!doctype html>
 <html lang="ru">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Сайт — один HTML</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      ::-webkit-scrollbar { height: 10px; width: 10px; }
-      ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.3); border-radius: 8px; }
-      ::-webkit-scrollbar-track { background: rgba(0,0,0,.06); }
-      body { background:#fff; color:#000; }
-      button { -webkit-tap-highlight-color: transparent; }
-    </style>
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="text/babel">
-      const { useEffect, useMemo, useRef, useState } = React;
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Портфолио — один HTML</title>
+  <style>
+    :root {
+      --page-xpad: 50px;           /* Постоянные отступы слева/справа */
+      --nav-item-h: 44px;          /* Высота открытого прямоугольника навигации */
+      --nav-item-h-collapsed: 10px;/* Высота закрытого прямоугольника */
+      --gap-vert: 50px;            /* Вертикальные отступы между блоками */
+      --border-w: 2px;             /* Толщина условной "ручной" кромки */
+      --overlay-dim: rgba(0,0,0,.72); /* Затемнение фона лайтбокса */
+    }
 
-      const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Noto Sans', Arial, 'Apple Color Emoji','Segoe UI Emoji';
+      color: #000;
+      background: #fff;
+      line-height: 1.4;
+    }
 
-      const initialPortfolioProjects = [
-        { id: "pf1", title: "Портфолио: серия иллюстраций", description: "Кураторская выборка работ, разные техники и форматы.", media: [
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'><rect width='100%' height='100%' fill='%23e5e5e5'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.5 },
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='%23f0f0f0'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>square</text></svg>", ar: 1 },
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='300'><rect width='100%' height='100%' fill='%23dddddd'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>vertical</text></svg>", ar: 2/3 }
-        ]},
-        { id: "pf2", title: "Портфолио: инфографика", description: "Плакаты и схемы. Ссылки на публикации: http://example.com", media: [
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='200'><rect width='100%' height='100%' fill='%23ededed'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.8 },
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'><rect width='100%' height='100%' fill='%23eaeaea'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.5 }
-        ]}
-      ];
+    /* =================== NAV =================== */
+    .nav {
+      position: fixed;
+      top: 50px;
+      right: var(--page-xpad);
+      z-index: 40;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      pointer-events: auto;
+    }
+    .nav__item {
+      position: relative;
+      background: #000;            /* Черный прямоугольник */
+      color: #fff;
+      height: var(--nav-item-h);
+      border: none;
+      margin: 0;
+      padding: 0 15px;              /* Отступы текста слева/справа по 15px */
+      width: fit-content;
+      align-self: flex-end;
+      transition: width .25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;     /* Текст по центру */
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;         /* Текст всегда в одну строку */
+      overflow: hidden;            /* Чтобы текст исчезал при схлопывании */
+      border-radius: 0;            /* Никаких скруглений у прямоугольников */
+      /* переход по ширине при схлопывании */
+      /* Имитация "неровной" кромки — клип-путь с легким джиттером */
+      clip-path: polygon(
+        var(--x1,0%)  var(--y1,2%),
+        var(--x2,100%) var(--y2,1%),
+        var(--x3,100%) var(--y3,98%),
+        var(--x4,0%)   var(--y4,99%)
+      );
+      outline: var(--border-w) solid #000; /* чёткий контур */
+      outline-offset: 0;
+    }
+    .nav__item .label { transition: opacity .18s ease; }
+    .nav__item.collapsed { width: 10px; max-width: 10px; min-width: 0; padding: 0; }
+    .nav__item.collapsed .label { opacity: 0; }
+    .nav__item.active { outline-color: #111; }
 
-      const initialThingsProjects = [
-        { id: "th1", title: "Штуки: эксперименты", description: "Небольшие визуальные опыты, петли, стикеры, процесс.", media: [
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='200'><rect width='100%' height='100%' fill='%23efefef'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.2 },
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='200'><rect width='100%' height='100%' fill='%23e1e1e1'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>vertical</text></svg>", ar: 0.8 },
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'><rect width='100%' height='100%' fill='%23dcdcdc'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>wide</text></svg>", ar: 1.5 }
-        ]},
-        { id: "th2", title: "Штуки: зины", description: "Малые издания и наброски.", media: [
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='200'><rect width='100%' height='100%' fill='%23f5f5f5'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.2 }
-        ]}
-      ];
+    /* =================== PAGE WRAPPER =================== */
+    main {
+      min-height: 100vh;
+      padding: 0 var(--page-xpad) 80px; /* убрали верхний паддинг у main, чтобы общий верхний отступ контролировали страницы */
+    }
+    /* На главной странице отступов не должно быть */
+    body.is-home main { padding: 0; }
 
-      const initialEdtechProjects = [
-        { id: "ed1", title: "Ed‑Tech: геометрия", description: "Интерактивы и иллюстрации для задач по геометрии.", media: [
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='200'><rect width='100%' height='100%' fill='%23ececec'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.8 },
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200'><rect width='100%' height='100%' fill='%23e7e7e7'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>wide</text></svg>", ar: 2 }
-        ]},
-        { id: "ed2", title: "Ed‑Tech: естествознание", description: "Анимации процессов, карточки, svg‑лупы.", media: [
-          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='200'><rect width='100%' height='100%' fill='%23e0e0e0'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.8 }
-        ]}
-      ];
+    section.page { display: none; }
+    section.page.active { display: block; }
 
-      const Section = { HOME: "home", PORTFOLIO: "portfolio", THINGS: "things", EDTECH: "edtech", ABOUT: "about" };
+    /* Заголовки секций */
+    .page h1 { font-size: 28px; margin: 0 0 20px; font-weight: 700; text-align: left; }
 
-      function useAdmin() {
-        const [isAdmin, setIsAdmin] = useState(false);
-        const enable = (pwd) => { if ((pwd || "").trim() === "сколопендра") setIsAdmin(true); else alert("Неверный пароль"); };
-        const disable = () => setIsAdmin(false);
-        return { isAdmin, enable, disable };
-      }
+    /* Отступ сверху на всех страницах (кроме главной) */
+    section.page { padding-top: 50px; }
+    #home { padding-top: 0; }
+    /* Специальный правый отступ только для страницы "Обо мне": 50px (главный) + 15px (секция) = 65px */
+    #about { padding-right: 15px; }
 
-      function Modal({ open, onClose, children, title }) {
-        if (!open) return null;
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div className="absolute inset-0 bg-black/60" onClick={onClose} />
-            <div className="relative z-10 w-[min(720px,94vw)] rounded-2xl bg-white p-6 shadow-xl">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="text-xl font-semibold">{title}</h3>
-                <button className="rounded-full px-3 py-1 text-sm hover:bg-black/5" onClick={onClose}>✕</button>
-              </div>
-              {children}
-            </div>
+    /* =================== HOME =================== */
+    #home {
+      position: relative;
+      min-height: 100vh; /* во всю высоту экрана для пересечения анимаций */
+      overflow: hidden; /* чтобы анимации "вплывали" */
+    }
+    .shapes-layer { position: absolute; inset: 0; pointer-events: none; }
+    .shape, .wave {
+      /* волнистая лента; параметры сегмента задаём CSS‑переменными */
+      /* ширина сегмента — --segW (по умолчанию 24px), высота сегмента — --segH (по умолчанию 20px) */
+      width: 220px; height: 20px;
+      background: repeating-linear-gradient(
+        90deg,
+        #000 0 calc(var(--segW, 24px) / 2),
+        transparent calc(var(--segW, 24px) / 2) var(--segW, 24px)
+      );
+      -webkit-mask: radial-gradient(
+          calc(var(--segW, 24px) / 2) calc(var(--segH, 20px) / 2) at calc(var(--segW, 24px) / 2) calc(var(--segH, 20px) / 2),
+          #000 98%, transparent
+        ) repeat-x left center / var(--segW, 24px) var(--segH, 20px);
+              mask: radial-gradient(
+          calc(var(--segW, 24px) / 2) calc(var(--segH, 20px) / 2) at calc(var(--segW, 24px) / 2) calc(var(--segH, 20px) / 2),
+          #000 98%, transparent
+        ) repeat-x left center / var(--segW, 24px) var(--segH, 20px);
+      background-clip: padding-box;
+    }
+
+    @keyframes floatLR { from{ transform: translateX(-120vw);} to{ transform: translateX(120vw);} }
+    @keyframes floatRL { from{ transform: translateX(120vw);} to{ transform: translateX(-120vw);} }
+    @keyframes floatTB { from{ transform: translateY(-120vh);} to{ transform: translateY(120vh);} }
+    @keyframes floatBT { from{ transform: translateY(120vh);} to{ transform: translateY(-120vh);} }
+
+    /* =================== ABOUT =================== */
+    .about {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      justify-content: flex-end; /* выравнивание по правому краю всей полосы */
+    }
+    .about__image {
+      flex: 0 0 33.333vw; /* занимает треть экрана по ширине */
+      max-width: 33.333vw;
+    }
+    .about__image img {
+      display: block;
+      width: 100%;     /* фиксированная по ширине доля */
+      height: auto;    /* любая высота */
+      object-fit: cover;
+    }
+    .about__text { flex: 1 1 auto; min-width: 280px; font-size: 0.8rem; }
+    /* Убираем верхний внешний отступ у первого элемента текста, чтобы картинка и текст были ровно по верхнему краю */
+    .about__text > :first-child { margin-top: 0; }
+
+    /* =================== FEED PAGES (Картинки, Штуки, Ed‑tech) =================== */
+    .feed {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start; /* все блоки выровнены по правому краю */
+      gap: var(--gap-vert);
+    }
+    .block { width: 100%; max-width: 1200px; }
+    .block__title { font-weight: 800; margin: 0 0 12px; text-align: left; }
+
+    .gallery {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;        /* горизонтальная прокрутка */
+      padding-bottom: 8px;
+      scrollbar-width: thin;
+    }
+    .gallery::-webkit-scrollbar { height: 10px; }
+    .gallery::-webkit-scrollbar-thumb { background: rgba(0,0,0,.3); }
+    .gallery::-webkit-scrollbar-track { background: rgba(0,0,0,.08); }
+
+    .media {
+      flex: 0 0 auto;
+      height: 150px;           /* фиксированная высота */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ddd;         /* серые превью-фреймы */
+      color: #666;
+      border: 1px solid #ccc;
+      border-radius: 0;         /* без скруглений */
+      cursor: pointer;
+      position: relative;
+      aspect-ratio: auto;       /* ширина подстраивается под контент */
+    }
+    .media img, .media video, .media svg {
+      height: 100%;
+      width: auto;              /* подгон по ширине формата */
+      display: block;
+      pointer-events: none;
+    }
+    .block__desc { max-width: 60ch; margin-top: 10px; margin-left: 0; text-align: left; font-size: 0.8rem; }
+
+    /* =================== LIGHTBOX =================== */
+    .lightbox { position: fixed; inset: 0; background: var(--overlay-dim); display: none; place-items: center; z-index: 100; }
+    .lightbox.open { display: grid; }
+    .lightbox__inner {
+      position: relative;
+      max-width: calc(100vw - 200px);  /* 100px отступы по узкой стороне */
+      max-height: calc(100vh - 200px);
+      display: inline-block;
+    }
+    .lightbox__media { display: block; max-width: 100%; max-height: 100%; border-radius: 0; background:#ddd; }
+    .lb-btn {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
+      background: #000; color: #fff; display: grid; place-items: center; font-size: 20px; line-height: 1;
+    }
+    .lb-prev { left: -60px; }
+    .lb-next { right: -60px; }
+    .lb-close { position: absolute; top: -60px; right: 0; width: 40px; height: 40px; border-radius: 50%; background:#000; color:#fff; border:none; cursor:pointer; }
+
+    /* Адаптив: если очень узко, немного поджимаем стрелки */
+    @media (max-width: 640px) {
+      .lb-prev { left: -44px; }
+      .lb-next { right: -44px; }
+      .lb-close { top: -50px; }
+    }
+
+    /* Учет доступности: меньше анимаций, если пользователь просит */
+    @media (prefers-reduced-motion: reduce) {
+      .shape, .wave { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- =================== NAV =================== -->
+  <nav class="nav" id="nav">
+    <button class="nav__item" data-target="home"><span class="label">Главная страница</span></button>
+    <button class="nav__item" data-target="pictures"><span class="label">Картинки</span></button>
+    <button class="nav__item" data-target="things"><span class="label">Штуки</span></button>
+    <button class="nav__item" data-target="edtech"><span class="label">Ed‑tech</span></button>
+    <button class="nav__item" data-target="about"><span class="label">Обо мне</span></button>
+  </nav>
+
+  <main>
+    <!-- =================== HOME =================== -->
+    <section class="page active" id="home">
+                  <div class="shapes-layer" id="shapes"></div>
+    </section>
+
+    <!-- =================== PICTURES =================== -->
+    <section class="page" id="pictures">
+            <div class="feed">
+        <article class="block">
+          <h2 class="block__title">Серия A</h2>
+          <div class="gallery" data-gallery>
+            <div class="media" style="width: 260px" title="Фрейм 1"></div>
+            <div class="media" style="width: 180px" title="Фрейм 2"></div>
+            <div class="media" style="width: 320px" title="Фрейм 3"></div>
+            <div class="media" style="width: 210px" title="Фрейм 4"></div>
+            <div class="media" style="width: 280px" title="Фрейм 5"></div>
           </div>
-        );
-      }
+          <div class="block__desc">Описание серии A. Серые фреймы разной ширины — заглушки под изображения/видео/GIF/SVG.</div>
+        </article>
 
-      function MediaStrip({ items, isAdmin = false, onEdit = () => {}, onDelete = () => {}, onAddNew = () => {}, onOpen = () => {} }) {
-        const H = 200; const hasMedia = Array.isArray(items) && items.length > 0;
-        return (
-          <div className="overflow-x-auto">
-            <div className="flex gap-4 py-2">
-              {hasMedia ? items.map((m, i) => { const ar = typeof m.ar === "number" && m.ar > 0 ? m.ar : 1.5; const w = Math.max(Math.round(H * ar), 80);
-                return (
-                  <div key={i} className="relative shrink-0 cursor-zoom-in" style={{ width: w, minWidth: w, height: H }} onClick={() => onOpen(i)}>
-                    {m.type === "video" ? <video src={m.url} controls className="h-full w-full object-contain" /> : <img src={m.url} alt="media" className="h-full w-full object-contain" />}
-                    {isAdmin && (
-                      <div className="absolute right-2 top-2 z-10 flex items-center gap-2">
-                        <button title="Редактировать этот фрейм" className="rounded-md bg-white/90 px-2 py-1 text-xs shadow" onClick={(e) => { e.stopPropagation(); onEdit(i); }}>✎</button>
-                        <button title="Удалить этот фрейм" className="rounded-md bg-white/90 px-2 py-1 text-xs shadow" onClick={(e) => { e.stopPropagation(); onDelete(i); }}>✕</button>
-                      </div>
-                    )}
-                  </div>
-                );
-              }) : Array.from({ length: 4 }).map((_, i) => (<div key={i} className="bg-neutral-200" style={{ width: H * 1.5, minWidth: H * 1.5, height: H }} />))}
-              {isAdmin && (
-                <button type="button" className="shrink-0 text-3xl" style={{ width: H * 1.5, minWidth: H * 1.5, height: H, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)" }} onClick={onAddNew} title="Добавить изображение/видео">+</button>
-              )}
-            </div>
+        <article class="block">
+          <h2 class="block__title">Серия B</h2>
+          <div class="gallery" data-gallery>
+            <div class="media" style="width: 200px"></div>
+            <div class="media" style="width: 340px"></div>
+            <div class="media" style="width: 190px"></div>
+            <div class="media" style="width: 270px"></div>
           </div>
-        );
-      }
+          <div class="block__desc">Описание серии B. Колесо мыши или палец прокручивают ленту горизонтально.</div>
+        </article>
+      </div>
+    </section>
 
-      function UrlAdder({ onAdd }) {
-        const [raw, setRaw] = useState("");
-        return (
-          <div className="space-y-2">
-            <textarea className="h-24 w-full rounded-md border px-3 py-2" placeholder={"https://.../1.png\nhttps://.../clip.mp4"} value={raw} onChange={(e) => setRaw(e.target.value)} />
-            <div className="text-right"><button className="rounded-md bg-black px-3 py-2 text-white" onClick={() => { const urls = raw.replace(/\r/g, "").split(/\r?\n|,|;/).map((s) => s.trim()).filter(Boolean); if (urls.length) onAdd(urls); }}>Добавить URL</button></div>
+    <!-- =================== THINGS =================== -->
+    <section class="page" id="things">
+            <div class="feed">
+        <article class="block">
+          <h2 class="block__title">Проект X</h2>
+          <div class="gallery" data-gallery>
+            <div class="media" style="width: 220px"></div>
+            <div class="media" style="width: 240px"></div>
+            <div class="media" style="width: 180px"></div>
+            <div class="media" style="width: 300px"></div>
           </div>
-        );
-      }
+          <div class="block__desc">Короткое описание проекта X.</div>
+        </article>
+      </div>
+    </section>
 
-      function linkify(parts) {
-        return parts.split(/(https?:\/\/[^\s]+)/g).map((t, i) => /^https?:\/\//.test(t) ? <a key={i} href={t} target="_blank" rel="noreferrer" className="underline">{t}</a> : <span key={i}>{t}</span>);
-      }
-
-      function ProjectBlock({ project, isAdmin, onUpdate }) {
-        const [addMediaOpen, setAddMediaOpen] = useState(false);
-        const [editMediaOpen, setEditMediaOpen] = useState(false);
-        const [editIndex, setEditIndex] = useState(-1);
-        const [confirmDelOpen, setConfirmDelOpen] = useState(false);
-        const [delIndex, setDelIndex] = useState(-1);
-        const [lightboxOpen, setLightboxOpen] = useState(false);
-        const [lbIndex, setLbIndex] = useState(0);
-
-        const getImageAR = (url) => new Promise((resolve) => { const img = new Image(); img.onload = () => resolve(img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1.5); img.onerror = () => resolve(1.5); img.src = url; });
-        const getVideoAR = (url) => new Promise((resolve) => { const v = document.createElement('video'); v.preload = 'metadata'; v.onloadedmetadata = () => resolve(v.videoWidth && v.videoHeight ? v.videoWidth / v.videoHeight : 1.5); v.onerror = () => resolve(1.5); v.src = url; });
-        const getAR = async (url, type) => type === 'video' ? await getVideoAR(url) : await getImageAR(url);
-
-        const onFilesPickedAppend = async (files) => {
-          const list = Array.from(files || []); if (!list.length) return;
-          const readAsDataURL = (file) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
-          const created = await Promise.all(list.map(async (f) => { const dataUrl = await readAsDataURL(f); const type = /video\//.test(f.type) ? 'video' : 'img'; const ar = await getAR(dataUrl, type); return { type, url: dataUrl, ar }; }));
-          onUpdate && onUpdate({ ...project, media: [...(project.media || []), ...created] }); setAddMediaOpen(false);
-        };
-
-        const onFilesPickedReplace = async (files) => {
-          const list = Array.from(files || []); if (!list.length || editIndex < 0) return;
-          const f = list[0]; const readAsDataURL = (file) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
-          const dataUrl = await readAsDataURL(f); const type = /video\//.test(f.type) ? 'video' : 'img'; const ar = await getAR(dataUrl, type);
-          const next = [...(project.media || [])]; next[editIndex] = { type, url: dataUrl, ar };
-          onUpdate && onUpdate({ ...project, media: next }); setEditMediaOpen(false); setEditIndex(-1);
-        };
-
-        const requestDelete = (i) => { setDelIndex(i); setConfirmDelOpen(true); };
-        const confirmDelete = () => { if (delIndex < 0) return; const next = [...(project.media || [])]; next.splice(delIndex, 1); onUpdate && onUpdate({ ...project, media: next }); setConfirmDelOpen(false); setDelIndex(-1); };
-
-        const openLightboxAt = (i) => { if (!project.media || !project.media.length) return; setLbIndex(i); setLightboxOpen(true); };
-        const lbPrev = () => setLbIndex((i) => (i - 1 + project.media.length) % project.media.length);
-        const lbNext = () => setLbIndex((i) => (i + 1) % project.media.length);
-
-        useEffect(() => {
-          if (!lightboxOpen) return; const onKey = (e) => { if (e.key === 'Escape') setLightboxOpen(false); if (e.key === 'ArrowLeft') lbPrev(); if (e.key === 'ArrowRight') lbNext(); };
-          window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
-        }, [lightboxOpen, project.media?.length]);
-
-        return (
-          <div className="mb-[50px]">
-            <div className="mb-2 flex items-start justify-between">
-              {isAdmin ? (
-                <input className="w-full max-w-[70%] border-b border-black/20 bg-transparent text-2xl font-semibold outline-none" value={project.title} onChange={(e) => onUpdate && onUpdate({ ...project, title: e.target.value })} />
-              ) : (
-                <h4 className="text-2xl font-semibold">{project.title}</h4>
-              )}
-            </div>
-
-            <div className="relative">
-              <MediaStrip items={project.media} isAdmin={isAdmin} onEdit={(i) => { setEditIndex(i); setEditMediaOpen(true); }} onDelete={(i) => requestDelete(i)} onAddNew={() => setAddMediaOpen(true)} onOpen={openLightboxAt} />
-            </div>
-
-            <div className="mt-2">
-              {isAdmin ? (
-                <textarea className="w-full rounded-md border px-3 py-2 text-base leading-relaxed" value={project.description} onChange={(e) => onUpdate && onUpdate({ ...project, description: e.target.value })} />
-              ) : (
-                <p className="whitespace-pre-wrap text-base leading-relaxed">{linkify(project.description)}</p>
-              )}
-            </div>
-
-            <Modal open={addMediaOpen} onClose={() => setAddMediaOpen(false)} title="Добавить изображения/видео">
-              <div className="space-y-3">
-                <input type="file" multiple accept="image/*,video/*" className="w-full" onChange={(e) => onFilesPickedAppend(e.target.files)} />
-                <div className="text-sm text-black/60">Можно загрузить несколько файлов сразу. Или вставить URL ниже.</div>
-                <UrlAdder onAdd={(urls) => { (async () => { const created = await Promise.all(urls.map(async (u) => { const clean = u.trim(); const type = /(\.mp4|\.webm|\.mov)$/i.test(clean) ? 'video' : 'img'; const ar = await getAR(clean, type); return { type, url: clean, ar }; })); onUpdate && onUpdate({ ...project, media: [...(project.media || []), ...created] }); setAddMediaOpen(false); })(); }} />
-              </div>
-            </Modal>
-
-            <Modal open={editMediaOpen} onClose={() => { setEditMediaOpen(false); setEditIndex(-1); }} title="Заменить медиа фрейма">
-              <div className="space-y-3">
-                <input type="file" accept="image/*,video/*" className="w-full" onChange={(e) => onFilesPickedReplace(e.target.files)} />
-                <div className="text-sm text-black/60">Или вставьте один URL ниже, чтобы заменить выбранный фрейм.</div>
-                <UrlAdder onAdd={(urls) => { (async () => { if (!urls.length || editIndex < 0) return; const clean = urls[0].trim(); const type = /(\.mp4|\.webm|\.mov)$/i.test(clean) ? 'video' : 'img'; const ar = await getAR(clean, type); const next = [...(project.media || [])]; next[editIndex] = { type, url: clean, ar }; onUpdate && onUpdate({ ...project, media: next }); setEditMediaOpen(false); setEditIndex(-1); })(); }} />
-              </div>
-            </Modal>
-
-            <Modal open={confirmDelOpen} onClose={() => { setConfirmDelOpen(false); setDelIndex(-1); }} title="Удалить фрейм?">
-              <div className="flex items-center justify-end gap-2"><button className="px-3 py-2" onClick={() => { setConfirmDelOpen(false); setDelIndex(-1); }}>Нет</button><button className="bg-black px-3 py-2 text-white" onClick={confirmDelete}>Да</button></div>
-            </Modal>
-
-            {lightboxOpen && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setLightboxOpen(false)}>
-                <div className="relative" style={{ width: 'calc(100vw - 200px)', height: 'calc(100vh - 200px)' }} onClick={(e) => e.stopPropagation()}>
-                  {project.media[lbIndex]?.type === 'video' ? (
-                    <video src={project.media[lbIndex]?.url} controls className="block" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  ) : (
-                    <img src={project.media[lbIndex]?.url} className="block" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  )}
-                  <button aria-label="prev" className="absolute left-[-64px] top-1/2 z-50 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow" onClick={lbPrev}>‹</button>
-                  <button aria-label="next" className="absolute right-[-64px] top-1/2 z-50 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow" onClick={lbNext}>›</button>
-                  <button aria-label="close" className="absolute right-2 top-2 z-50 text-2xl text-black" onClick={() => setLightboxOpen(false)}>✕</button>
-                </div>
-              </div>
-            )}
+    <!-- =================== EDTECH =================== -->
+    <section class="page" id="edtech">
+            <div class="feed">
+        <article class="block">
+          <h2 class="block__title">Интерактивы</h2>
+          <div class="gallery" data-gallery>
+            <div class="media" style="width: 300px"></div>
+            <div class="media" style="width: 200px"></div>
+            <div class="media" style="width: 260px"></div>
           </div>
-        );
+          <div class="block__desc">Описание образовательных интерактивов.</div>
+        </article>
+      </div>
+    </section>
+
+    <!-- =================== ABOUT =================== -->
+    <section class="page" id="about">
+            <div class="about">
+        <div class="about__image">
+          <!-- Заглушка-изображение SVG вшито в data URI (замените на свою картинку при желании) -->
+          <img alt="Фото" src="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?><svg xmlns='http://www.w3.org/2000/svg' width='800' height='1200'><rect width='100%' height='100%' fill='%23e5e5e5'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='48' fill='%23999'>Фото</text></svg>">
+        </div>
+        <div class="about__text">
+          <p><strong>Александра Халбаева</strong> — иллюстратор и дизайнер интерактивов. Здесь будет ваш текст: биография, подход к работе, список клиентов, награды и пр.</p>
+          <p>Изображение слева занимает треть ширины экрана и может быть любой высоты. Справа — текст, занимающий оставшуюся ширину.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- =================== LIGHTBOX =================== -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <div class="lightbox__inner" id="lbInner">
+      <button class="lb-close" id="lbClose" aria-label="Закрыть">×</button>
+      <button class="lb-btn lb-prev" id="lbPrev" aria-label="Предыдущий">‹</button>
+      <img class="lightbox__media" id="lbMedia" alt="Просмотр" />
+      <button class="lb-btn lb-next" id="lbNext" aria-label="Следующий">›</button>
+    </div>
+  </div>
+
+  <script>
+    const $ = (sel, root=document) => root.querySelector(sel);
+    const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+
+    /* =================== Навигация и аккордеон =================== */
+    const sections = $$('.page');
+    const navItems = $$('.nav__item');
+
+    function jitterNavItem(el){
+      const r = (min,max) => (Math.random()*(max-min)+min).toFixed(2);
+      el.style.setProperty('--x1', '0%');  el.style.setProperty('--y1', r(0.5,3)+'%');
+      el.style.setProperty('--x2', '100%'); el.style.setProperty('--y2', r(0.5,2.5)+'%');
+      el.style.setProperty('--x3', '100%'); el.style.setProperty('--y3', r(96.5,99)+'%');
+      el.style.setProperty('--x4', '0%');  el.style.setProperty('--y4', r(96.5,99)+'%');
+    }
+
+    function setPage(id){
+      // показать нужную секцию
+      sections.forEach(s => s.classList.toggle('active', s.id===id));
+      // активная кнопка
+      navItems.forEach(btn => btn.classList.toggle('active', btn.dataset.target===id));
+
+      const isHome = (id === 'home');
+      document.body.classList.toggle('is-home', isHome);
+
+      // Логика схлопывания: если НЕ Главная — все, кроме активной, схлопываются до 10px
+      navItems.forEach(btn => {
+        if(isHome){ btn.classList.remove('collapsed'); }
+        else { btn.classList.toggle('collapsed', btn.dataset.target !== id); }
+      });
+
+      // hash для прямых ссылок
+      if(location.hash.replace('#','') !== id){
+        history.replaceState(null, '', '#'+id);
       }
 
-      function PortfolioPage({ isAdmin }) {
-        const [items, setItems] = useState(initialPortfolioProjects);
-        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый проект", description: "Описание...", media: [] }, ...xs]);
-        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
-        return (
-          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
-            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
-            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить проект" onClick={addBlank}>+</button></div>)}
-          </div>
-        );
+      // при возврате на главную — регенерируем слой фигур
+      if(isHome){ spawnShapes(true); }
+    }
+
+    navItems.forEach(btn => {
+      jitterNavItem(btn);
+      btn.addEventListener('click', () => setPage(btn.dataset.target));
+    });
+
+    // Восстановление страницы по hash при загрузке
+    window.addEventListener('DOMContentLoaded', () => {
+      const target = (location.hash || '#home').replace('#','');
+      setPage(['home','pictures','things','edtech','about'].includes(target) ? target : 'home');
+    });
+
+    // Обновлять "неровности" при ресайзе, чтобы не выглядели клонами
+    let jitterTO;
+    window.addEventListener('resize', () => {
+      clearTimeout(jitterTO);
+      jitterTO = setTimeout(()=> navItems.forEach(jitterNavItem), 120);
+    });
+
+    /* =================== Горизонтальная прокрутка колесом =================== */
+    $$('.gallery').forEach(gal => {
+      gal.addEventListener('wheel', (e) => {
+        if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+          e.preventDefault();
+          gal.scrollLeft += e.deltaY;
+        }
+      }, { passive:false });
+    });
+
+    /* =================== LIGHTBOX =================== */
+    const lb = $('#lightbox');
+    const lbMedia = $('#lbMedia');
+    const lbPrev = $('#lbPrev');
+    const lbNext = $('#lbNext');
+    const lbClose = $('#lbClose');
+
+    let currentGallery = null;
+    let currentIndex = -1;
+
+    function openLightbox(gallery, index){
+      currentGallery = gallery;
+      currentIndex = index;
+      renderLightbox();
+      lb.classList.add('open');
+      lb.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(){
+      lb.classList.remove('open');
+      lb.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+      currentGallery = null; currentIndex = -1;
+      lbMedia.removeAttribute('src');
+    }
+
+    function renderLightbox(){
+      if(!currentGallery) return;
+      const items = $$('.media', currentGallery);
+      if(!items.length) return;
+      if(currentIndex < 0) currentIndex = 0;
+      if(currentIndex >= items.length) currentIndex = items.length-1;
+
+      const node = items[currentIndex];
+      const img = node.querySelector('img');
+      if(img && img.getAttribute('src')){
+        lbMedia.setAttribute('src', img.getAttribute('src'));
+      } else {
+        const w = Math.max(400, Math.min(1000, node.clientWidth * 3));
+        const h = Math.max(300, Math.min(800, 600));
+        const svg = encodeURIComponent(`<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='100%' height='100%' fill='%23dddddd'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='32' fill='%23999'>Превью</text></svg>`);
+        lbMedia.setAttribute('src', `data:image/svg+xml;utf8,${svg}`);
       }
+    }
 
-      function ThingsPage({ isAdmin }) {
-        const [items, setItems] = useState(initialThingsProjects);
-        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый эксперимент", description: "Немного текста...", media: [] }, ...xs]);
-        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
-        return (
-          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
-            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
-            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить блок" onClick={addBlank}>+</button></div>)}
-          </div>
-        );
+    lbPrev.addEventListener('click', () => { if(currentGallery){ currentIndex = (currentIndex-1+ $$('.media',currentGallery).length) % $$('.media',currentGallery).length; renderLightbox(); } });
+    lbNext.addEventListener('click', () => { if(currentGallery){ currentIndex = (currentIndex+1) % $$('.media',currentGallery).length; renderLightbox(); } });
+    lbClose.addEventListener('click', closeLightbox);
+    lb.addEventListener('click', (e) => { if(e.target === lb) closeLightbox(); });
+    window.addEventListener('keydown', (e) => {
+      if(!lb.classList.contains('open')) return;
+      if(e.key === 'Escape') closeLightbox();
+      if(e.key === 'ArrowLeft') lbPrev.click();
+      if(e.key === 'ArrowRight') lbNext.click();
+    });
+
+    document.addEventListener('click', (e) => {
+      const m = e.target.closest('.media');
+      if(!m) return;
+      const gallery = m.closest('[data-gallery]');
+      if(!gallery) return;
+      const index = $$('.media', gallery).indexOf(m);
+      openLightbox(gallery, index);
+    });
+
+    /* =================== HOME: генерация простых плавающих фигур =================== */
+    function rand(min,max){ return Math.random()*(max-min)+min }
+
+    function spawnShapes(force=false){
+      const layer = $('#shapes');
+      if(!layer) return;
+      if(layer.children.length && !force) return;
+      layer.innerHTML='';
+      const W = layer.clientWidth; const H = layer.clientHeight;
+      const count = 18;
+      const pick = (arr)=> arr[Math.floor(Math.random()*arr.length)];
+
+      for(let i=0;i<count;i++){
+        const kind = pick(['square','circle','wave']);
+        const dir  = pick(['LR','RL','TB','BT']);
+        const el = document.createElement('div');
+        el.className = (kind==='wave') ? 'wave' : `shape ${kind}`;
+
+        if(kind==='square'){
+          const s = Math.max(12, Math.round((Math.random()*30 + 30) * 0.7)); // уменьшено на ~30%
+          el.style.width = s+'px'; el.style.height = s+'px';
+          el.style.opacity = .85;
+        }
+        if(kind==='circle'){
+          const s = Math.max(12, Math.round((Math.random()*28 + 28) * 0.7)); // уменьшено на ~30%
+          el.style.width = s+'px'; el.style.height = s+'px'; el.style.borderRadius = '50%';
+          el.style.opacity = .9;
+        }
+        if(kind==='wave'){
+          const segW = 24; // базовая ширина сегмента
+          const segH = Math.round(Math.random()*10)+14; // высота сегмента ~14–24
+          const n = (Math.random() < 0.5 ? 4 : 6); // только 4 или 6 секций
+          el.style.setProperty('--segW', segW+'px');
+          el.style.setProperty('--segH', segH+'px');
+          el.style.width = (segW * n) + 'px';
+          el.style.height = segH + 'px';
+        }
+
+        const dur = (Math.random()*14 + 14).toFixed(2)+'s';
+        el.style.animationDuration = dur;
+        el.style.animationTimingFunction = 'linear';
+        el.style.animationIterationCount = 'infinite';
+        // уникальные старты: у каждого элемента свой сдвиг (индекс + джиттер)
+        const delaySec = -(i * 1.111 + Math.random()*0.5); // никогда не совпадают
+        el.style.animationDelay = delaySec.toFixed(3) + 's';
+
+        if(dir==='LR'){
+          const y = Math.random()*(H-40)+10;
+          el.style.top = y+'px';
+          el.style.left = '-25vw';
+          el.style.animationName = 'floatLR';
+        } else if(dir==='RL'){
+          const y = Math.random()*(H-40)+10;
+          el.style.top = y+'px';
+          el.style.right = '-25vw';
+          el.style.animationName = 'floatRL';
+        } else if(dir==='TB'){
+          const x = Math.random()*(W-60)+10;
+          el.style.left = x+'px';
+          el.style.top = '-25vh';
+          el.style.animationName = 'floatTB';
+        } else {
+          const x = Math.random()*(W-60)+10;
+          el.style.left = x+'px';
+          el.style.bottom = '-25vh';
+          el.style.animationName = 'floatBT';
+        }
+
+        layer.appendChild(el);
       }
+    }
 
-      function EdTechPage({ isAdmin }) {
-        const [items, setItems] = useState(initialEdtechProjects);
-        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый модуль", description: "Краткое описание...", media: [] }, ...xs]);
-        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
-        return (
-          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
-            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
-            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить модуль" onClick={addBlank}>+</button></div>)}
-          </div>
-        );
-      }
-
-      function AboutPage({ isAdmin }) {
-        const [photo, setPhoto] = useState("");
-        const [text, setText] = useState("Иллюстратор и аниматор, работаю на стыке документальной визуализации и образовательных проектов. Открыта к коллаборациям.");
-        const [editPhoto, setEditPhoto] = useState(false);
-        const [editText, setEditText] = useState(false);
-        const [confirmDelPhoto, setConfirmDelPhoto] = useState(false);
-
-        const onPhotoFile = async (files) => {
-          const list = Array.from(files || []); if (!list.length) return;
-          const file = list[0]; const readAsDataURL = (f) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(f); });
-          const dataUrl = await readAsDataURL(file); setPhoto(dataUrl); setEditPhoto(false);
-        };
-
-        return (
-          <div className="mx-auto grid w-[min(1000px,92vw)] grid-cols-1 gap-8 py-8 md:grid-cols-2">
-            <div className="relative">
-              {photo ? (
-                <>
-                  <img src={photo} className="w-full h-auto" />
-                  {isAdmin && (
-                    <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
-                      <button title="Редактировать" className="rounded-md bg-white/90 px-2 py-1 text-xs shadow" onClick={() => setEditPhoto(true)}>✎</button>
-                      <button title="Удалить" className="rounded-md bg-white/90 px-2 py-1 text-xs shadow" onClick={() => setConfirmDelPhoto(true)}>✕</button>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="relative w-full bg-neutral-200" style={{ minHeight: 320 }}>
-                  {isAdmin && (
-                    <button title="Добавить изображение" onClick={() => setEditPhoto(true)} className="absolute inset-0 m-auto flex h-full w-full items-center justify-center text-4xl" style={{ clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)" }}>+
-                    </button>
-                  )}
-                </div>
-              )}
-              <Modal open={editPhoto} onClose={() => setEditPhoto(false)} title="Изображение">
-                <div className="space-y-3">
-                  <input type="file" accept="image/*" className="w-full" onChange={(e) => onPhotoFile(e.target.files)} />
-                  <UrlAdder onAdd={(urls) => { if (!urls.length) return; setPhoto(urls[0].trim()); setEditPhoto(false); }} />
-                </div>
-              </Modal>
-              <Modal open={confirmDelPhoto} onClose={() => setConfirmDelPhoto(false)} title="Удалить изображение?">
-                <div className="flex items-center justify-end gap-2"><button className="px-3 py-2" onClick={() => setConfirmDelPhoto(false)}>Нет</button><button className="bg-black px-3 py-2 text-white" onClick={() => { setPhoto(""); setConfirmDelPhoto(false); }}>Да</button></div>
-              </Modal>
-            </div>
-            <div className="relative">
-              <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{text}</p>
-              {isAdmin && (<button onClick={() => setEditText(true)} className="absolute right-0 top-0 rounded-md bg-white/90 px-2 py-1 text-xs shadow">✎</button>)}
-              <Modal open={editText} onClose={() => setEditText(false)} title="Текст">
-                <textarea className="h-48 w-full rounded-md border px-3 py-2" value={text} onChange={(e) => setText(e.target.value)} />
-                <div className="mt-3 text-right"><button className="rounded-md bg-black px-3 py-2 text-white" onClick={() => setEditText(false)}>Готово</button></div>
-              </Modal>
-            </div>
-          </div>
-        );
-      }
-
-      function HomeNav({ current, setCurrent }) {
-        const tiles = [
-          { key: Section.HOME, label: "главная страница" },
-          { key: Section.PORTFOLIO, label: "портфолио" },
-          { key: Section.THINGS, label: "штуки" },
-          { key: Section.EDTECH, label: "ed-tech" },
-          { key: Section.ABOUT, label: "обо мне" }
-        ];
-        const collapsedWidth = 10; const measureRefs = useRef({}); const [sizes, setSizes] = useState({});
-        useEffect(() => { const next = {}; tiles.forEach((t) => { const el = measureRefs.current[t.key]; if (el) next[t.key] = Math.ceil(el.offsetWidth); }); setSizes(next); }, []);
-        return (
-          <div className="fixed right-4 top-4 z-40 flex flex-col items-end gap-2">
-            <div className="fixed -left-[9999px] top-0">
-              {tiles.map((t) => (
-                <div key={t.key} ref={(el) => (measureRefs.current[t.key] = el)} className="inline-flex h-10 items-center justify-center bg-black text-white" style={{ paddingLeft: 15, paddingRight: 15, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)", boxShadow: "0 0 0 1.2px #000 inset" }}>
-                  <span className="whitespace-nowrap text-[12px] uppercase tracking-wide">{t.label}</span>
-                </div>
-              ))}
-            </div>
-            {tiles.map((t) => { const isActive = current === t.key; const expanded = current === Section.HOME || isActive; const targetWidth = sizes[t.key] ?? 224; return (
-              <div key={t.key} className="group relative flex h-10 items-center justify-center overflow-hidden bg-black text-white transition-[width] duration-300" style={{ width: expanded ? targetWidth : collapsedWidth, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)", boxShadow: "0 0 0 1.2px #000 inset", paddingLeft: expanded ? 15 : 0, paddingRight: expanded ? 15 : 0 }} onMouseEnter={(e) => { if (!expanded) { e.currentTarget.style.width = `${targetWidth}px`; e.currentTarget.style.paddingLeft = '15px'; e.currentTarget.style.paddingRight = '15px'; } }} onMouseLeave={(e) => { if (!expanded) { e.currentTarget.style.width = `${collapsedWidth}px`; e.currentTarget.style.paddingLeft = '0px'; e.currentTarget.style.paddingRight = '0px'; } }} onClick={() => setCurrent(t.key)}>
-                <div className={"text-center text-[12px] uppercase tracking-wide whitespace-nowrap transition-opacity " + (expanded ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>{t.label}</div>
-              </div>
-            ); })}
-          </div>
-        );
-      }
-
-      function useMicroAnimations({ active }) {
-        const [items, setItems] = useState([{ id: "m1", kind: "square", active: true }, { id: "m2", kind: "circle", active: true }, { id: "m3", kind: "triangle", active: true }]);
-        const [sprites, setSprites] = useState([]);
-        useEffect(() => { if (!active) return; const spawn = () => { const pool = items.filter((i) => i.active); if (!pool.length) return; const pick = pool[Math.floor(Math.random() * pool.length)]; const edge = Math.floor(Math.random() * 5); const id = uid(); setSprites((s) => [...s, { id, kind: pick.kind, from: edge, created: Date.now(), life: 4500 + Math.random() * 2500 }]); }; const t = setInterval(spawn, 1200); return () => clearInterval(t); }, [active, items]);
-        useEffect(() => { const t = setInterval(() => { setSprites((s) => s.filter((sp) => Date.now() - sp.created < sp.life)); }, 500); return () => clearInterval(t); }, []);
-        return { items, setItems, sprites };
-      }
-
-      function Sprite({ sp }) {
-        const [w, h] = [typeof window !== "undefined" ? window.innerWidth : 1024, typeof window !== "undefined" ? window.innerHeight : 768];
-        const start = useMemo(() => { switch (sp.from) { case 0: return { x: -60, y: Math.random() * h }; case 1: return { x: w + 60, y: Math.random() * h }; case 2: return { x: Math.random() * w, y: -60 }; case 3: return { x: Math.random() * w, y: h + 60 }; default: return { x: w / 2, y: h / 2 }; } }, [sp, w, h]);
-        const end = useMemo(() => ({ x: Math.random() * w, y: Math.random() * h }), [w, h, sp.created]);
-        const ref = useRef(null);
-        useEffect(() => { const el = ref.current; if (!el) return; const anim = el.animate([
-          { transform: `translate(${start.x}px, ${start.y}px) scale(0.6)`, opacity: 0 },
-          { transform: `translate(${(start.x + end.x) / 2}px, ${(start.y + end.y) / 2}px) scale(1)`, opacity: 1 },
-          { transform: `translate(${end.x}px, ${end.y}px) scale(0.6)`, opacity: 0 }
-        ], { duration: sp.life, easing: "ease-in-out", fill: "forwards" }); return () => anim.cancel(); }, [start, end, sp]);
-        const shape = { square: <div className="h-8 w-8 bg-black" />, circle: <div className="h-8 w-8 rounded-full bg-black" />, triangle: <div className="h-0 w-0" style={{ borderLeft: "10px solid transparent", borderRight: "10px solid transparent", borderBottom: "20px solid black" }} /> }[sp.kind];
-        return <div ref={ref} className="pointer-events-none fixed left-0 top-0 z-10">{shape}</div>;
-      }
-
-      function HomePage({ isAdmin, onOpenAnimManager }) {
-        const { sprites } = useMicroAnimations({ active: true });
-        return (
-          <div className="h-[80vh] w-full">
-            {sprites.map((sp) => (<Sprite key={sp.id} sp={sp} />))}
-            {isAdmin && (<button onClick={onOpenAnimManager} className="fixed bottom-4 left-4 z-50 rounded-full bg-black px-3 py-2 text-sm text-white shadow">+ Анимации</button>)}
-            <div className="pointer-events-none fixed inset-0" />
-          </div>
-        );
-      }
-
-      function AnimManager({ open, onClose, items, setItems }) {
-        const [kind, setKind] = useState("square");
-        return (
-          <Modal open={open} onClose={onClose} title="Микро‑анимации">
-            <div className="space-y-3">
-              <div className="text-sm text-black/70">Список активных элементов. Можно деактивировать.</div>
-              <div className="flex flex-wrap gap-2">
-                {items.map((it) => (
-                  <div key={it.id} className="flex items-center gap-2 rounded-xl border px-2 py-1">
-                    <span className="text-sm">{it.kind}</span>
-                    <label className="flex items-center gap-1 text-xs"><input type="checkbox" checked={it.active} onChange={(e) => setItems((xs) => xs.map((x) => (x.id === it.id ? { ...x, active: e.target.checked } : x)))} />активен</label>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-2 border-t pt-3">
-                <div className="mb-2 text-sm">Добавить элемент</div>
-                <div className="flex items-center gap-2">
-                  <select className="rounded-md border px-2 py-1" value={kind} onChange={(e) => setKind(e.target.value)}>
-                    <option value="square">square</option>
-                    <option value="circle">circle</option>
-                    <option value="triangle">triangle</option>
-                  </select>
-                  <button className="rounded-md bg-black px-3 py-2 text-white" onClick={() => setItems((xs) => [...xs, { id: uid(), kind, active: true }])}>Добавить</button>
-                </div>
-              </div>
-            </div>
-          </Modal>
-        );
-      }
-
-      function App() {
-        const { isAdmin, enable, disable } = useAdmin();
-        const [section, setSection] = useState(Section.HOME);
-        const [animOpen, setAnimOpen] = useState(false);
-        const [pwdOpen, setPwdOpen] = useState(false);
-        const [pwd, setPwd] = useState("");
-        const micro = useMicroAnimations({ active: false });
-        const topPad = (section === Section.PORTFOLIO || section === Section.THINGS || section === Section.EDTECH || section === Section.ABOUT) ? "pt-6" : "pt-20";
-        return (
-          <div className="min-h-screen bg-white text-black">
-            {pwdOpen && !isAdmin && (<div className="fixed inset-0 z-40" onClick={() => setPwdOpen(false)} />)}
-            <div className="fixed bottom-4 right-4 z-50">
-              <div className="relative h-12">
-                <div className={(pwdOpen && !isAdmin ? "w-[260px]" : "w-0") + " absolute right-12 bottom-0 z-40 flex h-12 items-center overflow-hidden rounded-full bg-neutral-100 transition-all duration-300"}>
-                  <input type="password" className={(pwdOpen && !isAdmin ? "opacity-100" : "opacity-0") + " w-[220px] px-4 py-2 text-sm outline-none transition-opacity duration-200"} placeholder="Пароль" value={pwd} onChange={(e) => setPwd(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { enable(pwd); setPwd(''); setPwdOpen(false); } }} />
-                </div>
-                <button className="absolute right-0 bottom-0 z-50 h-12 w-12 rounded-full bg-black text-white" title={isAdmin ? "Применить изменения и выйти из редактирования" : (pwdOpen ? "Принять пароль" : "Войти в режим редактирования")} onClick={() => { if (isAdmin) { disable(); setPwdOpen(false); } else if (pwdOpen) { enable(pwd); setPwd(''); setPwdOpen(false); } else { setPwdOpen(true); } }}>{(isAdmin || pwdOpen) ? '✓' : '•'}</button>
-              </div>
-            </div>
-            <HomeNav current={section} setCurrent={setSection} />
-            <main className={topPad}>
-              {section === Section.HOME && (<HomePage isAdmin={isAdmin} onOpenAnimManager={() => setAnimOpen(true)} />)}
-              {section === Section.PORTFOLIO && <PortfolioPage isAdmin={isAdmin} />}
-              {section === Section.THINGS && <ThingsPage isAdmin={isAdmin} />}
-              {section === Section.EDTECH && <EdTechPage isAdmin={isAdmin} />}
-              {section === Section.ABOUT && <AboutPage isAdmin={isAdmin} />}
-            </main>
-            <AnimManager open={animOpen} onClose={() => setAnimOpen(false)} items={micro.items} setItems={micro.setItems} />
-          </div>
-        );
-      }
-
-      const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(<App />);
-    </script>
-  </body>
+    window.addEventListener('load', () => spawnShapes(true));
+    window.addEventListener('resize', () => { clearTimeout(window.__rsTO); window.__rsTO=setTimeout(()=>spawnShapes(true), 180); });
+  </script>
+</body>
 </html>
