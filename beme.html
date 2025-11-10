@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Сайт‑прототип Александры — один HTML</title>
+    <title>Сайт — один HTML</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       ::-webkit-scrollbar { height: 10px; width: 10px; }
@@ -59,7 +59,7 @@
       const Section = { HOME: "home", PORTFOLIO: "portfolio", THINGS: "things", EDTECH: "edtech", ABOUT: "about" };
 
       function useAdmin() {
-        const [isAdmin, setIsAdmin] = React.useState(false);
+        const [isAdmin, setIsAdmin] = useState(false);
         const enable = (pwd) => { if ((pwd || "").trim() === "сколопендра") setIsAdmin(true); else alert("Неверный пароль"); };
         const disable = () => setIsAdmin(false);
         return { isAdmin, enable, disable };
@@ -108,27 +108,27 @@
       }
 
       function UrlAdder({ onAdd }) {
-        const [raw, setRaw] = React.useState("");
+        const [raw, setRaw] = useState("");
         return (
           <div className="space-y-2">
             <textarea className="h-24 w-full rounded-md border px-3 py-2" placeholder={"https://.../1.png\nhttps://.../clip.mp4"} value={raw} onChange={(e) => setRaw(e.target.value)} />
-            <div className="text-right"><button className="rounded-md bg-black px-3 py-2 text-white" onClick={() => { const urls = raw.replace(/\\r/g, "").split(/\\r?\\n|,|;/).map((s) => s.trim()).filter(Boolean); if (urls.length) onAdd(urls); }}>Добавить URL</button></div>
+            <div className="text-right"><button className="rounded-md bg-black px-3 py-2 text-white" onClick={() => { const urls = raw.replace(/\r/g, "").split(/\r?\n|,|;/).map((s) => s.trim()).filter(Boolean); if (urls.length) onAdd(urls); }}>Добавить URL</button></div>
           </div>
         );
       }
 
       function linkify(parts) {
-        return parts.split(/(https?:\\/\\/[^\\s]+)/g).map((t, i) => /^https?:\\/\\//.test(t) ? <a key={i} href={t} target="_blank" rel="noreferrer" className="underline">{t}</a> : <span key={i}>{t}</span>);
+        return parts.split(/(https?:\/\/[^\s]+)/g).map((t, i) => /^https?:\/\//.test(t) ? <a key={i} href={t} target="_blank" rel="noreferrer" className="underline">{t}</a> : <span key={i}>{t}</span>);
       }
 
       function ProjectBlock({ project, isAdmin, onUpdate }) {
-        const [addMediaOpen, setAddMediaOpen] = React.useState(false);
-        const [editMediaOpen, setEditMediaOpen] = React.useState(false);
-        const [editIndex, setEditIndex] = React.useState(-1);
-        const [confirmDelOpen, setConfirmDelOpen] = React.useState(false);
-        const [delIndex, setDelIndex] = React.useState(-1);
-        const [lightboxOpen, setLightboxOpen] = React.useState(false);
-        const [lbIndex, setLbIndex] = React.useState(0);
+        const [addMediaOpen, setAddMediaOpen] = useState(false);
+        const [editMediaOpen, setEditMediaOpen] = useState(false);
+        const [editIndex, setEditIndex] = useState(-1);
+        const [confirmDelOpen, setConfirmDelOpen] = useState(false);
+        const [delIndex, setDelIndex] = useState(-1);
+        const [lightboxOpen, setLightboxOpen] = useState(false);
+        const [lbIndex, setLbIndex] = useState(0);
 
         const getImageAR = (url) => new Promise((resolve) => { const img = new Image(); img.onload = () => resolve(img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1.5); img.onerror = () => resolve(1.5); img.src = url; });
         const getVideoAR = (url) => new Promise((resolve) => { const v = document.createElement('video'); v.preload = 'metadata'; v.onloadedmetadata = () => resolve(v.videoWidth && v.videoHeight ? v.videoWidth / v.videoHeight : 1.5); v.onerror = () => resolve(1.5); v.src = url; });
@@ -137,14 +137,14 @@
         const onFilesPickedAppend = async (files) => {
           const list = Array.from(files || []); if (!list.length) return;
           const readAsDataURL = (file) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
-          const created = await Promise.all(list.map(async (f) => { const dataUrl = await readAsDataURL(f); const type = /video\\//.test(f.type) ? 'video' : 'img'; const ar = await getAR(dataUrl, type); return { type, url: dataUrl, ar }; }));
+          const created = await Promise.all(list.map(async (f) => { const dataUrl = await readAsDataURL(f); const type = /video\//.test(f.type) ? 'video' : 'img'; const ar = await getAR(dataUrl, type); return { type, url: dataUrl, ar }; }));
           onUpdate && onUpdate({ ...project, media: [...(project.media || []), ...created] }); setAddMediaOpen(false);
         };
 
         const onFilesPickedReplace = async (files) => {
           const list = Array.from(files || []); if (!list.length || editIndex < 0) return;
           const f = list[0]; const readAsDataURL = (file) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
-          const dataUrl = await readAsDataURL(f); const type = /video\\//.test(f.type) ? 'video' : 'img'; const ar = await getAR(dataUrl, type);
+          const dataUrl = await readAsDataURL(f); const type = /video\//.test(f.type) ? 'video' : 'img'; const ar = await getAR(dataUrl, type);
           const next = [...(project.media || [])]; next[editIndex] = { type, url: dataUrl, ar };
           onUpdate && onUpdate({ ...project, media: next }); setEditMediaOpen(false); setEditIndex(-1);
         };
@@ -156,7 +156,7 @@
         const lbPrev = () => setLbIndex((i) => (i - 1 + project.media.length) % project.media.length);
         const lbNext = () => setLbIndex((i) => (i + 1) % project.media.length);
 
-        React.useEffect(() => {
+        useEffect(() => {
           if (!lightboxOpen) return; const onKey = (e) => { if (e.key === 'Escape') setLightboxOpen(false); if (e.key === 'ArrowLeft') lbPrev(); if (e.key === 'ArrowRight') lbNext(); };
           window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
         }, [lightboxOpen, project.media?.length]);
@@ -187,7 +187,7 @@
               <div className="space-y-3">
                 <input type="file" multiple accept="image/*,video/*" className="w-full" onChange={(e) => onFilesPickedAppend(e.target.files)} />
                 <div className="text-sm text-black/60">Можно загрузить несколько файлов сразу. Или вставить URL ниже.</div>
-                <UrlAdder onAdd={(urls) => { (async () => { const created = await Promise.all(urls.map(async (u) => { const clean = u.trim(); const type = /(\\.mp4|\\.webm|\\.mov)$/i.test(clean) ? 'video' : 'img'; const ar = await getAR(clean, type); return { type, url: clean, ar }; })); onUpdate && onUpdate({ ...project, media: [...(project.media || []), ...created] }); setAddMediaOpen(false); })(); }} />
+                <UrlAdder onAdd={(urls) => { (async () => { const created = await Promise.all(urls.map(async (u) => { const clean = u.trim(); const type = /(\.mp4|\.webm|\.mov)$/i.test(clean) ? 'video' : 'img'; const ar = await getAR(clean, type); return { type, url: clean, ar }; })); onUpdate && onUpdate({ ...project, media: [...(project.media || []), ...created] }); setAddMediaOpen(false); })(); }} />
               </div>
             </Modal>
 
@@ -195,7 +195,7 @@
               <div className="space-y-3">
                 <input type="file" accept="image/*,video/*" className="w-full" onChange={(e) => onFilesPickedReplace(e.target.files)} />
                 <div className="text-sm text-black/60">Или вставьте один URL ниже, чтобы заменить выбранный фрейм.</div>
-                <UrlAdder onAdd={(urls) => { (async () => { if (!urls.length || editIndex < 0) return; const clean = urls[0].trim(); const type = /(\\.mp4|\\.webm|\\.mov)$/i.test(clean) ? 'video' : 'img'; const ar = await getAR(clean, type); const next = [...(project.media || [])]; next[editIndex] = { type, url: clean, ar }; onUpdate && onUpdate({ ...project, media: next }); setEditMediaOpen(false); setEditIndex(-1); })(); }} />
+                <UrlAdder onAdd={(urls) => { (async () => { if (!urls.length || editIndex < 0) return; const clean = urls[0].trim(); const type = /(\.mp4|\.webm|\.mov)$/i.test(clean) ? 'video' : 'img'; const ar = await getAR(clean, type); const next = [...(project.media || [])]; next[editIndex] = { type, url: clean, ar }; onUpdate && onUpdate({ ...project, media: next }); setEditMediaOpen(false); setEditIndex(-1); })(); }} />
               </div>
             </Modal>
 
@@ -222,7 +222,7 @@
       }
 
       function PortfolioPage({ isAdmin }) {
-        const [items, setItems] = React.useState(initialPortfolioProjects);
+        const [items, setItems] = useState(initialPortfolioProjects);
         const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый проект", description: "Описание...", media: [] }, ...xs]);
         const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
         return (
@@ -234,7 +234,7 @@
       }
 
       function ThingsPage({ isAdmin }) {
-        const [items, setItems] = React.useState(initialThingsProjects);
+        const [items, setItems] = useState(initialThingsProjects);
         const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый эксперимент", description: "Немного текста...", media: [] }, ...xs]);
         const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
         return (
@@ -246,7 +246,7 @@
       }
 
       function EdTechPage({ isAdmin }) {
-        const [items, setItems] = React.useState(initialEdtechProjects);
+        const [items, setItems] = useState(initialEdtechProjects);
         const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый модуль", description: "Краткое описание...", media: [] }, ...xs]);
         const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
         return (
@@ -258,11 +258,11 @@
       }
 
       function AboutPage({ isAdmin }) {
-        const [photo, setPhoto] = React.useState("");
-        const [text, setText] = React.useState("Иллюстратор и аниматор, работаю на стыке документальной визуализации и образовательных проектов. Открыта к коллаборациям.");
-        const [editPhoto, setEditPhoto] = React.useState(false);
-        const [editText, setEditText] = React.useState(false);
-        const [confirmDelPhoto, setConfirmDelPhoto] = React.useState(false);
+        const [photo, setPhoto] = useState("");
+        const [text, setText] = useState("Иллюстратор и аниматор, работаю на стыке документальной визуализации и образовательных проектов. Открыта к коллаборациям.");
+        const [editPhoto, setEditPhoto] = useState(false);
+        const [editText, setEditText] = useState(false);
+        const [confirmDelPhoto, setConfirmDelPhoto] = useState(false);
 
         const onPhotoFile = async (files) => {
           const list = Array.from(files || []); if (!list.length) return;
@@ -321,8 +321,8 @@
           { key: Section.EDTECH, label: "ed-tech" },
           { key: Section.ABOUT, label: "обо мне" }
         ];
-        const collapsedWidth = 10; const measureRefs = React.useRef({}); const [sizes, setSizes] = React.useState({});
-        React.useEffect(() => { const next = {}; tiles.forEach((t) => { const el = measureRefs.current[t.key]; if (el) next[t.key] = Math.ceil(el.offsetWidth); }); setSizes(next); }, []);
+        const collapsedWidth = 10; const measureRefs = useRef({}); const [sizes, setSizes] = useState({});
+        useEffect(() => { const next = {}; tiles.forEach((t) => { const el = measureRefs.current[t.key]; if (el) next[t.key] = Math.ceil(el.offsetWidth); }); setSizes(next); }, []);
         return (
           <div className="fixed right-4 top-4 z-40 flex flex-col items-end gap-2">
             <div className="fixed -left-[9999px] top-0">
@@ -333,7 +333,7 @@
               ))}
             </div>
             {tiles.map((t) => { const isActive = current === t.key; const expanded = current === Section.HOME || isActive; const targetWidth = sizes[t.key] ?? 224; return (
-              <div key={t.key} className="group relative flex h-10 items-center justify-center overflow-hidden bg-black text-white transition-[width] duration-300" style={{ width: expanded ? targetWidth : collapsedWidth, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)", boxShadow: "0 0 0 1.2px #000 inset", paddingLeft: expanded ? 15 : 0, paddingRight: expanded ? 15 : 0 }} onMouseEnter={(e) => { if (!expanded) { e.currentTarget.style.width = \`\${targetWidth}px\`; e.currentTarget.style.paddingLeft = '15px'; e.currentTarget.style.paddingRight = '15px'; } }} onMouseLeave={(e) => { if (!expanded) { e.currentTarget.style.width = \`\${collapsedWidth}px\`; e.currentTarget.style.paddingLeft = '0px'; e.currentTarget.style.paddingRight = '0px'; } }} onClick={() => setCurrent(t.key)}>
+              <div key={t.key} className="group relative flex h-10 items-center justify-center overflow-hidden bg-black text-white transition-[width] duration-300" style={{ width: expanded ? targetWidth : collapsedWidth, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)", boxShadow: "0 0 0 1.2px #000 inset", paddingLeft: expanded ? 15 : 0, paddingRight: expanded ? 15 : 0 }} onMouseEnter={(e) => { if (!expanded) { e.currentTarget.style.width = `${targetWidth}px`; e.currentTarget.style.paddingLeft = '15px'; e.currentTarget.style.paddingRight = '15px'; } }} onMouseLeave={(e) => { if (!expanded) { e.currentTarget.style.width = `${collapsedWidth}px`; e.currentTarget.style.paddingLeft = '0px'; e.currentTarget.style.paddingRight = '0px'; } }} onClick={() => setCurrent(t.key)}>
                 <div className={"text-center text-[12px] uppercase tracking-wide whitespace-nowrap transition-opacity " + (expanded ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>{t.label}</div>
               </div>
             ); })}
@@ -342,22 +342,22 @@
       }
 
       function useMicroAnimations({ active }) {
-        const [items, setItems] = React.useState([{ id: "m1", kind: "square", active: true }, { id: "m2", kind: "circle", active: true }, { id: "m3", kind: "triangle", active: true }]);
-        const [sprites, setSprites] = React.useState([]);
-        React.useEffect(() => { if (!active) return; const spawn = () => { const pool = items.filter((i) => i.active); if (!pool.length) return; const pick = pool[Math.floor(Math.random() * pool.length)]; const edge = Math.floor(Math.random() * 5); const id = uid(); setSprites((s) => [...s, { id, kind: pick.kind, from: edge, created: Date.now(), life: 4500 + Math.random() * 2500 }]); }; const t = setInterval(spawn, 1200); return () => clearInterval(t); }, [active, items]);
-        React.useEffect(() => { const t = setInterval(() => { setSprites((s) => s.filter((sp) => Date.now() - sp.created < sp.life)); }, 500); return () => clearInterval(t); }, []);
+        const [items, setItems] = useState([{ id: "m1", kind: "square", active: true }, { id: "m2", kind: "circle", active: true }, { id: "m3", kind: "triangle", active: true }]);
+        const [sprites, setSprites] = useState([]);
+        useEffect(() => { if (!active) return; const spawn = () => { const pool = items.filter((i) => i.active); if (!pool.length) return; const pick = pool[Math.floor(Math.random() * pool.length)]; const edge = Math.floor(Math.random() * 5); const id = uid(); setSprites((s) => [...s, { id, kind: pick.kind, from: edge, created: Date.now(), life: 4500 + Math.random() * 2500 }]); }; const t = setInterval(spawn, 1200); return () => clearInterval(t); }, [active, items]);
+        useEffect(() => { const t = setInterval(() => { setSprites((s) => s.filter((sp) => Date.now() - sp.created < sp.life)); }, 500); return () => clearInterval(t); }, []);
         return { items, setItems, sprites };
       }
 
       function Sprite({ sp }) {
         const [w, h] = [typeof window !== "undefined" ? window.innerWidth : 1024, typeof window !== "undefined" ? window.innerHeight : 768];
-        const start = React.useMemo(() => { switch (sp.from) { case 0: return { x: -60, y: Math.random() * h }; case 1: return { x: w + 60, y: Math.random() * h }; case 2: return { x: Math.random() * w, y: -60 }; case 3: return { x: Math.random() * w, y: h + 60 }; default: return { x: w / 2, y: h / 2 }; } }, [sp, w, h]);
-        const end = React.useMemo(() => ({ x: Math.random() * w, y: Math.random() * h }), [w, h, sp.created]);
-        const ref = React.useRef(null);
-        React.useEffect(() => { const el = ref.current; if (!el) return; const anim = el.animate([
-          { transform: \`translate(\${start.x}px, \${start.y}px) scale(0.6)\`, opacity: 0 },
-          { transform: \`translate(\${(start.x + end.x) / 2}px, \${(start.y + end.y) / 2}px) scale(1)\`, opacity: 1 },
-          { transform: \`translate(\${end.x}px, \${end.y}px) scale(0.6)\`, opacity: 0 }
+        const start = useMemo(() => { switch (sp.from) { case 0: return { x: -60, y: Math.random() * h }; case 1: return { x: w + 60, y: Math.random() * h }; case 2: return { x: Math.random() * w, y: -60 }; case 3: return { x: Math.random() * w, y: h + 60 }; default: return { x: w / 2, y: h / 2 }; } }, [sp, w, h]);
+        const end = useMemo(() => ({ x: Math.random() * w, y: Math.random() * h }), [w, h, sp.created]);
+        const ref = useRef(null);
+        useEffect(() => { const el = ref.current; if (!el) return; const anim = el.animate([
+          { transform: `translate(${start.x}px, ${start.y}px) scale(0.6)`, opacity: 0 },
+          { transform: `translate(${(start.x + end.x) / 2}px, ${(start.y + end.y) / 2}px) scale(1)`, opacity: 1 },
+          { transform: `translate(${end.x}px, ${end.y}px) scale(0.6)`, opacity: 0 }
         ], { duration: sp.life, easing: "ease-in-out", fill: "forwards" }); return () => anim.cancel(); }, [start, end, sp]);
         const shape = { square: <div className="h-8 w-8 bg-black" />, circle: <div className="h-8 w-8 rounded-full bg-black" />, triangle: <div className="h-0 w-0" style={{ borderLeft: "10px solid transparent", borderRight: "10px solid transparent", borderBottom: "20px solid black" }} /> }[sp.kind];
         return <div ref={ref} className="pointer-events-none fixed left-0 top-0 z-10">{shape}</div>;
@@ -375,7 +375,7 @@
       }
 
       function AnimManager({ open, onClose, items, setItems }) {
-        const [kind, setKind] = React.useState("square");
+        const [kind, setKind] = useState("square");
         return (
           <Modal open={open} onClose={onClose} title="Микро‑анимации">
             <div className="space-y-3">
@@ -406,10 +406,10 @@
 
       function App() {
         const { isAdmin, enable, disable } = useAdmin();
-        const [section, setSection] = React.useState(Section.HOME);
-        const [animOpen, setAnimOpen] = React.useState(false);
-        const [pwdOpen, setPwdOpen] = React.useState(false);
-        const [pwd, setPwd] = React.useState("");
+        const [section, setSection] = useState(Section.HOME);
+        const [animOpen, setAnimOpen] = useState(false);
+        const [pwdOpen, setPwdOpen] = useState(false);
+        const [pwd, setPwd] = useState("");
         const micro = useMicroAnimations({ active: false });
         const topPad = (section === Section.PORTFOLIO || section === Section.THINGS || section === Section.EDTECH || section === Section.ABOUT) ? "pt-6" : "pt-20";
         return (
@@ -432,70 +432,6 @@
               {section === Section.ABOUT && <AboutPage isAdmin={isAdmin} />}
             </main>
             <AnimManager open={animOpen} onClose={() => setAnimOpen(false)} items={micro.items} setItems={micro.setItems} />
-          </div>
-        );
-      }
-
-      function PortfolioPage({ isAdmin }) {
-        const [items, setItems] = React.useState(initialPortfolioProjects);
-        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый проект", description: "Описание...", media: [] }, ...xs]);
-        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
-        return (
-          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
-            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
-            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить проект" onClick={addBlank}>+</button></div>)}
-          </div>
-        );
-      }
-
-      function ThingsPage({ isAdmin }) {
-        const [items, setItems] = React.useState(initialThingsProjects);
-        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый эксперимент", description: "Немного текста...", media: [] }, ...xs]);
-        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
-        return (
-          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
-            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
-            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить блок" onClick={addBlank}>+</button></div>)}
-          </div>
-        );
-      }
-
-      function EdTechPage({ isAdmin }) {
-        const [items, setItems] = React.useState(initialEdtechProjects);
-        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый модуль", description: "Краткое описание...", media: [] }, ...xs]);
-        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
-        return (
-          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
-            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
-            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить модуль" onClick={addBlank}>+</button></div>)}
-          </div>
-        );
-      }
-
-      function HomeNav({ current, setCurrent }) {
-        const tiles = [
-          { key: Section.HOME, label: "главная страница" },
-          { key: Section.PORTFOLIO, label: "портфолио" },
-          { key: Section.THINGS, label: "штуки" },
-          { key: Section.EDTECH, label: "ed-tech" },
-          { key: Section.ABOUT, label: "обо мне" }
-        ];
-        const collapsedWidth = 10; const measureRefs = React.useRef({}); const [sizes, setSizes] = React.useState({});
-        React.useEffect(() => { const next = {}; tiles.forEach((t) => { const el = measureRefs.current[t.key]; if (el) next[t.key] = Math.ceil(el.offsetWidth); }); setSizes(next); }, []);
-        return (
-          <div className="fixed right-4 top-4 z-40 flex flex-col items-end gap-2">
-            <div className="fixed -left-[9999px] top-0">
-              {tiles.map((t) => (
-                <div key={t.key} ref={(el) => (measureRefs.current[t.key] = el)} className="inline-flex h-10 items-center justify-center bg-black text-white" style={{ paddingLeft: 15, paddingRight: 15, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)", boxShadow: "0 0 0 1.2px #000 inset" }}>
-                  <span className="whitespace-nowrap text-[12px] uppercase tracking-wide">{t.label}</span>
-                </div>
-              ))}
-            </div>
-            {tiles.map((t) => { const isActive = current === t.key; const expanded = current === Section.HOME || isActive; const targetWidth = sizes[t.key] ?? 224; return (
-              <div key={t.key} className="group relative flex h-10 items-center justify-center overflow-hidden bg-black text-white transition-[width] duration-300" style={{ width: expanded ? targetWidth : collapsedWidth, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)", boxShadow: "0 0 0 1.2px #000 inset", paddingLeft: expanded ? 15 : 0, paddingRight: expanded ? 15 : 0 }} onMouseEnter={(e) => { if (!expanded) { e.currentTarget.style.width = \`\${targetWidth}px\`; e.currentTarget.style.paddingLeft = '15px'; e.currentTarget.style.paddingRight = '15px'; } }} onMouseLeave={(e) => { if (!expanded) { e.currentTarget.style.width = \`\${collapsedWidth}px\`; e.currentTarget.style.paddingLeft = '0px'; e.currentTarget.style.paddingRight = '0px'; } }} onClick={() => setCurrent(t.key)}>
-                <div className={"text-center text-[12px] uppercase tracking-wide whitespace-nowrap transition-opacity " + (expanded ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>{t.label}</div>
-              </div>
-            ); })}
           </div>
         );
       }
