@@ -28,7 +28,7 @@
     .nav {
       position: fixed;
       top: 50px;
-      right: var(--page-xpad);
+      right: 0;           /* без отступа от правой границы */
       z-index: 40;
       display: flex;
       flex-direction: column;
@@ -165,8 +165,8 @@
     .gallery::-webkit-scrollbar-track { background: rgba(0,0,0,.08); }
 
     .media {
+      height: 200px;           /* фиксированная высота превью */
       flex: 0 0 auto;
-      height: 150px;           /* фиксированная высота */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -176,7 +176,7 @@
       border-radius: 0;         /* без скруглений */
       cursor: pointer;
       position: relative;
-      aspect-ratio: auto;       /* ширина подстраивается под контент */
+      aspect-ratio: auto;       /* ширина берётся из inline-style width */
     }
     .media img, .media video, .media svg {
       height: 100%;
@@ -204,7 +204,7 @@
     }
     .lb-prev { left: -60px; }
     .lb-next { right: -60px; }
-    .lb-close { position: absolute; top: -60px; right: 0; width: 40px; height: 40px; border-radius: 50%; background:#000; color:#fff; border:none; cursor:pointer; }
+    .lb-close { position:absolute; top:-60px; right:0; width:40px; height:40px; background:transparent; color:#000; border:none; cursor:pointer; border-radius:0; display:flex; align-items:center; justify-content:center; font-size:32px; line-height:1; }
 
     /* Адаптив: если очень узко, немного поджимаем стрелки */
     @media (max-width: 640px) {
