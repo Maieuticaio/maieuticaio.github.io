@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Сайт‑прототип Александры — один HTML</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      ::-webkit-scrollbar { height: 10px; width: 10px; }
+      ::-webkit-scrollbar-thumb { background: rgba(0,0,0,.3); border-radius: 8px; }
+      ::-webkit-scrollbar-track { background: rgba(0,0,0,.06); }
+      body { background:#fff; color:#000; }
+      button { -webkit-tap-highlight-color: transparent; }
+    </style>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="text/babel">
+      const { useEffect, useMemo, useRef, useState } = React;
+
+      const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+      const initialPortfolioProjects = [
+        { id: "pf1", title: "Портфолио: серия иллюстраций", description: "Кураторская выборка работ, разные техники и форматы.", media: [
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'><rect width='100%' height='100%' fill='%23e5e5e5'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.5 },
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><rect width='100%' height='100%' fill='%23f0f0f0'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>square</text></svg>", ar: 1 },
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='300'><rect width='100%' height='100%' fill='%23dddddd'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>vertical</text></svg>", ar: 2/3 }
+        ]},
+        { id: "pf2", title: "Портфолио: инфографика", description: "Плакаты и схемы. Ссылки на публикации: http://example.com", media: [
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='200'><rect width='100%' height='100%' fill='%23ededed'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.8 },
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'><rect width='100%' height='100%' fill='%23eaeaea'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.5 }
+        ]}
+      ];
+
+      const initialThingsProjects = [
+        { id: "th1", title: "Штуки: эксперименты", description: "Небольшие визуальные опыты, петли, стикеры, процесс.", media: [
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='200'><rect width='100%' height='100%' fill='%23efefef'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.2 },
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='200'><rect width='100%' height='100%' fill='%23e1e1e1'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>vertical</text></svg>", ar: 0.8 },
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'><rect width='100%' height='100%' fill='%23dcdcdc'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>wide</text></svg>", ar: 1.5 }
+        ]},
+        { id: "th2", title: "Штуки: зины", description: "Малые издания и наброски.", media: [
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='200'><rect width='100%' height='100%' fill='%23f5f5f5'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.2 }
+        ]}
+      ];
+
+      const initialEdtechProjects = [
+        { id: "ed1", title: "Ed‑Tech: геометрия", description: "Интерактивы и иллюстрации для задач по геометрии.", media: [
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='200'><rect width='100%' height='100%' fill='%23ececec'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.8 },
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200'><rect width='100%' height='100%' fill='%23e7e7e7'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>wide</text></svg>", ar: 2 }
+        ]},
+        { id: "ed2", title: "Ed‑Tech: естествознание", description: "Анимации процессов, карточки, svg‑лупы.", media: [
+          { type: "img", url: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='200'><rect width='100%' height='100%' fill='%23e0e0e0'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='16' fill='%23888888'>placeholder</text></svg>", ar: 1.8 }
+        ]}
+      ];
+
+      const Section = { HOME: "home", PORTFOLIO: "portfolio", THINGS: "things", EDTECH: "edtech", ABOUT: "about" };
+
+      function useAdmin() {
+        const [isAdmin, setIsAdmin] = React.useState(false);
+        const enable = (pwd) => { if ((pwd || "").trim() === "сколопендра") setIsAdmin(true); else alert("Неверный пароль"); };
+        const disable = () => setIsAdmin(false);
+        return { isAdmin, enable, disable };
+      }
+
+      function Modal({ open, onClose, children, title }) {
+        if (!open) return null;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black/60" onClick={onClose} />
+            <div className="relative z-10 w-[min(720px,94vw)] rounded-2xl bg-white p-6 shadow-xl">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="text-xl font-semibold">{title}</h3>
+                <button className="rounded-full px-3 py-1 text-sm hover:bg-black/5" onClick={onClose}>✕</button>
+              </div>
+              {children}
+            </div>
+          </div>
+        );
+      }
+
+      function MediaStrip({ items, isAdmin = false, onEdit = () => {}, onDelete = () => {}, onAddNew = () => {}, onOpen = () => {} }) {
+        const H = 200; const hasMedia = Array.isArray(items) && items.length > 0;
+        return (
+          <div className="overflow-x-auto">
+            <div className="flex gap-4 py-2">
+              {hasMedia ? items.map((m, i) => { const ar = typeof m.ar === "number" && m.ar > 0 ? m.ar : 1.5; const w = Math.max(Math.round(H * ar), 80);
+                return (
+                  <div key={i} className="relative shrink-0 cursor-zoom-in" style={{ width: w, minWidth: w, height: H }} onClick={() => onOpen(i)}>
+                    {m.type === "video" ? <video src={m.url} controls className="h-full w-full object-contain" /> : <img src={m.url} alt="media" className="h-full w-full object-contain" />}
+                    {isAdmin && (
+                      <div className="absolute right-2 top-2 z-10 flex items-center gap-2">
+                        <button title="Редактировать этот фрейм" className="rounded-md bg-white/90 px-2 py-1 text-xs shadow" onClick={(e) => { e.stopPropagation(); onEdit(i); }}>✎</button>
+                        <button title="Удалить этот фрейм" className="rounded-md bg-white/90 px-2 py-1 text-xs shadow" onClick={(e) => { e.stopPropagation(); onDelete(i); }}>✕</button>
+                      </div>
+                    )}
+                  </div>
+                );
+              }) : Array.from({ length: 4 }).map((_, i) => (<div key={i} className="bg-neutral-200" style={{ width: H * 1.5, minWidth: H * 1.5, height: H }} />))}
+              {isAdmin && (
+                <button type="button" className="shrink-0 text-3xl" style={{ width: H * 1.5, minWidth: H * 1.5, height: H, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)" }} onClick={onAddNew} title="Добавить изображение/видео">+</button>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      function UrlAdder({ onAdd }) {
+        const [raw, setRaw] = React.useState("");
+        return (
+          <div className="space-y-2">
+            <textarea className="h-24 w-full rounded-md border px-3 py-2" placeholder={"https://.../1.png\nhttps://.../clip.mp4"} value={raw} onChange={(e) => setRaw(e.target.value)} />
+            <div className="text-right"><button className="rounded-md bg-black px-3 py-2 text-white" onClick={() => { const urls = raw.replace(/\\r/g, "").split(/\\r?\\n|,|;/).map((s) => s.trim()).filter(Boolean); if (urls.length) onAdd(urls); }}>Добавить URL</button></div>
+          </div>
+        );
+      }
+
+      function linkify(parts) {
+        return parts.split(/(https?:\\/\\/[^\\s]+)/g).map((t, i) => /^https?:\\/\\//.test(t) ? <a key={i} href={t} target="_blank" rel="noreferrer" className="underline">{t}</a> : <span key={i}>{t}</span>);
+      }
+
+      function ProjectBlock({ project, isAdmin, onUpdate }) {
+        const [addMediaOpen, setAddMediaOpen] = React.useState(false);
+        const [editMediaOpen, setEditMediaOpen] = React.useState(false);
+        const [editIndex, setEditIndex] = React.useState(-1);
+        const [confirmDelOpen, setConfirmDelOpen] = React.useState(false);
+        const [delIndex, setDelIndex] = React.useState(-1);
+        const [lightboxOpen, setLightboxOpen] = React.useState(false);
+        const [lbIndex, setLbIndex] = React.useState(0);
+
+        const getImageAR = (url) => new Promise((resolve) => { const img = new Image(); img.onload = () => resolve(img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight : 1.5); img.onerror = () => resolve(1.5); img.src = url; });
+        const getVideoAR = (url) => new Promise((resolve) => { const v = document.createElement('video'); v.preload = 'metadata'; v.onloadedmetadata = () => resolve(v.videoWidth && v.videoHeight ? v.videoWidth / v.videoHeight : 1.5); v.onerror = () => resolve(1.5); v.src = url; });
+        const getAR = async (url, type) => type === 'video' ? await getVideoAR(url) : await getImageAR(url);
+
+        const onFilesPickedAppend = async (files) => {
+          const list = Array.from(files || []); if (!list.length) return;
+          const readAsDataURL = (file) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
+          const created = await Promise.all(list.map(async (f) => { const dataUrl = await readAsDataURL(f); const type = /video\\//.test(f.type) ? 'video' : 'img'; const ar = await getAR(dataUrl, type); return { type, url: dataUrl, ar }; }));
+          onUpdate && onUpdate({ ...project, media: [...(project.media || []), ...created] }); setAddMediaOpen(false);
+        };
+
+        const onFilesPickedReplace = async (files) => {
+          const list = Array.from(files || []); if (!list.length || editIndex < 0) return;
+          const f = list[0]; const readAsDataURL = (file) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(file); });
+          const dataUrl = await readAsDataURL(f); const type = /video\\//.test(f.type) ? 'video' : 'img'; const ar = await getAR(dataUrl, type);
+          const next = [...(project.media || [])]; next[editIndex] = { type, url: dataUrl, ar };
+          onUpdate && onUpdate({ ...project, media: next }); setEditMediaOpen(false); setEditIndex(-1);
+        };
+
+        const requestDelete = (i) => { setDelIndex(i); setConfirmDelOpen(true); };
+        const confirmDelete = () => { if (delIndex < 0) return; const next = [...(project.media || [])]; next.splice(delIndex, 1); onUpdate && onUpdate({ ...project, media: next }); setConfirmDelOpen(false); setDelIndex(-1); };
+
+        const openLightboxAt = (i) => { if (!project.media || !project.media.length) return; setLbIndex(i); setLightboxOpen(true); };
+        const lbPrev = () => setLbIndex((i) => (i - 1 + project.media.length) % project.media.length);
+        const lbNext = () => setLbIndex((i) => (i + 1) % project.media.length);
+
+        React.useEffect(() => {
+          if (!lightboxOpen) return; const onKey = (e) => { if (e.key === 'Escape') setLightboxOpen(false); if (e.key === 'ArrowLeft') lbPrev(); if (e.key === 'ArrowRight') lbNext(); };
+          window.addEventListener('keydown', onKey); return () => window.removeEventListener('keydown', onKey);
+        }, [lightboxOpen, project.media?.length]);
+
+        return (
+          <div className="mb-[50px]">
+            <div className="mb-2 flex items-start justify-between">
+              {isAdmin ? (
+                <input className="w-full max-w-[70%] border-b border-black/20 bg-transparent text-2xl font-semibold outline-none" value={project.title} onChange={(e) => onUpdate && onUpdate({ ...project, title: e.target.value })} />
+              ) : (
+                <h4 className="text-2xl font-semibold">{project.title}</h4>
+              )}
+            </div>
+
+            <div className="relative">
+              <MediaStrip items={project.media} isAdmin={isAdmin} onEdit={(i) => { setEditIndex(i); setEditMediaOpen(true); }} onDelete={(i) => requestDelete(i)} onAddNew={() => setAddMediaOpen(true)} onOpen={openLightboxAt} />
+            </div>
+
+            <div className="mt-2">
+              {isAdmin ? (
+                <textarea className="w-full rounded-md border px-3 py-2 text-base leading-relaxed" value={project.description} onChange={(e) => onUpdate && onUpdate({ ...project, description: e.target.value })} />
+              ) : (
+                <p className="whitespace-pre-wrap text-base leading-relaxed">{linkify(project.description)}</p>
+              )}
+            </div>
+
+            <Modal open={addMediaOpen} onClose={() => setAddMediaOpen(false)} title="Добавить изображения/видео">
+              <div className="space-y-3">
+                <input type="file" multiple accept="image/*,video/*" className="w-full" onChange={(e) => onFilesPickedAppend(e.target.files)} />
+                <div className="text-sm text-black/60">Можно загрузить несколько файлов сразу. Или вставить URL ниже.</div>
+                <UrlAdder onAdd={(urls) => { (async () => { const created = await Promise.all(urls.map(async (u) => { const clean = u.trim(); const type = /(\\.mp4|\\.webm|\\.mov)$/i.test(clean) ? 'video' : 'img'; const ar = await getAR(clean, type); return { type, url: clean, ar }; })); onUpdate && onUpdate({ ...project, media: [...(project.media || []), ...created] }); setAddMediaOpen(false); })(); }} />
+              </div>
+            </Modal>
+
+            <Modal open={editMediaOpen} onClose={() => { setEditMediaOpen(false); setEditIndex(-1); }} title="Заменить медиа фрейма">
+              <div className="space-y-3">
+                <input type="file" accept="image/*,video/*" className="w-full" onChange={(e) => onFilesPickedReplace(e.target.files)} />
+                <div className="text-sm text-black/60">Или вставьте один URL ниже, чтобы заменить выбранный фрейм.</div>
+                <UrlAdder onAdd={(urls) => { (async () => { if (!urls.length || editIndex < 0) return; const clean = urls[0].trim(); const type = /(\\.mp4|\\.webm|\\.mov)$/i.test(clean) ? 'video' : 'img'; const ar = await getAR(clean, type); const next = [...(project.media || [])]; next[editIndex] = { type, url: clean, ar }; onUpdate && onUpdate({ ...project, media: next }); setEditMediaOpen(false); setEditIndex(-1); })(); }} />
+              </div>
+            </Modal>
+
+            <Modal open={confirmDelOpen} onClose={() => { setConfirmDelOpen(false); setDelIndex(-1); }} title="Удалить фрейм?">
+              <div className="flex items-center justify-end gap-2"><button className="px-3 py-2" onClick={() => { setConfirmDelOpen(false); setDelIndex(-1); }}>Нет</button><button className="bg-black px-3 py-2 text-white" onClick={confirmDelete}>Да</button></div>
+            </Modal>
+
+            {lightboxOpen && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={() => setLightboxOpen(false)}>
+                <div className="relative" style={{ width: 'calc(100vw - 200px)', height: 'calc(100vh - 200px)' }} onClick={(e) => e.stopPropagation()}>
+                  {project.media[lbIndex]?.type === 'video' ? (
+                    <video src={project.media[lbIndex]?.url} controls className="block" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  ) : (
+                    <img src={project.media[lbIndex]?.url} className="block" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  )}
+                  <button aria-label="prev" className="absolute left-[-64px] top-1/2 z-50 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow" onClick={lbPrev}>‹</button>
+                  <button aria-label="next" className="absolute right-[-64px] top-1/2 z-50 -translate-y-1/2 flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow" onClick={lbNext}>›</button>
+                  <button aria-label="close" className="absolute right-2 top-2 z-50 text-2xl text-black" onClick={() => setLightboxOpen(false)}>✕</button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      function PortfolioPage({ isAdmin }) {
+        const [items, setItems] = React.useState(initialPortfolioProjects);
+        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый проект", description: "Описание...", media: [] }, ...xs]);
+        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
+        return (
+          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
+            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
+            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить проект" onClick={addBlank}>+</button></div>)}
+          </div>
+        );
+      }
+
+      function ThingsPage({ isAdmin }) {
+        const [items, setItems] = React.useState(initialThingsProjects);
+        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый эксперимент", description: "Немного текста...", media: [] }, ...xs]);
+        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
+        return (
+          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
+            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
+            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить блок" onClick={addBlank}>+</button></div>)}
+          </div>
+        );
+      }
+
+      function EdTechPage({ isAdmin }) {
+        const [items, setItems] = React.useState(initialEdtechProjects);
+        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый модуль", description: "Краткое описание...", media: [] }, ...xs]);
+        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
+        return (
+          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
+            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
+            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить модуль" onClick={addBlank}>+</button></div>)}
+          </div>
+        );
+      }
+
+      function AboutPage({ isAdmin }) {
+        const [photo, setPhoto] = React.useState("");
+        const [text, setText] = React.useState("Иллюстратор и аниматор, работаю на стыке документальной визуализации и образовательных проектов. Открыта к коллаборациям.");
+        const [editPhoto, setEditPhoto] = React.useState(false);
+        const [editText, setEditText] = React.useState(false);
+        const [confirmDelPhoto, setConfirmDelPhoto] = React.useState(false);
+
+        const onPhotoFile = async (files) => {
+          const list = Array.from(files || []); if (!list.length) return;
+          const file = list[0]; const readAsDataURL = (f) => new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.onerror = rej; fr.readAsDataURL(f); });
+          const dataUrl = await readAsDataURL(file); setPhoto(dataUrl); setEditPhoto(false);
+        };
+
+        return (
+          <div className="mx-auto grid w-[min(1000px,92vw)] grid-cols-1 gap-8 py-8 md:grid-cols-2">
+            <div className="relative">
+              {photo ? (
+                <>
+                  <img src={photo} className="w-full h-auto" />
+                  {isAdmin && (
+                    <div className="absolute right-3 top-3 z-10 flex items-center gap-2">
+                      <button title="Редактировать" className="rounded-md bg-white/90 px-2 py-1 text-xs shadow" onClick={() => setEditPhoto(true)}>✎</button>
+                      <button title="Удалить" className="rounded-md bg-white/90 px-2 py-1 text-xs shadow" onClick={() => setConfirmDelPhoto(true)}>✕</button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="relative w-full bg-neutral-200" style={{ minHeight: 320 }}>
+                  {isAdmin && (
+                    <button title="Добавить изображение" onClick={() => setEditPhoto(true)} className="absolute inset-0 m-auto flex h-full w-full items-center justify-center text-4xl" style={{ clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)" }}>+
+                    </button>
+                  )}
+                </div>
+              )}
+              <Modal open={editPhoto} onClose={() => setEditPhoto(false)} title="Изображение">
+                <div className="space-y-3">
+                  <input type="file" accept="image/*" className="w-full" onChange={(e) => onPhotoFile(e.target.files)} />
+                  <UrlAdder onAdd={(urls) => { if (!urls.length) return; setPhoto(urls[0].trim()); setEditPhoto(false); }} />
+                </div>
+              </Modal>
+              <Modal open={confirmDelPhoto} onClose={() => setConfirmDelPhoto(false)} title="Удалить изображение?">
+                <div className="flex items-center justify-end gap-2"><button className="px-3 py-2" onClick={() => setConfirmDelPhoto(false)}>Нет</button><button className="bg-black px-3 py-2 text-white" onClick={() => { setPhoto(""); setConfirmDelPhoto(false); }}>Да</button></div>
+              </Modal>
+            </div>
+            <div className="relative">
+              <p className="whitespace-pre-wrap text-[15px] leading-relaxed">{text}</p>
+              {isAdmin && (<button onClick={() => setEditText(true)} className="absolute right-0 top-0 rounded-md bg-white/90 px-2 py-1 text-xs shadow">✎</button>)}
+              <Modal open={editText} onClose={() => setEditText(false)} title="Текст">
+                <textarea className="h-48 w-full rounded-md border px-3 py-2" value={text} onChange={(e) => setText(e.target.value)} />
+                <div className="mt-3 text-right"><button className="rounded-md bg-black px-3 py-2 text-white" onClick={() => setEditText(false)}>Готово</button></div>
+              </Modal>
+            </div>
+          </div>
+        );
+      }
+
+      function HomeNav({ current, setCurrent }) {
+        const tiles = [
+          { key: Section.HOME, label: "главная страница" },
+          { key: Section.PORTFOLIO, label: "портфолио" },
+          { key: Section.THINGS, label: "штуки" },
+          { key: Section.EDTECH, label: "ed-tech" },
+          { key: Section.ABOUT, label: "обо мне" }
+        ];
+        const collapsedWidth = 10; const measureRefs = React.useRef({}); const [sizes, setSizes] = React.useState({});
+        React.useEffect(() => { const next = {}; tiles.forEach((t) => { const el = measureRefs.current[t.key]; if (el) next[t.key] = Math.ceil(el.offsetWidth); }); setSizes(next); }, []);
+        return (
+          <div className="fixed right-4 top-4 z-40 flex flex-col items-end gap-2">
+            <div className="fixed -left-[9999px] top-0">
+              {tiles.map((t) => (
+                <div key={t.key} ref={(el) => (measureRefs.current[t.key] = el)} className="inline-flex h-10 items-center justify-center bg-black text-white" style={{ paddingLeft: 15, paddingRight: 15, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)", boxShadow: "0 0 0 1.2px #000 inset" }}>
+                  <span className="whitespace-nowrap text-[12px] uppercase tracking-wide">{t.label}</span>
+                </div>
+              ))}
+            </div>
+            {tiles.map((t) => { const isActive = current === t.key; const expanded = current === Section.HOME || isActive; const targetWidth = sizes[t.key] ?? 224; return (
+              <div key={t.key} className="group relative flex h-10 items-center justify-center overflow-hidden bg-black text-white transition-[width] duration-300" style={{ width: expanded ? targetWidth : collapsedWidth, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)", boxShadow: "0 0 0 1.2px #000 inset", paddingLeft: expanded ? 15 : 0, paddingRight: expanded ? 15 : 0 }} onMouseEnter={(e) => { if (!expanded) { e.currentTarget.style.width = \`\${targetWidth}px\`; e.currentTarget.style.paddingLeft = '15px'; e.currentTarget.style.paddingRight = '15px'; } }} onMouseLeave={(e) => { if (!expanded) { e.currentTarget.style.width = \`\${collapsedWidth}px\`; e.currentTarget.style.paddingLeft = '0px'; e.currentTarget.style.paddingRight = '0px'; } }} onClick={() => setCurrent(t.key)}>
+                <div className={"text-center text-[12px] uppercase tracking-wide whitespace-nowrap transition-opacity " + (expanded ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>{t.label}</div>
+              </div>
+            ); })}
+          </div>
+        );
+      }
+
+      function useMicroAnimations({ active }) {
+        const [items, setItems] = React.useState([{ id: "m1", kind: "square", active: true }, { id: "m2", kind: "circle", active: true }, { id: "m3", kind: "triangle", active: true }]);
+        const [sprites, setSprites] = React.useState([]);
+        React.useEffect(() => { if (!active) return; const spawn = () => { const pool = items.filter((i) => i.active); if (!pool.length) return; const pick = pool[Math.floor(Math.random() * pool.length)]; const edge = Math.floor(Math.random() * 5); const id = uid(); setSprites((s) => [...s, { id, kind: pick.kind, from: edge, created: Date.now(), life: 4500 + Math.random() * 2500 }]); }; const t = setInterval(spawn, 1200); return () => clearInterval(t); }, [active, items]);
+        React.useEffect(() => { const t = setInterval(() => { setSprites((s) => s.filter((sp) => Date.now() - sp.created < sp.life)); }, 500); return () => clearInterval(t); }, []);
+        return { items, setItems, sprites };
+      }
+
+      function Sprite({ sp }) {
+        const [w, h] = [typeof window !== "undefined" ? window.innerWidth : 1024, typeof window !== "undefined" ? window.innerHeight : 768];
+        const start = React.useMemo(() => { switch (sp.from) { case 0: return { x: -60, y: Math.random() * h }; case 1: return { x: w + 60, y: Math.random() * h }; case 2: return { x: Math.random() * w, y: -60 }; case 3: return { x: Math.random() * w, y: h + 60 }; default: return { x: w / 2, y: h / 2 }; } }, [sp, w, h]);
+        const end = React.useMemo(() => ({ x: Math.random() * w, y: Math.random() * h }), [w, h, sp.created]);
+        const ref = React.useRef(null);
+        React.useEffect(() => { const el = ref.current; if (!el) return; const anim = el.animate([
+          { transform: \`translate(\${start.x}px, \${start.y}px) scale(0.6)\`, opacity: 0 },
+          { transform: \`translate(\${(start.x + end.x) / 2}px, \${(start.y + end.y) / 2}px) scale(1)\`, opacity: 1 },
+          { transform: \`translate(\${end.x}px, \${end.y}px) scale(0.6)\`, opacity: 0 }
+        ], { duration: sp.life, easing: "ease-in-out", fill: "forwards" }); return () => anim.cancel(); }, [start, end, sp]);
+        const shape = { square: <div className="h-8 w-8 bg-black" />, circle: <div className="h-8 w-8 rounded-full bg-black" />, triangle: <div className="h-0 w-0" style={{ borderLeft: "10px solid transparent", borderRight: "10px solid transparent", borderBottom: "20px solid black" }} /> }[sp.kind];
+        return <div ref={ref} className="pointer-events-none fixed left-0 top-0 z-10">{shape}</div>;
+      }
+
+      function HomePage({ isAdmin, onOpenAnimManager }) {
+        const { sprites } = useMicroAnimations({ active: true });
+        return (
+          <div className="h-[80vh] w-full">
+            {sprites.map((sp) => (<Sprite key={sp.id} sp={sp} />))}
+            {isAdmin && (<button onClick={onOpenAnimManager} className="fixed bottom-4 left-4 z-50 rounded-full bg-black px-3 py-2 text-sm text-white shadow">+ Анимации</button>)}
+            <div className="pointer-events-none fixed inset-0" />
+          </div>
+        );
+      }
+
+      function AnimManager({ open, onClose, items, setItems }) {
+        const [kind, setKind] = React.useState("square");
+        return (
+          <Modal open={open} onClose={onClose} title="Микро‑анимации">
+            <div className="space-y-3">
+              <div className="text-sm text-black/70">Список активных элементов. Можно деактивировать.</div>
+              <div className="flex flex-wrap gap-2">
+                {items.map((it) => (
+                  <div key={it.id} className="flex items-center gap-2 rounded-xl border px-2 py-1">
+                    <span className="text-sm">{it.kind}</span>
+                    <label className="flex items-center gap-1 text-xs"><input type="checkbox" checked={it.active} onChange={(e) => setItems((xs) => xs.map((x) => (x.id === it.id ? { ...x, active: e.target.checked } : x)))} />активен</label>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 border-t pt-3">
+                <div className="mb-2 text-sm">Добавить элемент</div>
+                <div className="flex items-center gap-2">
+                  <select className="rounded-md border px-2 py-1" value={kind} onChange={(e) => setKind(e.target.value)}>
+                    <option value="square">square</option>
+                    <option value="circle">circle</option>
+                    <option value="triangle">triangle</option>
+                  </select>
+                  <button className="rounded-md bg-black px-3 py-2 text-white" onClick={() => setItems((xs) => [...xs, { id: uid(), kind, active: true }])}>Добавить</button>
+                </div>
+              </div>
+            </div>
+          </Modal>
+        );
+      }
+
+      function App() {
+        const { isAdmin, enable, disable } = useAdmin();
+        const [section, setSection] = React.useState(Section.HOME);
+        const [animOpen, setAnimOpen] = React.useState(false);
+        const [pwdOpen, setPwdOpen] = React.useState(false);
+        const [pwd, setPwd] = React.useState("");
+        const micro = useMicroAnimations({ active: false });
+        const topPad = (section === Section.PORTFOLIO || section === Section.THINGS || section === Section.EDTECH || section === Section.ABOUT) ? "pt-6" : "pt-20";
+        return (
+          <div className="min-h-screen bg-white text-black">
+            {pwdOpen && !isAdmin && (<div className="fixed inset-0 z-40" onClick={() => setPwdOpen(false)} />)}
+            <div className="fixed bottom-4 right-4 z-50">
+              <div className="relative h-12">
+                <div className={(pwdOpen && !isAdmin ? "w-[260px]" : "w-0") + " absolute right-12 bottom-0 z-40 flex h-12 items-center overflow-hidden rounded-full bg-neutral-100 transition-all duration-300"}>
+                  <input type="password" className={(pwdOpen && !isAdmin ? "opacity-100" : "opacity-0") + " w-[220px] px-4 py-2 text-sm outline-none transition-opacity duration-200"} placeholder="Пароль" value={pwd} onChange={(e) => setPwd(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { enable(pwd); setPwd(''); setPwdOpen(false); } }} />
+                </div>
+                <button className="absolute right-0 bottom-0 z-50 h-12 w-12 rounded-full bg-black text-white" title={isAdmin ? "Применить изменения и выйти из редактирования" : (pwdOpen ? "Принять пароль" : "Войти в режим редактирования")} onClick={() => { if (isAdmin) { disable(); setPwdOpen(false); } else if (pwdOpen) { enable(pwd); setPwd(''); setPwdOpen(false); } else { setPwdOpen(true); } }}>{(isAdmin || pwdOpen) ? '✓' : '•'}</button>
+              </div>
+            </div>
+            <HomeNav current={section} setCurrent={setSection} />
+            <main className={topPad}>
+              {section === Section.HOME && (<HomePage isAdmin={isAdmin} onOpenAnimManager={() => setAnimOpen(true)} />)}
+              {section === Section.PORTFOLIO && <PortfolioPage isAdmin={isAdmin} />}
+              {section === Section.THINGS && <ThingsPage isAdmin={isAdmin} />}
+              {section === Section.EDTECH && <EdTechPage isAdmin={isAdmin} />}
+              {section === Section.ABOUT && <AboutPage isAdmin={isAdmin} />}
+            </main>
+            <AnimManager open={animOpen} onClose={() => setAnimOpen(false)} items={micro.items} setItems={micro.setItems} />
+          </div>
+        );
+      }
+
+      function PortfolioPage({ isAdmin }) {
+        const [items, setItems] = React.useState(initialPortfolioProjects);
+        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый проект", description: "Описание...", media: [] }, ...xs]);
+        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
+        return (
+          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
+            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
+            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить проект" onClick={addBlank}>+</button></div>)}
+          </div>
+        );
+      }
+
+      function ThingsPage({ isAdmin }) {
+        const [items, setItems] = React.useState(initialThingsProjects);
+        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый эксперимент", description: "Немного текста...", media: [] }, ...xs]);
+        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
+        return (
+          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
+            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
+            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить блок" onClick={addBlank}>+</button></div>)}
+          </div>
+        );
+      }
+
+      function EdTechPage({ isAdmin }) {
+        const [items, setItems] = React.useState(initialEdtechProjects);
+        const addBlank = () => setItems((xs) => [{ id: uid(), title: "Новый модуль", description: "Краткое описание...", media: [] }, ...xs]);
+        const updateItem = (next) => setItems((xs) => xs.map((p) => (p.id === next.id ? next : p)));
+        return (
+          <div className="relative mx-auto w-[min(1000px,92vw)] py-8">
+            {items.map((p) => (<ProjectBlock key={p.id} project={p} isAdmin={isAdmin} onUpdate={updateItem} />))}
+            {isAdmin && (<div className="sticky bottom-4 pt-4"><button className="mx-auto block h-12 w-12 rounded-full border border-gray-400 bg-white text-black" title="Добавить модуль" onClick={addBlank}>+</button></div>)}
+          </div>
+        );
+      }
+
+      function HomeNav({ current, setCurrent }) {
+        const tiles = [
+          { key: Section.HOME, label: "главная страница" },
+          { key: Section.PORTFOLIO, label: "портфолио" },
+          { key: Section.THINGS, label: "штуки" },
+          { key: Section.EDTECH, label: "ed-tech" },
+          { key: Section.ABOUT, label: "обо мне" }
+        ];
+        const collapsedWidth = 10; const measureRefs = React.useRef({}); const [sizes, setSizes] = React.useState({});
+        React.useEffect(() => { const next = {}; tiles.forEach((t) => { const el = measureRefs.current[t.key]; if (el) next[t.key] = Math.ceil(el.offsetWidth); }); setSizes(next); }, []);
+        return (
+          <div className="fixed right-4 top-4 z-40 flex flex-col items-end gap-2">
+            <div className="fixed -left-[9999px] top-0">
+              {tiles.map((t) => (
+                <div key={t.key} ref={(el) => (measureRefs.current[t.key] = el)} className="inline-flex h-10 items-center justify-center bg-black text-white" style={{ paddingLeft: 15, paddingRight: 15, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)", boxShadow: "0 0 0 1.2px #000 inset" }}>
+                  <span className="whitespace-nowrap text-[12px] uppercase tracking-wide">{t.label}</span>
+                </div>
+              ))}
+            </div>
+            {tiles.map((t) => { const isActive = current === t.key; const expanded = current === Section.HOME || isActive; const targetWidth = sizes[t.key] ?? 224; return (
+              <div key={t.key} className="group relative flex h-10 items-center justify-center overflow-hidden bg-black text-white transition-[width] duration-300" style={{ width: expanded ? targetWidth : collapsedWidth, clipPath: "polygon(0% 0%, 98% 1%, 100% 0%, 100% 98%, 99% 100%, 2% 99%, 0% 100%, 0% 2%)", boxShadow: "0 0 0 1.2px #000 inset", paddingLeft: expanded ? 15 : 0, paddingRight: expanded ? 15 : 0 }} onMouseEnter={(e) => { if (!expanded) { e.currentTarget.style.width = \`\${targetWidth}px\`; e.currentTarget.style.paddingLeft = '15px'; e.currentTarget.style.paddingRight = '15px'; } }} onMouseLeave={(e) => { if (!expanded) { e.currentTarget.style.width = \`\${collapsedWidth}px\`; e.currentTarget.style.paddingLeft = '0px'; e.currentTarget.style.paddingRight = '0px'; } }} onClick={() => setCurrent(t.key)}>
+                <div className={"text-center text-[12px] uppercase tracking-wide whitespace-nowrap transition-opacity " + (expanded ? "opacity-100" : "opacity-0 group-hover:opacity-100")}>{t.label}</div>
+              </div>
+            ); })}
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    </script>
+  </body>
+</html>
