@@ -6,12 +6,14 @@
   <title>Портфолио — один HTML</title>
   <style>
     :root {
-      --page-xpad: 50px;           /* Постоянные отступы слева/справа */
-      --nav-item-h: 44px;          /* Высота открытого прямоугольника навигации */
-      --nav-item-h-collapsed: 10px;/* Высота закрытого прямоугольника */
-      --gap-vert: 50px;            /* Вертикальные отступы между блоками */
-      --border-w: 2px;             /* Толщина условной "ручной" кромки */
-      --overlay-dim: rgba(0,0,0,.72); /* Затемнение фона лайтбокса */
+      /* Глобальные переменные */
+      --page-xpad: 50px;
+      --nav-item-h: 44px;
+      --gap-vert: 50px;
+      --border-w: 2px;
+      --overlay-dim: rgba(0,0,0,.72);
+      --nav-fs: 1rem;      /* базовый размер шрифта навигации и описаний */
+      --nav-gap: 8px;      /* расстояние между пунктами и отступ сверху */
     }
 
     * { box-sizing: border-box; }
@@ -27,42 +29,41 @@
     /* =================== NAV =================== */
     .nav {
       position: fixed;
-      top: 50px;
-      right: 0;           /* без отступа от правой границы */
+      top: var(--nav-gap);
+      right: 0;
       z-index: 40;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: var(--nav-gap);
       pointer-events: auto;
+      font-size: var(--nav-fs);
     }
     .nav__item {
       position: relative;
-      background: #000;            /* Черный прямоугольник */
+      background: #000;
       color: #fff;
       height: var(--nav-item-h);
       border: none;
       margin: 0;
-      padding: 0 15px;              /* Отступы текста слева/справа по 15px */
+      padding: 0 15px;
       width: fit-content;
       align-self: flex-end;
       transition: width .25s ease;
       display: flex;
       align-items: center;
-      justify-content: center;     /* Текст по центру */
+      justify-content: center;
       cursor: pointer;
       user-select: none;
-      white-space: nowrap;         /* Текст всегда в одну строку */
-      overflow: hidden;            /* Чтобы текст исчезал при схлопывании */
-      border-radius: 0;            /* Никаких скруглений у прямоугольников */
-      /* переход по ширине при схлопывании */
-      /* Имитация "неровной" кромки — клип-путь с легким джиттером */
+      white-space: nowrap;
+      overflow: hidden;
+      border-radius: 0;
       clip-path: polygon(
         var(--x1,0%)  var(--y1,2%),
         var(--x2,100%) var(--y2,1%),
         var(--x3,100%) var(--y3,98%),
         var(--x4,0%)   var(--y4,99%)
       );
-      outline: var(--border-w) solid #000; /* чёткий контур */
+      outline: var(--border-w) solid #000;
       outline-offset: 0;
     }
     .nav__item .label { transition: opacity .18s ease; }
@@ -97,23 +98,15 @@
       overflow: hidden; /* чтобы анимации "вплывали" */
     }
     .shapes-layer { position: absolute; inset: 0; pointer-events: none; }
-    .shape, .wave {
-      /* волнистая лента; параметры сегмента задаём CSS‑переменными */
-      /* ширина сегмента — --segW (по умолчанию 24px), высота сегмента — --segH (по умолчанию 20px) */
-      width: 220px; height: 20px;
-      background: repeating-linear-gradient(
-        90deg,
-        #000 0 calc(var(--segW, 24px) / 2),
-        transparent calc(var(--segW, 24px) / 2) var(--segW, 24px)
-      );
-      -webkit-mask: radial-gradient(
-          calc(var(--segW, 24px) / 2) calc(var(--segH, 20px) / 2) at calc(var(--segW, 24px) / 2) calc(var(--segH, 20px) / 2),
-          #000 98%, transparent
-        ) repeat-x left center / var(--segW, 24px) var(--segH, 20px);
-              mask: radial-gradient(
-          calc(var(--segW, 24px) / 2) calc(var(--segH, 20px) / 2) at calc(var(--segW, 24px) / 2) calc(var(--segH, 20px) / 2),
-          #000 98%, transparent
-        ) repeat-x left center / var(--segW, 24px) var(--segH, 20px);
+    .shape, .wave { position: absolute; opacity: .9; }
+.shape.square{ background:#000; }
+.shape.circle{ background:#000; border-radius:50%; }
+.wave {
+      /* волнистая лента с параметризуемыми сегментами */
+      width:220px; height:20px;
+      background: repeating-linear-gradient(90deg, #000 0 calc(var(--segW,24px)/2), transparent calc(var(--segW,24px)/2) var(--segW,24px));
+      -webkit-mask: radial-gradient(calc(var(--segW,24px)/2) calc(var(--segH,20px)/2) at calc(var(--segW,24px)/2) calc(var(--segH,20px)/2), #000 98%, transparent) repeat-x left center / var(--segW,24px) var(--segH,20px);
+              mask: radial-gradient(calc(var(--segW,24px)/2) calc(var(--segH,20px)/2) at calc(var(--segW,24px)/2) calc(var(--segH,20px)/2), #000 98%, transparent) repeat-x left center / var(--segW,24px) var(--segH,20px);
       background-clip: padding-box;
     }
 
@@ -142,6 +135,29 @@
     .about__text { flex: 1 1 auto; min-width: 280px; font-size: 0.8rem; }
     /* Убираем верхний внешний отступ у первого элемента текста, чтобы картинка и текст были ровно по верхнему краю */
     .about__text > :first-child { margin-top: 0; }
+
+    /* Кнопка назад на главную (нижний правый угол) */
+    .home-back{
+      position: fixed;
+      right: 0;                 /* у самой правой кромки */
+      bottom: var(--nav-gap);   /* как зазор в навигации */
+      z-index: 45;
+      height: var(--nav-item-h);
+      background:#000; color:#fff;
+      border:none; border-radius:0; cursor:pointer;
+      padding: 0 15px;          /* как у пунктов меню */
+      display: none;            /* показывается только вне главной */
+      align-items:center; justify-content:center;
+      font: inherit;            /* тот же размер, что и навигация */
+      clip-path: polygon(
+        var(--x1,0%)  var(--y1,2%),
+        var(--x2,100%) var(--y2,1%),
+        var(--x3,100%) var(--y3,98%),
+        var(--x4,0%)   var(--y4,99%)
+      );
+      outline: var(--border-w) solid #000;
+      outline-offset: 0;
+    }
 
     /* =================== FEED PAGES (Картинки, Штуки, Ed‑tech) =================== */
     .feed {
@@ -222,12 +238,14 @@
 <body>
   <!-- =================== NAV =================== -->
   <nav class="nav" id="nav">
-    <button class="nav__item" data-target="home"><span class="label">Главная страница</span></button>
     <button class="nav__item" data-target="pictures"><span class="label">Картинки</span></button>
     <button class="nav__item" data-target="things"><span class="label">Штуки</span></button>
     <button class="nav__item" data-target="edtech"><span class="label">Ed‑tech</span></button>
     <button class="nav__item" data-target="about"><span class="label">Обо мне</span></button>
   </nav>
+  
+  <!-- Кнопка «назад на главную» в левом нижнем углу -->
+  <button class="home-back" id="homeBack" aria-label="На главную" title="На главную">&lt;</button>
 
   <main>
     <!-- =================== HOME =================== -->
@@ -265,11 +283,11 @@
 
     <!-- =================== THINGS =================== -->
     <section class="page" id="things">
-            <div class="feed">
+      <div class="feed">
         <article class="block">
           <h2 class="block__title">Проект X</h2>
           <div class="gallery" data-gallery>
-            <div class="media" style="width: 220px"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/camphoto_341603450.jpeg" alt="Изображение проекта" loading="lazy" /></div>
             <div class="media" style="width: 240px"></div>
             <div class="media" style="width: 180px"></div>
             <div class="media" style="width: 300px"></div>
@@ -326,6 +344,7 @@
     /* =================== Навигация и аккордеон =================== */
     const sections = $$('.page');
     const navItems = $$('.nav__item');
+    const homeBack  = $('#homeBack');
 
     function jitterNavItem(el){
       const r = (min,max) => (Math.random()*(max-min)+min).toFixed(2);
@@ -336,56 +355,69 @@
     }
 
     function setPage(id){
-      // показать нужную секцию
       sections.forEach(s => s.classList.toggle('active', s.id===id));
-      // активная кнопка
       navItems.forEach(btn => btn.classList.toggle('active', btn.dataset.target===id));
 
       const isHome = (id === 'home');
       document.body.classList.toggle('is-home', isHome);
 
-      // Логика схлопывания: если НЕ Главная — все, кроме активной, схлопываются до 10px
+      // Схлопывание пунктов: на внутренних страницах схлопываем все, кроме активного
       navItems.forEach(btn => {
         if(isHome){ btn.classList.remove('collapsed'); }
         else { btn.classList.toggle('collapsed', btn.dataset.target !== id); }
       });
 
-      // hash для прямых ссылок
+      // Кнопка «домой» показывается только вне главной
+      if(homeBack){ homeBack.style.display = isHome ? 'none' : 'flex'; }
+
+      // Обновляем hash
       if(location.hash.replace('#','') !== id){
         history.replaceState(null, '', '#'+id);
       }
 
-      // при возврате на главную — регенерируем слой фигур
+      // При возврате на главную — пересоздаём слой фигур
       if(isHome){ spawnShapes(true); }
     }
 
-    navItems.forEach(btn => {
-      jitterNavItem(btn);
-      btn.addEventListener('click', () => setPage(btn.dataset.target));
-    });
+    // Инициализация навигации
+    navItems.forEach(btn => { jitterNavItem(btn); btn.addEventListener('click', () => setPage(btn.dataset.target)); });
+    if(homeBack){ jitterNavItem(homeBack); }
 
     // Восстановление страницы по hash при загрузке
     window.addEventListener('DOMContentLoaded', () => {
       const target = (location.hash || '#home').replace('#','');
       setPage(['home','pictures','things','edtech','about'].includes(target) ? target : 'home');
+      if(homeBack){ homeBack.addEventListener('click', () => setPage('home')); }
     });
 
-    // Обновлять "неровности" при ресайзе, чтобы не выглядели клонами
-    let jitterTO;
-    window.addEventListener('resize', () => {
-      clearTimeout(jitterTO);
-      jitterTO = setTimeout(()=> navItems.forEach(jitterNavItem), 120);
-    });
+    // Обновлять «неровности» при ресайзе
+    let jitterTO; window.addEventListener('resize', () => { clearTimeout(jitterTO); jitterTO = setTimeout(()=> navItems.forEach(jitterNavItem), 120); });
 
     /* =================== Горизонтальная прокрутка колесом =================== */
     $$('.gallery').forEach(gal => {
-      gal.addEventListener('wheel', (e) => {
-        if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
-          e.preventDefault();
-          gal.scrollLeft += e.deltaY;
-        }
-      }, { passive:false });
+      gal.addEventListener('wheel', (e) => { if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); gal.scrollLeft += e.deltaY; } }, { passive:false });
     });
+
+    /* =================== АВТО‑ШИРИНА КАДРА ПОД ФОРМАТ ИЗОБРАЖЕНИЯ =================== */
+    function fitMediaToImageWidth(root=document){
+      const items = $$('.media', root);
+      items.forEach(m => {
+        const img = $('img', m);
+        if(!img) return; // плейсхолдеры без картинок остаются со своей заданной шириной
+        const apply = () => {
+          const H = m.clientHeight || 200; // фиксированная высота карточки
+          const iw = img.naturalWidth, ih = img.naturalHeight;
+          if(!iw || !ih) return; // если ещё не загрузилось
+          const w = Math.max(1, Math.round(iw * (H/ih))); // реальная ширина кадра по аспекту
+          m.style.width = w + 'px';
+          m.style.background = 'transparent'; // убираем серые поля по бокам
+        };
+        if(img.complete){ apply(); }
+        img.addEventListener('load', apply, { once:false });
+      });
+    }
+    window.addEventListener('DOMContentLoaded', ()=> fitMediaToImageWidth());
+    window.addEventListener('resize', ()=> { clearTimeout(window.__fitTO); window.__fitTO = setTimeout(()=>fitMediaToImageWidth(), 120); });
 
     /* =================== LIGHTBOX =================== */
     const lb = $('#lightbox');
@@ -394,132 +426,59 @@
     const lbNext = $('#lbNext');
     const lbClose = $('#lbClose');
 
-    let currentGallery = null;
-    let currentIndex = -1;
+    let currentGallery = null; let currentIndex = -1;
+    function openLightbox(gallery, index){ currentGallery = gallery; currentIndex = index; renderLightbox(); lb.classList.add('open'); lb.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; }
+    function closeLightbox(){ lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; currentGallery = null; currentIndex = -1; lbMedia.removeAttribute('src'); }
+    function renderLightbox(){ if(!currentGallery) return; const items = $$('.media', currentGallery); if(!items.length) return; if(currentIndex<0) currentIndex=0; if(currentIndex>=items.length) currentIndex=items.length-1; const node = items[currentIndex]; const img = node.querySelector('img'); if(img && img.getAttribute('src')){ lbMedia.setAttribute('src', img.getAttribute('src')); } else { const w = Math.max(400, Math.min(1000, node.clientWidth*3)); const h = Math.max(300, Math.min(800, 600)); const svg = encodeURIComponent(`<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='100%' height='100%' fill='%23dddddd'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='32' fill='%23999'>Превью</text></svg>`); lbMedia.setAttribute('src', `data:image/svg+xml;utf8,${svg}`); } }
 
-    function openLightbox(gallery, index){
-      currentGallery = gallery;
-      currentIndex = index;
-      renderLightbox();
-      lb.classList.add('open');
-      lb.setAttribute('aria-hidden','false');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function closeLightbox(){
-      lb.classList.remove('open');
-      lb.setAttribute('aria-hidden','true');
-      document.body.style.overflow = '';
-      currentGallery = null; currentIndex = -1;
-      lbMedia.removeAttribute('src');
-    }
-
-    function renderLightbox(){
-      if(!currentGallery) return;
-      const items = $$('.media', currentGallery);
-      if(!items.length) return;
-      if(currentIndex < 0) currentIndex = 0;
-      if(currentIndex >= items.length) currentIndex = items.length-1;
-
-      const node = items[currentIndex];
-      const img = node.querySelector('img');
-      if(img && img.getAttribute('src')){
-        lbMedia.setAttribute('src', img.getAttribute('src'));
-      } else {
-        const w = Math.max(400, Math.min(1000, node.clientWidth * 3));
-        const h = Math.max(300, Math.min(800, 600));
-        const svg = encodeURIComponent(`<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='100%' height='100%' fill='%23dddddd'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='32' fill='%23999'>Превью</text></svg>`);
-        lbMedia.setAttribute('src', `data:image/svg+xml;utf8,${svg}`);
-      }
-    }
-
-    lbPrev.addEventListener('click', () => { if(currentGallery){ currentIndex = (currentIndex-1+ $$('.media',currentGallery).length) % $$('.media',currentGallery).length; renderLightbox(); } });
+    lbPrev.addEventListener('click', () => { if(currentGallery){ currentIndex = (currentIndex-1 + $$('.media',currentGallery).length) % $$('.media',currentGallery).length; renderLightbox(); } });
     lbNext.addEventListener('click', () => { if(currentGallery){ currentIndex = (currentIndex+1) % $$('.media',currentGallery).length; renderLightbox(); } });
     lbClose.addEventListener('click', closeLightbox);
     lb.addEventListener('click', (e) => { if(e.target === lb) closeLightbox(); });
-    window.addEventListener('keydown', (e) => {
-      if(!lb.classList.contains('open')) return;
-      if(e.key === 'Escape') closeLightbox();
-      if(e.key === 'ArrowLeft') lbPrev.click();
-      if(e.key === 'ArrowRight') lbNext.click();
-    });
+    window.addEventListener('keydown', (e) => { if(!lb.classList.contains('open')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowLeft') lbPrev.click(); if(e.key==='ArrowRight') lbNext.click(); });
 
     document.addEventListener('click', (e) => {
-      const m = e.target.closest('.media');
-      if(!m) return;
-      const gallery = m.closest('[data-gallery]');
-      if(!gallery) return;
+      const m = e.target.closest('.media'); if(!m) return;
+      const gallery = m.closest('[data-gallery]'); if(!gallery) return;
       const index = $$('.media', gallery).indexOf(m);
       openLightbox(gallery, index);
     });
 
     /* =================== HOME: генерация простых плавающих фигур =================== */
-    function rand(min,max){ return Math.random()*(max-min)+min }
-
     function spawnShapes(force=false){
-      const layer = $('#shapes');
-      if(!layer) return;
+      const layer = $('#shapes'); if(!layer) return;
       if(layer.children.length && !force) return;
       layer.innerHTML='';
       const W = layer.clientWidth; const H = layer.clientHeight;
-      const count = 18;
-      const pick = (arr)=> arr[Math.floor(Math.random()*arr.length)];
+      const count = 18; const pick = (arr)=> arr[Math.floor(Math.random()*arr.length)];
 
       for(let i=0;i<count;i++){
         const kind = pick(['square','circle','wave']);
         const dir  = pick(['LR','RL','TB','BT']);
-        const el = document.createElement('div');
-        el.className = (kind==='wave') ? 'wave' : `shape ${kind}`;
+        const el = document.createElement('div'); el.className = (kind==='wave') ? 'wave' : `shape ${kind}`;
 
         if(kind==='square'){
-          const s = Math.max(12, Math.round((Math.random()*30 + 30) * 0.7)); // уменьшено на ~30%
-          el.style.width = s+'px'; el.style.height = s+'px';
-          el.style.opacity = .85;
+          const s = Math.max(12, Math.round((Math.random()*30 + 30) * 0.7));
+          el.style.width = s+'px'; el.style.height = s+'px'; el.style.opacity = .85;
         }
         if(kind==='circle'){
-          const s = Math.max(12, Math.round((Math.random()*28 + 28) * 0.7)); // уменьшено на ~30%
-          el.style.width = s+'px'; el.style.height = s+'px'; el.style.borderRadius = '50%';
-          el.style.opacity = .9;
+          const s = Math.max(12, Math.round((Math.random()*28 + 28) * 0.7));
+          el.style.width = s+'px'; el.style.height = s+'px'; el.style.borderRadius = '50%'; el.style.opacity = .9;
         }
         if(kind==='wave'){
-          const segW = 24; // базовая ширина сегмента
-          const segH = Math.round(Math.random()*10)+14; // высота сегмента ~14–24
-          const n = (Math.random() < 0.5 ? 4 : 6); // только 4 или 6 секций
-          el.style.setProperty('--segW', segW+'px');
-          el.style.setProperty('--segH', segH+'px');
-          el.style.width = (segW * n) + 'px';
-          el.style.height = segH + 'px';
+          const segW = 24; const segH = Math.round(Math.random()*10)+14; const n = (Math.random() < 0.5 ? 4 : 6);
+          el.style.setProperty('--segW', segW+'px'); el.style.setProperty('--segH', segH+'px');
+          el.style.width = (segW * n) + 'px'; el.style.height = segH + 'px';
         }
 
         const dur = (Math.random()*14 + 14).toFixed(2)+'s';
-        el.style.animationDuration = dur;
-        el.style.animationTimingFunction = 'linear';
-        el.style.animationIterationCount = 'infinite';
-        // уникальные старты: у каждого элемента свой сдвиг (индекс + джиттер)
-        const delaySec = -(i * 1.111 + Math.random()*0.5); // никогда не совпадают
-        el.style.animationDelay = delaySec.toFixed(3) + 's';
+        el.style.animationDuration = dur; el.style.animationTimingFunction = 'linear'; el.style.animationIterationCount = 'infinite';
+        const delaySec = -(i * 1.111 + Math.random()*0.5); el.style.animationDelay = delaySec.toFixed(3) + 's';
 
-        if(dir==='LR'){
-          const y = Math.random()*(H-40)+10;
-          el.style.top = y+'px';
-          el.style.left = '-25vw';
-          el.style.animationName = 'floatLR';
-        } else if(dir==='RL'){
-          const y = Math.random()*(H-40)+10;
-          el.style.top = y+'px';
-          el.style.right = '-25vw';
-          el.style.animationName = 'floatRL';
-        } else if(dir==='TB'){
-          const x = Math.random()*(W-60)+10;
-          el.style.left = x+'px';
-          el.style.top = '-25vh';
-          el.style.animationName = 'floatTB';
-        } else {
-          const x = Math.random()*(W-60)+10;
-          el.style.left = x+'px';
-          el.style.bottom = '-25vh';
-          el.style.animationName = 'floatBT';
-        }
+        if(dir==='LR') { const y = Math.random()*(H-40)+10; el.style.top=y+'px'; el.style.left='-25vw'; el.style.animationName='floatLR'; }
+        else if(dir==='RL'){ const y = Math.random()*(H-40)+10; el.style.top=y+'px'; el.style.right='-25vw'; el.style.animationName='floatRL'; }
+        else if(dir==='TB'){ const x = Math.random()*(W-60)+10; el.style.left=x+'px'; el.style.top='-25vh'; el.style.animationName='floatTB'; }
+        else { const x = Math.random()*(W-60)+10; el.style.left=x+'px'; el.style.bottom='-25vh'; el.style.animationName='floatBT'; }
 
         layer.appendChild(el);
       }
