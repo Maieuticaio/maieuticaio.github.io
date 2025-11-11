@@ -69,6 +69,13 @@
   body.is-home .nav { pointer-events:auto; }
   body:not(.is-home) .nav .nav__item:not(.active){ display:none; }
   body:not(.is-home) .nav.expanded .nav__item{ display:flex; }
+  .home-back::before{ content: ':>' !important; }
+}
+  body:not(.is-home) .nav.expanded .nav__item{ display:flex; }
+  .home-back::before{ content: ':>' !important; }
+}
+  body:not(.is-home) .nav .nav__item:not(.active){ display:none; }
+  body:not(.is-home) .nav.expanded .nav__item{ display:flex; }
 }
 
     .mnav{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:80;background:rgba(128,128,128,.5)}
@@ -80,27 +87,16 @@
 
     @media (max-width: 640px){
       :root { --page-xpad: 10px; }
-      body.is-home .nav{display:none !important}
-      body:not(.is-home) .nav{display:flex !important}
-      body:not(.is-home) .nav .nav__item:not(.active){display:none}
-      body:not(.is-home) .nav.expanded .nav__item{display:flex}
+      .home-back{ display:none; }
+      .nav{ left: auto; right: var(--page-xpad); top: var(--nav-gap); }
+      body .nav{display:flex !important}
+      body .nav .nav__item:not(.active){display:none}
+      body .nav.expanded .nav__item{display:flex}
       .about { flex-direction: column; align-items: stretch; }
       .about__image { flex: 0 0 auto; max-width: 100%; }
       .about__image img { width: 100%; height: auto; object-fit: contain; }
       .about__text { font-size: 1rem; }
       .gallery { margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); }
-      .home-back::before{ content: '>' !important; transform: translateY(6px); }
-      body.is-home .home-back::before{ content: '≡' !important; transform: translateY(6px); }
-      body.is-home .mhead{display:none}
-      body:not(.is-home) .mhead{position:fixed;top:0;right:var(--page-xpad);left:auto;z-index:70;display:flex;flex-direction:column;align-items:flex-end;gap:var(--nav-gap);padding:var(--nav-gap) 0 0 0;background:transparent;height:calc(var(--nav-item-h) + var(--nav-gap));pointer-events:none}
-      .mhead .nav__item{align-self:flex-end;pointer-events:auto}
-      .mhead.collapsed .nav__item:not(.active){display:none}
-      .mhead.expanded .nav__item{display:flex}
-      .mhead.expanded .nav__item:not(.active){position:fixed;right:var(--page-xpad)}
-      .mhead.expanded .nav__item:nth-child(1):not(.active){top: calc(var(--nav-gap) + (var(--nav-item-h)+var(--nav-gap)) * 0)}
-      .mhead.expanded .nav__item:nth-child(2):not(.active){top: calc(var(--nav-gap) + (var(--nav-item-h)+var(--nav-gap)) * 1)}
-      .mhead.expanded .nav__item:nth-child(3):not(.active){top: calc(var(--nav-gap) + (var(--nav-item-h)+var(--nav-gap)) * 2)}
-      .mhead.expanded .nav__item:nth-child(4):not(.active){top: calc(var(--nav-gap) + (var(--nav-item-h)+var(--nav-gap)) * 3)}
       body:not(.is-home) section.page { padding-top: 110px; }
     }
     @media (max-width: 640px){ .media{cursor: default;} }
@@ -419,15 +415,20 @@
       const mnav = $('#mnav');
 
       function applyUniformNav(){
-        if(!nav) return;
-        if(isMobile()) { nav.style.removeProperty('--nav-fixed-w'); return; }
-        let max = 0;
+        const nav = $('#nav'); if(!nav) return;
+        let max = 0; const navItems = $$('.nav__item');
         navItems.forEach(btn=>{ const label = btn.querySelector('.label'); const w = (label?.scrollWidth||btn.scrollWidth); if(w>max) max = w; });
         const fixed = Math.ceil(max + 30);
         nav.style.setProperty('--nav-fixed-w', fixed + 'px');
         navItems.forEach((btn,i)=> btn.style.setProperty('--i', i));
       }
-      function setActiveIndex(){ if(!nav) return; const idx = navItems.findIndex(b=> b.classList.contains('active')); nav.style.setProperty('--ai', Math.max(0, idx)); }
+      function setActiveIndex(){
+        const navEl = $('#nav');
+        if(!navEl) return;
+        const navItems = $$('.nav__item');
+        const idx = navItems.findIndex(b=> b.classList.contains('active'));
+        navEl.style.setProperty('--ai', Math.max(0, idx));
+      }
 
       navItems.forEach(btn => {
         if(btn.closest('#mhead')) return;
