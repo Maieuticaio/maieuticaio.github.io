@@ -33,8 +33,9 @@
     body.is-home .home-back::before{ content: ':>'; }
     .feed { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-vert); }
     .block { width: 100%; max-width: 1200px; }
-    .block__title { font-family: inherit; font-weight: 600; margin: 0 0 8px; text-align: left; font-size: calc(var(--nav-fs) * 1.05); line-height: 1.2; letter-spacing: 0.005em; }
+    .block__title { font-family: inherit; font-weight: 600; margin: 0 0 16px; text-align: left; font-size: calc(var(--nav-fs) * 1.05); line-height: 1.2; letter-spacing: 0.005em; }
     .gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); -webkit-overflow-scrolling: touch; scroll-padding-left: var(--page-xpad); scroll-padding-right: var(--page-xpad); }
+.gallery + .gallery { margin-top: 12px; }
     .gallery::-webkit-scrollbar { height: 10px; }
     .gallery::-webkit-scrollbar-thumb { background: rgba(0,0,0,.3); }
     .gallery::-webkit-scrollbar-track { background: rgba(0,0,0,.08); }
@@ -90,14 +91,23 @@
           <div class="block__desc">Иллюстрации для урока об Анне Ахматовой для старшей школы в Учи.ру.</div>
         </article>
         <article class="block">
-          <h2 class="block__title">Серия B</h2>
+          <h2 class="block__title">Андрей Платонов</h2>
           <div class="gallery" data-gallery>
-            <div class="media" style="width: 200px"></div>
-            <div class="media" style="width: 340px"></div>
-            <div class="media" style="width: 190px"></div>
-            <div class="media" style="width: 270px"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train1.svg" alt="Платонов поезд 1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train2.svg" alt="Платонов поезд 2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train3.svg" alt="Платонов поезд 3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train4.svg" alt="Платонов поезд 4" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train5.svg" alt="Платонов поезд 5" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train6.svg" alt="Платонов поезд 6" loading="lazy"></div>
           </div>
-          <div class="block__desc">Описание серии B. Колесо мыши или палец прокручивают ленту горизонтально.</div>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/platonov1.svg" alt="Платонов 1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/platonov2.png" alt="Платонов 2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/platonov3.png" alt="Платонов 3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/platonov4.svg" alt="Платонов 4" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/platonov5.svg" alt="Платонов 5" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Иллюстрации к уроку по книге «Прекрасный яростный мир» для уроков старшей школы в Учи.ру.</div>
         </article>
       </div>
     </section>
