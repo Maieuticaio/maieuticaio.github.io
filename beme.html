@@ -227,7 +227,16 @@
 
     /* Адаптив: если очень узко, немного поджимаем стрелки */
     @media (max-width: 640px) {
+      /* существующие правки стрелок */
       .lb-prev { left: -44px; }
+      .lb-next { right: -44px; }
+      .lb-close { top: -50px; }
+
+      /* Мобильные поля: не более 10px от краёв экрана */
+      :root { --page-xpad: 10px; }
+      #about { padding-right: 0; } /* справа на мобайле только общий 10px от main */
+      .lightbox__inner { max-width: calc(100vw - 20px); max-height: calc(100vh - 20px); }
+    }
       .lb-next { right: -44px; }
       .lb-close { top: -50px; }
     }
