@@ -67,8 +67,11 @@
     .mhead{display:none}
     @media (max-width: 640px){
   :root { --page-xpad: 10px; }
-  .nav{ left:auto; right: var(--page-xpad); top: var(--nav-gap); display:flex; }
-  .nav .nav__item{ display:block; }
+  .nav{ left:auto; right:0; top: var(--nav-gap); display:flex; }
+  body.is-home .nav{ display:none !important; }
+  body:not(.is-home) .nav .nav__item{ display:none; }
+  body:not(.is-home) .nav .nav__item.active{ display:block; }
+  body:not(.is-home) .nav.expanded .nav__item{ display:block; }
   body:not(.is-home) section.page{ padding-top: 10px; }
 }
 @media (max-width: 640px){ .media{cursor: default;} }
