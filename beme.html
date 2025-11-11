@@ -58,7 +58,8 @@
       body.is-home .nav { pointer-events:auto; }
       body:not(.is-home) .nav .nav__item:not(.active){ display:none; }
       body:not(.is-home) .nav.expanded .nav__item{ display:flex; }
-      .home-back::before{ content: ':>' !important; }
+      body.is-home .home-back::before{ content: ':>' !important; }
+      body:not(.is-home) .home-back::before{ content: '>' !important; }
     }
     .mnav{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:200;background:rgba(128,128,128,.5)}
     .mnav.open{display:flex}
@@ -493,3 +494,4 @@
   </script>
 </body>
 </html>
+
