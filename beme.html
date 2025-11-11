@@ -66,7 +66,7 @@
       outline: var(--border-w) solid #000;
       outline-offset: 0;
     }
-    .nav__item .label { transition: opacity .18s ease; }
+    .nav__item .label { transition: opacity .18s ease; text-transform: uppercase; }
     .nav__item.collapsed { width: 10px; max-width: 10px; min-width: 0; padding: 0; }
     .nav__item.collapsed .label { opacity: 0; }
     .nav__item.active { outline-color: #111; }
@@ -99,9 +99,9 @@
     }
     .shapes-layer { position: absolute; inset: 0; pointer-events: none; }
     .shape, .wave { position: absolute; opacity: .9; }
-.shape.square{ background:#000; }
-.shape.circle{ background:#000; border-radius:50%; }
-.wave {
+    .shape.square{ background:#000; }
+    .shape.circle{ background:#000; border-radius:50%; }
+    .wave {
       /* волнистая лента с параметризуемыми сегментами */
       width:220px; height:20px;
       background: repeating-linear-gradient(90deg, #000 0 calc(var(--segW,24px)/2), transparent calc(var(--segW,24px)/2) var(--segW,24px));
@@ -136,19 +136,19 @@
     /* Убираем верхний внешний отступ у первого элемента текста, чтобы картинка и текст были ровно по верхнему краю */
     .about__text > :first-child { margin-top: 0; }
 
-    /* Кнопка назад на главную (нижний правый угол) */
+    /* Кнопка назад/домой (нижний правый угол) */
     .home-back{
       position: fixed;
-      right: 0;                 /* у самой правой кромки */
-      bottom: var(--nav-gap);   /* как зазор в навигации */
+      right: 0;
+      bottom: var(--nav-gap);
       z-index: 45;
       height: var(--nav-item-h);
       background:#000; color:#fff;
       border:none; border-radius:0; cursor:pointer;
-      padding: 0 15px;          /* как у пунктов меню */
-      display: none;            /* показывается только вне главной */
+      padding: 0 15px;
+      display: flex;
       align-items:center; justify-content:center;
-      font: inherit;            /* тот же размер, что и навигация */
+      font: inherit;
       clip-path: polygon(
         var(--x1,0%)  var(--y1,2%),
         var(--x2,100%) var(--y2,1%),
@@ -158,12 +158,15 @@
       outline: var(--border-w) solid #000;
       outline-offset: 0;
     }
+    /* Иконка на кнопке: на главной ":>", на внутренних ">" */
+    .home-back::before{ content: '>'; color:#fff; display:inline-block; line-height:1; }
+    body.is-home .home-back::before{ content: ':>'; }
 
     /* =================== FEED PAGES (Картинки, Штуки, Ed‑tech) =================== */
     .feed {
       display: flex;
       flex-direction: column;
-      align-items: flex-start; /* все блоки выровнены по правому краю */
+      align-items: flex-start; /* все блоки по левому краю */
       gap: var(--gap-vert);
     }
     .block { width: 100%; max-width: 1200px; }
@@ -233,6 +236,11 @@
     @media (prefers-reduced-motion: reduce) {
       .shape, .wave { animation: none !important; }
     }
+
+    /* =================== FIREWORK (домашняя кнопка) =================== */
+    .spark{ position:fixed; width:10px; height:10px; background:#000; pointer-events:none; will-change:transform,opacity; z-index:60; opacity:1; }
+    .spark.circle{ border-radius:50%; }
+    .spark.semi{ border-radius:50% 50% 0 0 / 50% 50% 0 0; overflow:hidden; }
   </style>
 </head>
 <body>
@@ -244,18 +252,18 @@
     <button class="nav__item" data-target="about"><span class="label">Обо мне</span></button>
   </nav>
   
-  <!-- Кнопка «назад на главную» в левом нижнем углу -->
-  <button class="home-back" id="homeBack" aria-label="На главную" title="На главную">&lt;</button>
+  <!-- Кнопка в правом нижнем углу -->
+  <button class="home-back" id="homeBack" aria-label=":>" title=":>"></button>
 
   <main>
     <!-- =================== HOME =================== -->
     <section class="page active" id="home">
-                  <div class="shapes-layer" id="shapes"></div>
+      <div class="shapes-layer" id="shapes"></div>
     </section>
 
     <!-- =================== PICTURES =================== -->
     <section class="page" id="pictures">
-            <div class="feed">
+      <div class="feed">
         <article class="block">
           <h2 class="block__title">Серия A</h2>
           <div class="gallery" data-gallery>
@@ -299,7 +307,7 @@
 
     <!-- =================== EDTECH =================== -->
     <section class="page" id="edtech">
-            <div class="feed">
+      <div class="feed">
         <article class="block">
           <h2 class="block__title">Интерактивы</h2>
           <div class="gallery" data-gallery>
@@ -314,7 +322,7 @@
 
     <!-- =================== ABOUT =================== -->
     <section class="page" id="about">
-            <div class="about">
+      <div class="about">
         <div class="about__image">
           <!-- Заглушка-изображение SVG вшито в data URI (замените на свою картинку при желании) -->
           <img alt="Фото" src="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?><svg xmlns='http://www.w3.org/2000/svg' width='800' height='1200'><rect width='100%' height='100%' fill='%23e5e5e5'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='48' fill='%23999'>Фото</text></svg>">
@@ -344,6 +352,8 @@
     /* =================== Навигация и аккордеон =================== */
     const sections = $$('.page');
     const navItems = $$('.nav__item');
+    let currentPage = 'home';
+    const backStack = [];
     const homeBack  = $('#homeBack');
 
     function jitterNavItem(el){
@@ -367,125 +377,245 @@
         else { btn.classList.toggle('collapsed', btn.dataset.target !== id); }
       });
 
-      // Кнопка «домой» показывается только вне главной
-      if(homeBack){ homeBack.style.display = isHome ? 'none' : 'flex'; }
+      // Обновляем подпись/ARIA для кнопки
+      if(homeBack){ homeBack.setAttribute('aria-label', isHome ? ':>' : '>'); }
 
       // Обновляем hash
       if(location.hash.replace('#','') !== id){
         history.replaceState(null, '', '#'+id);
       }
 
+      currentPage = id;
       // При возврате на главную — пересоздаём слой фигур
       if(isHome){ spawnShapes(true); }
     }
 
     // Инициализация навигации
-    navItems.forEach(btn => { jitterNavItem(btn); btn.addEventListener('click', () => setPage(btn.dataset.target)); });
+    navItems.forEach(btn => {
+      jitterNavItem(btn);
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.target;
+        if(currentPage && currentPage !== target){ backStack.push(currentPage); if(backStack.length>32) backStack.shift(); }
+        setPage(target);
+      });
+    });
     if(homeBack){ jitterNavItem(homeBack); }
+
+    // Горизонтальная прокрутка колесиком мыши
+    $$('.gallery').forEach(gal => {
+      gal.addEventListener('wheel', (e) => {
+        if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){
+          e.preventDefault();
+          gal.scrollLeft += e.deltaY;
+        }
+      }, { passive:false });
+    });
 
     // Восстановление страницы по hash при загрузке
     window.addEventListener('DOMContentLoaded', () => {
       const target = (location.hash || '#home').replace('#','');
       setPage(['home','pictures','things','edtech','about'].includes(target) ? target : 'home');
-      if(homeBack){ homeBack.addEventListener('click', () => setPage('home')); }
+      if(document.body.classList.contains('is-home')){ spawnShapes(true); }
+      if(homeBack){
+        homeBack.addEventListener('click', () => {
+          const isHome = document.body.classList.contains('is-home');
+          if(isHome){ fireworkFromButton(); }
+          else { const prev = backStack.pop() || 'home'; setPage(prev); }
+        });
+      }
+      // Лёгкое «оживление» кромок при загрузке
+      navItems.forEach(jitterNavItem);
+      if(homeBack) jitterNavItem(homeBack);
+
+      // === ТЕСТЫ (в консоли) ===
+      try {
+        console.assert(document.querySelector('.nav'), 'Nav должен существовать');
+        console.assert(document.querySelector('#shapes'), 'Слой фигур на главной должен существовать (#shapes)');
+        setPage('pictures');
+        console.assert(document.querySelector('#pictures.page.active'), 'Должна активироваться страница pictures');
+        console.assert([...document.querySelectorAll('.nav__item')].some(b=>b.classList.contains('collapsed')), 'Другие пункты меню должны схлопываться');
+        setPage('home');
+        console.assert(document.body.classList.contains('is-home'), 'На главной должен быть класс is-home');
+      } catch (e) { console.warn('Тесты UI упали:', e); }
     });
 
-    // Обновлять «неровности» при ресайзе
-    let jitterTO; window.addEventListener('resize', () => { clearTimeout(jitterTO); jitterTO = setTimeout(()=> navItems.forEach(jitterNavItem), 120); });
-
-    /* =================== Горизонтальная прокрутка колесом =================== */
-    $$('.gallery').forEach(gal => {
-      gal.addEventListener('wheel', (e) => { if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); gal.scrollLeft += e.deltaY; } }, { passive:false });
+    // Обновлять «неровности» при ресайзе и перегенерировать фигуры на главной
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__rsTO);
+      window.__rsTO = setTimeout(()=>{
+        navItems.forEach(jitterNavItem);
+        if(document.body.classList.contains('is-home')) spawnShapes(true);
+      }, 180);
     });
 
-    /* =================== АВТО‑ШИРИНА КАДРА ПОД ФОРМАТ ИЗОБРАЖЕНИЯ =================== */
-    function fitMediaToImageWidth(root=document){
-      const items = $$('.media', root);
-      items.forEach(m => {
-        const img = $('img', m);
-        if(!img) return; // плейсхолдеры без картинок остаются со своей заданной шириной
-        const apply = () => {
-          const H = m.clientHeight || 200; // фиксированная высота карточки
-          const iw = img.naturalWidth, ih = img.naturalHeight;
-          if(!iw || !ih) return; // если ещё не загрузилось
-          const w = Math.max(1, Math.round(iw * (H/ih))); // реальная ширина кадра по аспекту
-          m.style.width = w + 'px';
-          m.style.background = 'transparent'; // убираем серые поля по бокам
-        };
-        if(img.complete){ apply(); }
-        img.addEventListener('load', apply, { once:false });
-      });
-    }
-    window.addEventListener('DOMContentLoaded', ()=> fitMediaToImageWidth());
-    window.addEventListener('resize', ()=> { clearTimeout(window.__fitTO); window.__fitTO = setTimeout(()=>fitMediaToImageWidth(), 120); });
-
-    /* =================== LIGHTBOX =================== */
-    const lb = $('#lightbox');
-    const lbMedia = $('#lbMedia');
-    const lbPrev = $('#lbPrev');
-    const lbNext = $('#lbNext');
-    const lbClose = $('#lbClose');
-
-    let currentGallery = null; let currentIndex = -1;
-    function openLightbox(gallery, index){ currentGallery = gallery; currentIndex = index; renderLightbox(); lb.classList.add('open'); lb.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; }
-    function closeLightbox(){ lb.classList.remove('open'); lb.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; currentGallery = null; currentIndex = -1; lbMedia.removeAttribute('src'); }
-    function renderLightbox(){ if(!currentGallery) return; const items = $$('.media', currentGallery); if(!items.length) return; if(currentIndex<0) currentIndex=0; if(currentIndex>=items.length) currentIndex=items.length-1; const node = items[currentIndex]; const img = node.querySelector('img'); if(img && img.getAttribute('src')){ lbMedia.setAttribute('src', img.getAttribute('src')); } else { const w = Math.max(400, Math.min(1000, node.clientWidth*3)); const h = Math.max(300, Math.min(800, 600)); const svg = encodeURIComponent(`<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='100%' height='100%' fill='%23dddddd'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='32' fill='%23999'>Превью</text></svg>`); lbMedia.setAttribute('src', `data:image/svg+xml;utf8,${svg}`); } }
-
-    lbPrev.addEventListener('click', () => { if(currentGallery){ currentIndex = (currentIndex-1 + $$('.media',currentGallery).length) % $$('.media',currentGallery).length; renderLightbox(); } });
-    lbNext.addEventListener('click', () => { if(currentGallery){ currentIndex = (currentIndex+1) % $$('.media',currentGallery).length; renderLightbox(); } });
-    lbClose.addEventListener('click', closeLightbox);
-    lb.addEventListener('click', (e) => { if(e.target === lb) closeLightbox(); });
-    window.addEventListener('keydown', (e) => { if(!lb.classList.contains('open')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowLeft') lbPrev.click(); if(e.key==='ArrowRight') lbNext.click(); });
-
-    document.addEventListener('click', (e) => {
-      const m = e.target.closest('.media'); if(!m) return;
-      const gallery = m.closest('[data-gallery]'); if(!gallery) return;
-      const index = $$('.media', gallery).indexOf(m);
-      openLightbox(gallery, index);
-    });
-
-    /* =================== HOME: генерация простых плавающих фигур =================== */
+    /* =================== HOME: генерация плавающих фигур =================== */
     function spawnShapes(force=false){
-      const layer = $('#shapes'); if(!layer) return;
+      const layer = document.getElementById('shapes'); if(!layer) return;
       if(layer.children.length && !force) return;
-      layer.innerHTML='';
-      const W = layer.clientWidth; const H = layer.clientHeight;
-      const count = 18; const pick = (arr)=> arr[Math.floor(Math.random()*arr.length)];
-
+      layer.innerHTML = '';
+      const W = layer.clientWidth, H = layer.clientHeight;
+      const count = 18;
+      const pick = a => a[Math.floor(Math.random()*a.length)];
       for(let i=0;i<count;i++){
         const kind = pick(['square','circle','wave']);
         const dir  = pick(['LR','RL','TB','BT']);
-        const el = document.createElement('div'); el.className = (kind==='wave') ? 'wave' : `shape ${kind}`;
-
-        if(kind==='square'){
-          const s = Math.max(12, Math.round((Math.random()*30 + 30) * 0.7));
-          el.style.width = s+'px'; el.style.height = s+'px'; el.style.opacity = .85;
-        }
-        if(kind==='circle'){
-          const s = Math.max(12, Math.round((Math.random()*28 + 28) * 0.7));
-          el.style.width = s+'px'; el.style.height = s+'px'; el.style.borderRadius = '50%'; el.style.opacity = .9;
-        }
+        const el = document.createElement('div');
         if(kind==='wave'){
-          const segW = 24; const segH = Math.round(Math.random()*10)+14; const n = (Math.random() < 0.5 ? 4 : 6);
-          el.style.setProperty('--segW', segW+'px'); el.style.setProperty('--segH', segH+'px');
-          el.style.width = (segW * n) + 'px'; el.style.height = segH + 'px';
+          el.className = 'wave';
+          const segW = 24; const segH = Math.round(Math.random()*10)+14; const n = (Math.random()<0.5?4:6);
+          el.style.setProperty('--segW', segW+'px');
+          el.style.setProperty('--segH', segH+'px');
+          el.style.width = (segW*n)+'px';
+          el.style.height = segH+'px';
+        } else {
+          el.className = 'shape '+kind;
+          const s = Math.max(10, Math.round((Math.random()*30+30)*0.7));
+          el.style.width = s+'px'; el.style.height = s+'px';
+          if(kind==='circle') el.style.borderRadius = '50%';
         }
-
-        const dur = (Math.random()*14 + 14).toFixed(2)+'s';
-        el.style.animationDuration = dur; el.style.animationTimingFunction = 'linear'; el.style.animationIterationCount = 'infinite';
-        const delaySec = -(i * 1.111 + Math.random()*0.5); el.style.animationDelay = delaySec.toFixed(3) + 's';
-
-        if(dir==='LR') { const y = Math.random()*(H-40)+10; el.style.top=y+'px'; el.style.left='-25vw'; el.style.animationName='floatLR'; }
-        else if(dir==='RL'){ const y = Math.random()*(H-40)+10; el.style.top=y+'px'; el.style.right='-25vw'; el.style.animationName='floatRL'; }
-        else if(dir==='TB'){ const x = Math.random()*(W-60)+10; el.style.left=x+'px'; el.style.top='-25vh'; el.style.animationName='floatTB'; }
-        else { const x = Math.random()*(W-60)+10; el.style.left=x+'px'; el.style.bottom='-25vh'; el.style.animationName='floatBT'; }
-
+        const dur = (Math.random()*14+14).toFixed(2)+'s';
+        el.style.animationDuration = dur;
+        el.style.animationTimingFunction = 'linear';
+        el.style.animationIterationCount = 'infinite';
+        const delaySec = -(i*1.111 + Math.random()*0.5);
+        el.style.animationDelay = delaySec.toFixed(3)+'s';
+        if(dir==='LR'){ const y=Math.random()*(H-40)+10; el.style.top=y+'px'; el.style.left='-25vw'; el.style.animationName='floatLR'; }
+        else if(dir==='RL'){ const y=Math.random()*(H-40)+10; el.style.top=y+'px'; el.style.right='-25vw'; el.style.animationName='floatRL'; }
+        else if(dir==='TB'){ const x=Math.random()*(W-60)+10; el.style.left=x+'px'; el.style.top='-25vh'; el.style.animationName='floatTB'; }
+        else { const x=Math.random()*(W-60)+10; el.style.left=x+'px'; el.style.bottom='-25vh'; el.style.animationName='floatBT'; }
         layer.appendChild(el);
       }
     }
 
-    window.addEventListener('load', () => spawnShapes(true));
-    window.addEventListener('resize', () => { clearTimeout(window.__rsTO); window.__rsTO=setTimeout(()=>spawnShapes(true), 180); });
+    /* =================== LIGHTBOX (открытие изображений) =================== */
+    const lb = document.getElementById('lightbox');
+    const lbMedia = document.getElementById('lbMedia');
+    const lbPrev  = document.getElementById('lbPrev');
+    const lbNext  = document.getElementById('lbNext');
+    const lbClose = document.getElementById('lbClose');
+    let currentGallery = null; let currentIndex = -1;
+
+    function setLbMediaFromNode(node){
+      const img = node.querySelector('img,video,svg');
+      if(img && img.getAttribute('src')){
+        lbMedia.setAttribute('src', img.getAttribute('src'));
+        return;
+      }
+      // Заглушка, если в .media нет картинки
+      const w = Math.max(400, Math.min(1200, node.clientWidth*3 || 600));
+      const h = Math.max(300, Math.min(900,  node.clientHeight*3 || 450));
+      const svg = encodeURIComponent(`<?xml version=\"1.0\" encoding=\"UTF-8\"?><svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='100%' height='100%' fill='%23dddddd'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='32' fill='%23999'>Превью</text></svg>`);
+      lbMedia.setAttribute('src', `data:image/svg+xml;utf8,${svg}`);
+    }
+
+    function renderLightbox(){
+      if(!currentGallery) return;
+      const items = [...currentGallery.querySelectorAll('.media')];
+      if(!items.length) return;
+      if(currentIndex < 0) currentIndex = 0;
+      if(currentIndex >= items.length) currentIndex = items.length - 1;
+      setLbMediaFromNode(items[currentIndex]);
+    }
+
+    function openLightbox(gallery, index){
+      currentGallery = gallery; currentIndex = index;
+      renderLightbox();
+      lb.classList.add('open');
+      lb.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(){
+      lb.classList.remove('open');
+      lb.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+      currentGallery = null; currentIndex = -1;
+      lbMedia.removeAttribute('src');
+    }
+
+    // Делегирование клика по плиткам .media внутри [data-gallery]
+    document.addEventListener('click', (e) => {
+      const media = e.target.closest('.media');
+      if(!media) return;
+      const gallery = media.closest('[data-gallery]');
+      if(!gallery) return; // клики вне галерей игнорим
+      const items = [...gallery.querySelectorAll('.media')];
+      const index = items.indexOf(media);
+      openLightbox(gallery, index);
+    });
+
+    // Управление лайтбоксом
+    lbPrev && lbPrev.addEventListener('click', () => {
+      if(!currentGallery) return;
+      const items = [...currentGallery.querySelectorAll('.media')];
+      currentIndex = (currentIndex - 1 + items.length) % items.length;
+      renderLightbox();
+    });
+    lbNext && lbNext.addEventListener('click', () => {
+      if(!currentGallery) return;
+      const items = [...currentGallery.querySelectorAll('.media')];
+      currentIndex = (currentIndex + 1) % items.length;
+      renderLightbox();
+    });
+    lbClose && lbClose.addEventListener('click', closeLightbox);
+    lb && lb.addEventListener('click', (e) => { if(e.target === lb) closeLightbox(); });
+    window.addEventListener('keydown', (e) => {
+      if(!lb.classList.contains('open')) return;
+      if(e.key === 'Escape') closeLightbox();
+      if(e.key === 'ArrowLeft') lbPrev.click();
+      if(e.key === 'ArrowRight') lbNext.click();
+    });
+
+    // Мини‑тесты для лайтбокса (в консоли)
+    try {
+      const firstMedia = document.querySelector('[data-gallery] .media');
+      console.assert(!!firstMedia, 'Должен быть хотя бы один .media в галерее');
+    } catch(e){ console.warn('LB tests:', e); }
+
+    /* =================== HOME BUTTON FIREWORK =================== */
+    function fireworkFromButton(){
+      const btn = homeBack; if(!btn) return;
+      const rect = btn.getBoundingClientRect();
+      const origin = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+      const particles = 14;
+      const types = ['square','circle','semi'];
+      const frags = [];
+      for(let i=0;i<particles;i++){
+        const t = types[Math.floor(Math.random()*types.length)];
+        const el = document.createElement('div');
+        el.className = 'spark'+(t==='square'?'':(t==='circle'?' circle':' semi'));
+        const s = Math.round(6 + Math.random()*8); // 6–14px, меньше основных фигур
+        el.style.width = s+'px'; el.style.height = s+'px';
+        el.style.position = 'fixed';
+        el.style.zIndex = '200';
+        document.body.appendChild(el);
+        const ang = Math.random()*Math.PI*2;
+        let vx = Math.cos(ang) * (220 + Math.random()*240); // px/s
+        let vy = Math.sin(ang) * (220 + Math.random()*240);
+        const ax = Math.cos(ang) * 900;   // ускорение наружу
+        const ay = Math.sin(ang) * 900;
+        const x0 = origin.x - s/2;
+        const y0 = origin.y - s/2;
+        frags.push({ el, x: x0, y: y0, vx, vy, ax, ay, life: 0 });
+      }
+      let last = performance.now();
+      function tick(now){
+        const dt = (now - last)/1000; last = now;
+        let alive = 0;
+        for(const f of frags){
+          f.vx += f.ax * dt; f.vy += f.ay * dt;
+          f.x  += f.vx * dt; f.y  += f.vy * dt;
+          f.life += dt;
+          const fade = Math.max(0, 1 - f.life/0.8);
+          f.el.style.left = f.x + 'px';
+          f.el.style.top  = f.y + 'px';
+          f.el.style.opacity = String(fade);
+          if(f.life < 0.8) alive++; else { f.el.remove(); }
+        }
+        if(alive) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
   </script>
 </body>
 </html>
