@@ -5,286 +5,83 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Портфолио — один HTML</title>
   <style>
-    :root {
-      /* Глобальные переменные */
-      --page-xpad: 50px;
-      --nav-item-h: 44px;
-      --gap-vert: 50px;
-      --border-w: 2px;
-      --overlay-dim: rgba(0,0,0,.72);
-      --nav-fs: 1.125rem;      /* базовый размер шрифта навигации и описаний */
-      --nav-gap: 8px;      /* расстояние между пунктами и отступ сверху */
-    }
-
+    :root { --page-xpad: 50px; --nav-item-h: 44px; --gap-vert: 50px; --border-w: 2px; --overlay-dim: rgba(0,0,0,.72); --nav-fs: 1.125rem; --nav-gap: 8px; }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Noto Sans', Arial, 'Apple Color Emoji','Segoe UI Emoji';
-      color: #000;
-      background: #fff;
-      line-height: 1.4;
-    }
-
-    /* =================== NAV =================== */
-    .nav {
-      position: fixed;
-      top: var(--nav-gap);
-      right: 0;
-      z-index: 40;
-      display: flex;
-      flex-direction: column;
-      gap: var(--nav-gap);
-      pointer-events: auto;
-      font-size: var(--nav-fs);
-    }
-    .nav__item {
-      position: relative;
-      background: #000;
-      color: #fff;
-      height: var(--nav-item-h);
-      border: none;
-      margin: 0;
-      padding: 0 15px;
-      width: fit-content;
-      align-self: flex-end;
-      transition: width .25s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
-      overflow: hidden;
-      border-radius: 0;
-      clip-path: polygon(
-        var(--x1,0%)  var(--y1,2%),
-        var(--x2,100%) var(--y2,1%),
-        var(--x3,100%) var(--y3,98%),
-        var(--x4,0%)   var(--y4,99%)
-      );
-      outline: var(--border-w) solid #000;
-      outline-offset: 0;
-    }
+    body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Noto Sans', Arial, 'Apple Color Emoji','Segoe UI Emoji'; color: #000; background: #fff; line-height: 1.4; }
+    .nav { position: fixed; top: var(--nav-gap); right: 0; z-index: 40; display: flex; flex-direction: column; gap: var(--nav-gap); pointer-events: auto; font-size: var(--nav-fs); }
+    .nav__item { position: relative; background: #000; color: #fff; height: var(--nav-item-h); border: none; margin: 0; padding: 0 15px; width: fit-content; align-self: flex-end; transition: width .25s ease; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; white-space: nowrap; overflow: hidden; border-radius: 0; clip-path: polygon(var(--x1,0%) var(--y1,2%), var(--x2,100%) var(--y2,1%), var(--x3,100%) var(--y3,98%), var(--x4,0%) var(--y4,99%)); outline: var(--border-w) solid #000; outline-offset: 0; }
     .nav__item .label { transition: opacity .18s ease; text-transform: uppercase; }
     .nav__item.collapsed { width: 10px; max-width: 10px; min-width: 0; padding: 0; }
     .nav__item.collapsed .label { opacity: 0; }
     .nav__item.active { outline-color: #111; }
-
-    /* =================== PAGE WRAPPER =================== */
-    main {
-      min-height: 100vh;
-      padding: 0 var(--page-xpad) 80px; /* убрали верхний паддинг у main, чтобы общий верхний отступ контролировали страницы */
-    }
-    /* На главной странице отступов не должно быть */
+    main { min-height: 100vh; padding: 0 var(--page-xpad) 80px; }
     body.is-home main { padding: 0; }
-
-    section.page { display: none; }
+    section.page { display: none; padding-top: 50px; }
     section.page.active { display: block; }
-
-    /* Заголовки секций */
-    .page h1 { font-size: 28px; margin: 0 0 20px; font-weight: 700; text-align: left; }
-
-    /* Отступ сверху на всех страницах (кроме главной) */
-    section.page { padding-top: 50px; }
-    #home { padding-top: 0; }
-    /* Специальный правый отступ только для страницы "Обо мне": 50px (главный) + 15px (секция) = 65px */
-    #about { padding-right: 15px; }
-
-    /* =================== HOME =================== */
-    #home {
-      position: relative;
-      min-height: 100vh; /* во всю высоту экрана для пересечения анимаций */
-      overflow: hidden; /* чтобы анимации "вплывали" */
-    }
+    #home { padding-top: 0; position: relative; min-height: 100vh; overflow: hidden; }
     .shapes-layer { position: absolute; inset: 0; pointer-events: none; }
-    .shape, .wave { position: absolute; opacity: .9; }
-    .shape.square{ background:#000; }
-    .shape.circle{ background:#000; border-radius:50%; }
-    .wave {
-      /* волнистая лента с параметризуемыми сегментами */
-      width:220px; height:20px;
-      background: repeating-linear-gradient(90deg, #000 0 calc(var(--segW,24px)/2), transparent calc(var(--segW,24px)/2) var(--segW,24px));
-      -webkit-mask: radial-gradient(calc(var(--segW,24px)/2) calc(var(--segH,20px)/2) at calc(var(--segW,24px)/2) calc(var(--segH,20px)/2), #000 98%, transparent) repeat-x left center / var(--segW,24px) var(--segH,20px);
-              mask: radial-gradient(calc(var(--segW,24px)/2) calc(var(--segH,20px)/2) at calc(var(--segW,24px)/2) calc(var(--segH,20px)/2), #000 98%, transparent) repeat-x left center / var(--segW,24px) var(--segH,20px);
-      background-clip: padding-box;
-    }
-
-    @keyframes floatLR { from{ transform: translateX(-120vw);} to{ transform: translateX(120vw);} }
-    @keyframes floatRL { from{ transform: translateX(120vw);} to{ transform: translateX(-120vw);} }
-    @keyframes floatTB { from{ transform: translateY(-120vh);} to{ transform: translateY(120vh);} }
-    @keyframes floatBT { from{ transform: translateY(120vh);} to{ transform: translateY(-120vh);} }
-
-    /* =================== ABOUT =================== */
-    .about {
-      display: flex;
-      gap: 24px;
-      align-items: flex-start;
-      justify-content: flex-end; /* выравнивание по правому краю всей полосы */
-    }
-    .about__image {
-      flex: 0 0 33.333vw; /* занимает треть экрана по ширине */
-      max-width: 33.333vw;
-    }
-    .about__image img {
-      display: block;
-      width: 100%;     /* фиксированная по ширине доля */
-      height: auto;    /* любая высота */
-      object-fit: cover;
-    }
+    .drop{position:absolute;width:var(--s,36px);height:calc(var(--s,36px)*2);pointer-events:none}
+    .drop::after{content:"";position:absolute;left:0;bottom:0;width:var(--s,36px);height:var(--s,36px);background:#000;border-radius:50%;z-index:1}
+    .drop::before{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--s,36px)*0.5);width:0;height:0;border-left:calc(var(--s,36px)/2) solid transparent;border-right:calc(var(--s,36px)/2) solid transparent;border-bottom:calc(var(--s,36px)*1.1) solid #000;z-index:2}
+    .about { display: flex; gap: 24px; align-items: flex-start; justify-content: flex-end; }
+    .about__image { flex: 0 0 33.333vw; max-width: 33.333vw; }
+    .about__image img { display: block; width: 100%; height: auto; object-fit: cover; }
     .about__text { flex: 1 1 auto; min-width: 280px; font-size: 0.95rem; }
     .about__text > :first-child { margin-top: 0; }
-
-    /* Кнопка назад/домой (нижний правый угол) */
-    .home-back{
-      position: fixed;
-      right: 0;
-      bottom: var(--nav-gap);
-      z-index: 45;
-      height: var(--nav-item-h);
-      background:#000; color:#fff;
-      border:none; border-radius:0; cursor:pointer;
-      padding: 0 15px;
-      display: flex;
-      align-items:center; justify-content:center;
-      font: inherit;
-      clip-path: polygon(
-        var(--x1,0%)  var(--y1,2%),
-        var(--x2,100%) var(--y2,1%),
-        var(--x3,100%) var(--y3,98%),
-        var(--x4,0%)   var(--y4,99%)
-      );
-      outline: var(--border-w) solid #000;
-      outline-offset: 0;
-    }
+    .home-back{ position: fixed; right: 0; bottom: var(--nav-gap); z-index: 45; height: var(--nav-item-h); background:#000; color:#fff; border:none; border-radius:0; cursor:pointer; padding: 0 15px; display: flex; align-items:center; justify-content:center; font: inherit; clip-path: polygon(var(--x1,0%) var(--y1,2%), var(--x2,100%) var(--y2,1%), var(--x3,100%) var(--y3,98%), var(--x4,0%) var(--y4,99%)); outline: var(--border-w) solid #000; outline-offset: 0; }
     .home-back::before{ content: '>'; color:#fff; display:inline-block; line-height:1; }
     body.is-home .home-back::before{ content: ':>'; }
-
-    /* =================== FEED PAGES (Картинки, Штуки, Ed‑tech) =================== */
-    .feed {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start; /* все блоки по левому краю */
-      gap: var(--gap-vert);
-    }
+    .feed { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-vert); }
     .block { width: 100%; max-width: 1200px; }
     .block__title { font-weight: 800; margin: 0 0 12px; text-align: left; }
-
-    .gallery {
-      display: flex;
-      gap: 12px;
-      overflow-x: auto;        /* горизонтальная прокрутка */
-      padding-bottom: 8px;
-      scrollbar-width: thin;
-    }
+    .gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: thin; }
     .gallery::-webkit-scrollbar { height: 10px; }
     .gallery::-webkit-scrollbar-thumb { background: rgba(0,0,0,.3); }
     .gallery::-webkit-scrollbar-track { background: rgba(0,0,0,.08); }
-
-    .media {
-      height: 200px;           /* фиксированная высота превью */
-      flex: 0 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #ddd;         /* серые превью-фреймы */
-      color: #666;
-      border: 1px solid #ccc;
-      border-radius: 0;         /* без скруглений */
-      cursor: pointer;
-      position: relative;
-      aspect-ratio: auto;       /* ширина берётся из inline-style width */
-    }
-    .media img, .media video, .media svg {
-      height: 100%;
-      width: auto;              /* подгон по ширине формата */
-      display: block;
-      pointer-events: none;
-    }
+    .media { height: 200px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: #ddd; color: #666; border: none; border-radius: 0; cursor: pointer; position: relative; aspect-ratio: auto; }
+    .media img, .media video, .media svg { height: 100%; width: auto; display: block; pointer-events: none; }
     .block__desc { max-width: 60ch; margin-top: 10px; margin-left: 0; text-align: left; font-size: 0.95rem; }
-
-    /* =================== LIGHTBOX =================== */
     .lightbox { position: fixed; inset: 0; background: var(--overlay-dim); display: none; place-items: center; z-index: 100; }
     .lightbox.open { display: grid; }
-    .lightbox__inner {
-      position: relative;
-      max-width: calc(100vw - 200px);  /* 100px отступы по узкой стороне */
-      max-height: calc(100vh - 200px);
-      display: inline-block;
-    }
-    .lightbox__media { display: block; max-width: 100%; max-height: 100%; border-radius: 0; background:#ddd; }
-    .lb-btn {
-      position: absolute;
-      top: 50%; transform: translateY(-50%);
-      width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer;
-      background: #000; color: #fff; display: grid; place-items: center; font-size: 20px; line-height: 1;
-    }
+    .lightbox__inner { position: relative; max-width: calc(100vw - 200px); max-height: calc(100vh - 200px); display: inline-block; }
+    .lightbox__media { display: block; max-width: 100%; max-height: 100%; border-radius: 0; background: transparent; }
+    .lb-btn { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; border-radius: 50%; border: none; cursor: pointer; background: #000; color: #fff; display: grid; place-items: center; font-size: 20px; line-height: 1; }
     .lb-prev { left: -60px; }
     .lb-next { right: -60px; }
     .lb-close { position:absolute; top:-60px; right:0; width:40px; height:40px; background:transparent; color:#000; border:none; cursor:pointer; border-radius:0; display:flex; align-items:center; justify-content:center; font-size:32px; line-height:1; }
-
-    /* Адаптив: если очень узко, немного поджимаем стрелки */
-    @media (max-width: 640px) {
-      .lb-prev { left: -44px; }
-      .lb-next { right: -44px; }
-      .lb-close { top: -50px; }
-
-      /* Мобильные поля: не более 10px от краёв экрана */
-      :root { --page-xpad: 10px; }
-      #about { padding-right: 0; }
-      .lightbox__inner { max-width: calc(100vw - 20px); max-height: calc(100vh - 20px); }
-
-      /* Мобильная верстка "Обо мне": фото сверху, текст ниже; фото не обрезается */
-      .about { flex-direction: column; align-items: stretch; }
-      .about__image { flex: 0 0 auto; max-width: 100%; }
-      .about__image img { width: 100%; height: auto; object-fit: contain; }
-      .about__text { font-size: 1rem; }
-    }
-
-    /* Учет доступности: меньше анимаций, если пользователь просит */
-    @media (prefers-reduced-motion: reduce) {
-      .shape, .wave { animation: none !important; }
-    }
-
-    /* =================== FIREWORK (домашняя кнопка) =================== */
+    @media (max-width: 640px) { .lb-prev { left: -44px; } .lb-next { right: -44px; } .lb-close { top: -50px; } :root { --page-xpad: 10px; } #about { padding-right: 0; } .lightbox__inner { max-width: calc(100vw - 20px); max-height: calc(100vh - 20px); } .about { flex-direction: column; align-items: stretch; } .about__image { flex: 0 0 auto; max-width: 100%; } .about__image img { width: 100%; height: auto; object-fit: contain; } .about__text { font-size: 1rem; } }
+    @media (prefers-reduced-motion: reduce) { .drop { animation: none !important; } }
     .spark{ position:fixed; width:10px; height:10px; background:#000; pointer-events:none; will-change:transform,opacity; z-index:60; opacity:1; }
     .spark.circle{ border-radius:50%; }
     .spark.semi{ border-radius:50% 50% 0 0 / 50% 50% 0 0; overflow:hidden; }
   </style>
 </head>
 <body>
-  <!-- =================== NAV =================== -->
   <nav class="nav" id="nav">
     <button class="nav__item" data-target="pictures"><span class="label">Картинки</span></button>
     <button class="nav__item" data-target="things"><span class="label">Штуки</span></button>
     <button class="nav__item" data-target="edtech"><span class="label">Ed‑tech</span></button>
     <button class="nav__item" data-target="about"><span class="label">Обо мне</span></button>
   </nav>
-  
-  <!-- Кнопка в правом нижнем углу -->
   <button class="home-back" id="homeBack" aria-label=":>" title=":>"></button>
-
   <main>
-    <!-- =================== HOME =================== -->
     <section class="page active" id="home">
       <div class="shapes-layer" id="shapes"></div>
     </section>
-
-    <!-- =================== PICTURES =================== -->
     <section class="page" id="pictures">
       <div class="feed">
         <article class="block">
-          <h2 class="block__title">Серия A</h2>
+          <h2 class="block__title">Анна Ахматова</h2>
           <div class="gallery" data-gallery>
-            <div class="media" style="width: 260px" title="Фрейм 1"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/Akhmatova/flower-exp.gif" alt="Гиф: цветок — серия «Анна Ахматова»" loading="lazy"></div>
             <div class="media" style="width: 180px" title="Фрейм 2"></div>
             <div class="media" style="width: 320px" title="Фрейм 3"></div>
             <div class="media" style="width: 210px" title="Фрейм 4"></div>
             <div class="media" style="width: 280px" title="Фрейм 5"></div>
           </div>
-          <div class="block__desc">Описание серии A. Серые фреймы разной ширины — заглушки под изображения/видео/GIF/SVG.</div>
+          <div class="block__desc">Иллюстрации для урока об Анне Ахматовой для старшей школы в Учи.ру.</div>
         </article>
-
         <article class="block">
           <h2 class="block__title">Серия B</h2>
           <div class="gallery" data-gallery>
@@ -297,8 +94,6 @@
         </article>
       </div>
     </section>
-
-    <!-- =================== THINGS =================== -->
     <section class="page" id="things">
       <div class="feed">
         <article class="block">
@@ -313,8 +108,6 @@
         </article>
       </div>
     </section>
-
-    <!-- =================== EDTECH =================== -->
     <section class="page" id="edtech">
       <div class="feed">
         <article class="block">
@@ -328,12 +121,9 @@
         </article>
       </div>
     </section>
-
-    <!-- =================== ABOUT =================== -->
     <section class="page" id="about">
       <div class="about">
         <div class="about__image">
-          <!-- Заглушка-изображение SVG вшито в data URI (замените на свою картинку при желании) -->
           <img alt="Фото" src="data:image/svg+xml;utf8,<?xml version='1.0' encoding='UTF-8'?><svg xmlns='http://www.w3.org/2000/svg' width='800' height='1200'><rect width='100%' height='100%' fill='%23e5e5e5'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='48' fill='%23999'>Фото</text></svg>">
         </div>
         <div class="about__text">
@@ -343,8 +133,6 @@
       </div>
     </section>
   </main>
-
-  <!-- =================== LIGHTBOX =================== -->
   <div class="lightbox" id="lightbox" aria-hidden="true">
     <div class="lightbox__inner" id="lbInner">
       <button class="lb-close" id="lbClose" aria-label="Закрыть">×</button>
@@ -353,219 +141,208 @@
       <button class="lb-btn lb-next" id="lbNext" aria-label="Следующий">›</button>
     </div>
   </div>
-
   <script>
-    const $ = (sel, root=document) => root.querySelector(sel);
-    const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
-
-    let currentPage = 'home';
-    const backStack = [];
-
-    function jitterNavItem(el){
-      const r = (min,max) => (Math.random()*(max-min)+min).toFixed(2);
-      el.style.setProperty('--x1', '0%');  el.style.setProperty('--y1', r(0.5,3)+'%');
-      el.style.setProperty('--x2', '100%'); el.style.setProperty('--y2', r(0.5,2.5)+'%');
-      el.style.setProperty('--x3', '100%'); el.style.setProperty('--y3', r(96.5,99)+'%');
-      el.style.setProperty('--x4', '0%');  el.style.setProperty('--y4', r(96.5,99)+'%');
-    }
-
-    function setPage(id){
-      const sections = $$('.page');
-      const navItems = $$('.nav__item');
-
-      sections.forEach(s => s.classList.toggle('active', s.id===id));
-      navItems.forEach(btn => btn.classList.toggle('active', btn.dataset.target===id));
-
-      const isHome = (id === 'home');
-      document.body.classList.toggle('is-home', isHome);
-
-      navItems.forEach(btn => {
-        if(isHome){ btn.classList.remove('collapsed'); }
-        else { btn.classList.toggle('collapsed', btn.dataset.target !== id); }
-      });
-
-      if(location.hash.replace('#','') !== id){
-        history.replaceState(null, '', '#'+id);
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+let currentPage = 'home';
+function jitterNavItem(el){
+  const r = (a,b)=>(Math.random()*(b-a)+a).toFixed(2);
+  el.style.setProperty('--x1','0%');
+  el.style.setProperty('--y1',r(0.5,3)+'%');
+  el.style.setProperty('--x2','100%');
+  el.style.setProperty('--y2',r(0.5,2.5)+'%');
+  el.style.setProperty('--x3','100%');
+  el.style.setProperty('--y3',r(96.5,99)+'%');
+  el.style.setProperty('--x4','0%');
+  el.style.setProperty('--y4',r(96.5,99)+'%');
+}
+function setPage(id){
+  const sections = $$('.page');
+  const navItems = $$('.nav__item');
+  sections.forEach(s => s.classList.toggle('active', s.id === id));
+  navItems.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+  const isHome = id === 'home';
+  document.body.classList.toggle('is-home', isHome);
+  navItems.forEach(b => {
+    if(isHome){ b.classList.remove('collapsed'); }
+    else { b.classList.toggle('collapsed', b.dataset.target !== id); }
+  });
+  if(location.hash.replace('#','') !== id){ history.replaceState(null, '', '#'+id); }
+  currentPage = id;
+  if(isHome){ startRain(true); } else { stopRain(); }
+}
+function startRain(force=false){
+  const layer = $('#shapes');
+  if(!layer) return;
+  if(layer.dataset.mode === 'rain' && layer.children.length && !force) return;
+  stopRain();
+  layer.innerHTML = '';
+  layer.dataset.mode = 'rain';
+  const drops = [];
+  const DIR = Math.random() < 0.5 ? -1 : 1;
+  const makeDrop = (W,H) => {
+    const el = document.createElement('div');
+    el.className = 'drop';
+    const s = Math.round(22 + Math.random()*18);
+    el.style.setProperty('--s', s+'px');
+    const x = Math.random()*(W - s);
+    const y = -Math.random()*H*0.5 - s;
+    const vy = (70 + Math.random()*70) * 1.3333;
+    const vx = DIR * (28 + Math.random()*18);
+    let jx = 0;
+    layer.appendChild(el);
+    return { el, s, x, y, vy, vx, jx };
+  };
+  let W = layer.clientWidth, H = layer.clientHeight;
+  const COUNT = 26;
+  for(let i=0;i<COUNT;i++) drops.push(makeDrop(W,H));
+  let last = performance.now();
+  let speedMul = 1;
+  function loop(now){
+    const dt = Math.min(0.05, (now - last)/1000);
+    last = now;
+    W = layer.clientWidth; H = layer.clientHeight;
+    for(const d of drops){
+      d.jx += ((Math.random()-0.5)*30)*dt;
+      if(d.jx>5) d.jx=5; if(d.jx<-5) d.jx=-5;
+      d.x += (d.vx + d.jx)*dt;
+      d.y += d.vy*dt*speedMul;
+      d.el.style.transform = `translate(${Math.round(d.x)}px, ${Math.round(d.y)}px)`;
+      if(d.y > H + d.s*1.3 || d.x < -d.s || d.x > W + d.s){
+        d.y = -d.s - Math.random()*H*0.4;
+        d.x = Math.random()*(W - d.s);
+        d.vy = 70 + Math.random()*70;
+        d.vx = DIR * (28 + Math.random()*18);
+        d.jx = 0;
       }
-
-      currentPage = id;
-      if(isHome){ spawnShapes(true); }
     }
-
-    function spawnShapes(force=false){
-      const layer = document.getElementById('shapes'); if(!layer) return;
-      if(layer.children.length && !force) return;
-      layer.innerHTML = '';
-      const W = layer.clientWidth, H = layer.clientHeight;
-      const count = 18;
-      const pick = a => a[Math.floor(Math.random()*a.length)];
-      for(let i=0;i<count;i++){
-        const kind = pick(['square','circle','wave']);
-        const dir  = pick(['LR','RL','TB','BT']);
-        const el = document.createElement('div');
-        if(kind==='wave'){
-          el.className = 'wave';
-          const segW = 24; const segH = Math.round(Math.random()*10)+14; const n = (Math.random()<0.5?4:6);
-          el.style.setProperty('--segW', segW+'px');
-          el.style.setProperty('--segH', segH+'px');
-          el.style.width = (segW*n)+'px';
-          el.style.height = segH+'px';
-        } else {
-          el.className = 'shape '+kind;
-          const s = Math.max(10, Math.round((Math.random()*30+30)*0.7));
-          el.style.width = s+'px'; el.style.height = s+'px';
-          if(kind==='circle') el.style.borderRadius = '50%';
-        }
-        const dur = (Math.random()*14+14).toFixed(2)+'s';
-        el.style.animationDuration = dur;
-        el.style.animationTimingFunction = 'linear';
-        el.style.animationIterationCount = 'infinite';
-        const delaySec = -(i*1.111 + Math.random()*0.5);
-        el.style.animationDelay = delaySec.toFixed(3)+'s';
-        if(dir==='LR'){ const y=Math.random()*(H-40)+10; el.style.top=y+'px'; el.style.left='-25vw'; el.style.animationName='floatLR'; }
-        else if(dir==='RL'){ const y=Math.random()*(H-40)+10; el.style.top=y+'px'; el.style.right='-25vw'; el.style.animationName='floatRL'; }
-        else if(dir==='TB'){ const x=Math.random()*(W-60)+10; el.style.left=x+'px'; el.style.top='-25vh'; el.style.animationName='floatTB'; }
-        else { const x=Math.random()*(W-60)+10; el.style.left=x+'px'; el.style.bottom='-25vh'; el.style.animationName='floatBT'; }
-        layer.appendChild(el);
-      }
+    window.__rainRAF = requestAnimationFrame(loop);
+  }
+  function scheduleBoost(){
+    const wait = 6000 + Math.random()*6000;
+    window.__rainBoostTO = setTimeout(()=>{
+      speedMul = 2;
+      setTimeout(()=>{ speedMul = 1; scheduleBoost(); }, 1200 + Math.random()*800);
+    }, wait);
+  }
+  window.__rainRAF = requestAnimationFrame(loop);
+  scheduleBoost();
+}
+function stopRain(){
+  const layer = $('#shapes');
+  if(window.__rainRAF){ cancelAnimationFrame(window.__rainRAF); window.__rainRAF = null; }
+  if(window.__rainBoostTO){ clearTimeout(window.__rainBoostTO); window.__rainBoostTO = null; }
+  if(layer){ layer.innerHTML=''; layer.removeAttribute('data-mode'); }
+}
+function fireworkFromButton(){
+  const btn = $('#homeBack'); if(!btn) return;
+  const r = btn.getBoundingClientRect();
+  const o = { x: r.left + r.width/2, y: r.top + r.height/2 };
+  const N = 14; const types = ['square','circle','semi']; const fr = [];
+  for(let i=0;i<N;i++){
+    const t = types[Math.floor(Math.random()*types.length)];
+    const el = document.createElement('div');
+    el.className = 'spark' + (t==='square'?'':(t==='circle'?' circle':' semi'));
+    const s = Math.round(6 + Math.random()*8);
+    el.style.width = s+'px'; el.style.height = s+'px'; el.style.position='fixed'; el.style.zIndex='200';
+    document.body.appendChild(el);
+    const ang = Math.random()*Math.PI*2;
+    let vx = Math.cos(ang) * (220 + Math.random()*240);
+    let vy = Math.sin(ang) * (220 + Math.random()*240);
+    const ax = Math.cos(ang) * 900;
+    const ay = Math.sin(ang) * 900;
+    const x0 = o.x - s/2; const y0 = o.y - s/2;
+    fr.push({ el, x: x0, y: y0, vx, vy, ax, ay, life: 0 });
+  }
+  let last = performance.now();
+  function tick(now){
+    const dt = (now - last)/1000; last = now;
+    let alive = 0;
+    for(const f of fr){
+      f.vx += f.ax * dt; f.vy += f.ay * dt;
+      f.x  += f.vx * dt; f.y  += f.vy * dt;
+      f.life += dt;
+      const fade = Math.max(0, 1 - f.life/0.8);
+      f.el.style.left = f.x + 'px';
+      f.el.style.top  = f.y + 'px';
+      f.el.style.opacity = String(fade);
+      if(f.life < 0.8) alive++; else f.el.remove();
     }
-
-    function fireworkFromButton(){
-      const btn = document.getElementById('homeBack'); if(!btn) return;
-      const rect = btn.getBoundingClientRect();
-      const origin = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
-      const particles = 14;
-      const types = ['square','circle','semi'];
-      const frags = [];
-      for(let i=0;i<particles;i++){
-        const t = types[Math.floor(Math.random()*types.length)];
-        const el = document.createElement('div');
-        el.className = 'spark'+(t==='square'?'':(t==='circle'?' circle':' semi'));
-        const s = Math.round(6 + Math.random()*8);
-        el.style.width = s+'px'; el.style.height = s+'px';
-        el.style.position = 'fixed';
-        el.style.zIndex = '200';
-        document.body.appendChild(el);
-        const ang = Math.random()*Math.PI*2;
-        let vx = Math.cos(ang) * (220 + Math.random()*240);
-        let vy = Math.sin(ang) * (220 + Math.random()*240);
-        const ax = Math.cos(ang) * 900;
-        const ay = Math.sin(ang) * 900;
-        const x0 = origin.x - s/2;
-        const y0 = origin.y - s/2;
-        frags.push({ el, x: x0, y: y0, vx, vy, ax, ay, life: 0 });
-      }
-      let last = performance.now();
-      function tick(now){
-        const dt = (now - last)/1000; last = now;
-        let alive = 0;
-        for(const f of frags){
-          f.vx += f.ax * dt; f.vy += f.ay * dt;
-          f.x  += f.vx * dt; f.y  += f.vy * dt;
-          f.life += dt;
-          const fade = Math.max(0, 1 - f.life/0.8);
-          f.el.style.left = f.x + 'px';
-          f.el.style.top  = f.y + 'px';
-          f.el.style.opacity = String(fade);
-          if(f.life < 0.8) alive++; else { f.el.remove(); }
-        }
-        if(alive) requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
+    if(alive) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+const lb = $('#lightbox');
+const lbMedia = $('#lbMedia');
+const lbPrev  = $('#lbPrev');
+const lbNext  = $('#lbNext');
+const lbClose = $('#lbClose');
+let currentGallery = null; let currentIndex = -1;
+function setLbMediaFromNode(node){
+  const img = node.querySelector('img,video,svg');
+  if(img && img.getAttribute('src')){ lbMedia.setAttribute('src', img.getAttribute('src')); return; }
+  const w = Math.max(400, Math.min(1200, node.clientWidth*3 || 600));
+  const h = Math.max(300, Math.min(900,  node.clientHeight*3 || 450));
+  const svg = encodeURIComponent(`<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='100%' height='100%' fill='%23dddddd'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='32' fill='%23999'>Превью</text></svg>`);
+  lbMedia.setAttribute('src', `data:image/svg+xml;utf8,${svg}`);
+}
+function renderLightbox(){
+  if(!currentGallery) return;
+  const items = [...currentGallery.querySelectorAll('.media')];
+  if(!items.length) return;
+  if(currentIndex < 0) currentIndex = 0;
+  if(currentIndex >= items.length) currentIndex = items.length - 1;
+  setLbMediaFromNode(items[currentIndex]);
+}
+function openLightbox(gallery, index){
+  currentGallery = gallery; currentIndex = index;
+  renderLightbox();
+  lb.classList.add('open');
+  lb.setAttribute('aria-hidden','false');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox(){
+  lb.classList.remove('open');
+  lb.setAttribute('aria-hidden','true');
+  document.body.style.overflow = '';
+  currentGallery = null; currentIndex = -1;
+  lbMedia.removeAttribute('src');
+}
+document.addEventListener('click', (e) => {
+  const media = e.target.closest('.media');
+  if(media){
+    const gallery = media.closest('[data-gallery]');
+    if(gallery){
+      const items = [...gallery.querySelectorAll('.media')];
+      const index = items.indexOf(media);
+      openLightbox(gallery, index);
+      return;
     }
-
-    // LIGHTBOX
-    const lb = document.getElementById('lightbox');
-    const lbMedia = document.getElementById('lbMedia');
-    const lbPrev  = document.getElementById('lbPrev');
-    const lbNext  = document.getElementById('lbNext');
-    const lbClose = document.getElementById('lbClose');
-    let currentGallery = null; let currentIndex = -1;
-
-    function setLbMediaFromNode(node){
-      const img = node.querySelector('img,video,svg');
-      if(img && img.getAttribute('src')){ lbMedia.setAttribute('src', img.getAttribute('src')); return; }
-      const w = Math.max(400, Math.min(1200, node.clientWidth*3 || 600));
-      const h = Math.max(300, Math.min(900,  node.clientHeight*3 || 450));
-      const svg = encodeURIComponent(`<?xml version="1.0" encoding="UTF-8"?><svg xmlns='http://www.w3.org/2000/svg' width='${w}' height='${h}'><rect width='100%' height='100%' fill='%23dddddd'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='32' fill='%23999'>Превью</text></svg>`);
-      lbMedia.setAttribute('src', `data:image/svg+xml;utf8,${svg}`);
-    }
-    function renderLightbox(){
-      if(!currentGallery) return;
-      const items = [...currentGallery.querySelectorAll('.media')];
-      if(!items.length) return;
-      if(currentIndex < 0) currentIndex = 0;
-      if(currentIndex >= items.length) currentIndex = items.length - 1;
-      setLbMediaFromNode(items[currentIndex]);
-    }
-    function openLightbox(gallery, index){
-      currentGallery = gallery; currentIndex = index;
-      renderLightbox();
-      lb.classList.add('open');
-      lb.setAttribute('aria-hidden','false');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeLightbox(){
-      lb.classList.remove('open');
-      lb.setAttribute('aria-hidden','true');
-      document.body.style.overflow = '';
-      currentGallery = null; currentIndex = -1;
-      lbMedia.removeAttribute('src');
-    }
-
-    document.addEventListener('click', (e) => {
-      const media = e.target.closest('.media');
-      if(media){
-        const gallery = media.closest('[data-gallery]');
-        if(gallery){
-          const items = [...gallery.querySelectorAll('.media')];
-          const index = items.indexOf(media);
-          openLightbox(gallery, index);
-          return;
-        }
-      }
-      if(e.target === lb) closeLightbox();
-    });
-    lbPrev && lbPrev.addEventListener('click', () => { if(!currentGallery) return; const items=[...currentGallery.querySelectorAll('.media')]; currentIndex=(currentIndex-1+items.length)%items.length; renderLightbox(); });
-    lbNext && lbNext.addEventListener('click', () => { if(!currentGallery) return; const items=[...currentGallery.querySelectorAll('.media')]; currentIndex=(currentIndex+1)%items.length; renderLightbox(); });
-    lbClose && lbClose.addEventListener('click', closeLightbox);
-    window.addEventListener('keydown', (e) => { if(!lb.classList.contains('open')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowLeft') lbPrev.click(); if(e.key==='ArrowRight') lbNext.click(); });
-
-    // INIT
-    window.addEventListener('DOMContentLoaded', () => {
-      const navItems = $$('.nav__item');
-      navItems.forEach(btn => { jitterNavItem(btn); btn.addEventListener('click', () => setPage(btn.dataset.target)); });
-      const homeBack = document.getElementById('homeBack');
-      if(homeBack){ jitterNavItem(homeBack); homeBack.addEventListener('click', () => { const isHome = document.body.classList.contains('is-home'); if(isHome){ fireworkFromButton(); } else { setPage('home'); } }); }
-
-      $$('.gallery').forEach(gal => {
-        gal.addEventListener('wheel', (e) => { if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); gal.scrollLeft += e.deltaY; } }, { passive:false });
-      });
-
-      const target = (location.hash || '#home').replace('#','');
-      setPage(['home','pictures','things','edtech','about'].includes(target) ? target : 'home');
-      if(document.body.classList.contains('is-home')){ spawnShapes(true); }
-
-      // Консольные мини-тесты
-      try {
-        console.assert(document.querySelector('.nav'), 'Nav должен существовать');
-        console.assert(document.querySelector('#shapes'), 'Слой фигур на главной должен существовать (#shapes)');
-        setPage('pictures');
-        console.assert(document.querySelector('#pictures.page.active'), 'Должна активироваться страница pictures');
-        console.assert([...document.querySelectorAll('.nav__item')].some(b=>b.classList.contains('collapsed')), 'Другие пункты меню должны схлопываться');
-        setPage('home');
-        console.assert(document.body.classList.contains('is-home'), 'На главной должен быть класс is-home');
-      } catch (e) { console.warn('Тесты UI упали:', e); }
-    });
-
-    window.addEventListener('resize', () => {
-      clearTimeout(window.__rsTO);
-      window.__rsTO = setTimeout(()=>{
-        const navItems = $$('.nav__item');
-        navItems.forEach(jitterNavItem);
-        if(document.body.classList.contains('is-home')) spawnShapes(true);
-      }, 180);
-    });
-  </script>
+  }
+  if(e.target === lb) closeLightbox();
+});
+lbPrev && lbPrev.addEventListener('click', () => { if(!currentGallery) return; const items=[...currentGallery.querySelectorAll('.media')]; currentIndex=(currentIndex-1+items.length)%items.length; renderLightbox(); });
+lbNext && lbNext.addEventListener('click', () => { if(!currentGallery) return; const items=[...currentGallery.querySelectorAll('.media')]; currentIndex=(currentIndex+1)%items.length; renderLightbox(); });
+lbClose && lbClose.addEventListener('click', closeLightbox);
+window.addEventListener('keydown', (e) => { if(!lb.classList.contains('open')) return; if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowLeft') lbPrev.click(); if(e.key==='ArrowRight') lbNext.click(); });
+window.addEventListener('DOMContentLoaded', () => {
+  const navItems = $$('.nav__item');
+  navItems.forEach(btn => { jitterNavItem(btn); btn.addEventListener('click', () => setPage(btn.dataset.target)); });
+  const homeBack = $('#homeBack');
+  if(homeBack){ jitterNavItem(homeBack); homeBack.addEventListener('click', () => { const isHome = document.body.classList.contains('is-home'); if(isHome){ fireworkFromButton(); } else { setPage('home'); } }); }
+  $$('.gallery').forEach(gal => { gal.addEventListener('wheel', (e) => { if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); gal.scrollLeft += e.deltaY; } }, { passive:false }); });
+  const target = (location.hash || '#home').replace('#','');
+  setPage(['home','pictures','things','edtech','about'].includes(target) ? target : 'home');
+  if(document.body.classList.contains('is-home')){ startRain(true); }
+});
+window.addEventListener('resize', () => {
+  clearTimeout(window.__rsTO);
+  window.__rsTO = setTimeout(()=>{
+    const navItems = $$('.nav__item');
+    navItems.forEach(jitterNavItem);
+    if(document.body.classList.contains('is-home')) startRain(true);
+  }, 180);
+});
+</script>
 </body>
 </html>
