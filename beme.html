@@ -25,7 +25,7 @@
     .drop::before{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:var(--s,36px);height:calc(var(--s,36px)*1.1);background-repeat:no-repeat;background-size:100% 100%;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>");}
     .home-back{ position: fixed; right: 16px; left: auto; bottom: 16px; z-index: 45; width: 55px; height: 82px; background:#000; color:#fff; border:none; border-radius:0; cursor:pointer; padding: 0; display: flex; align-items:center; justify-content:center; font: inherit; outline: none; -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>"); mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; }
     .home-back::before{ content: '>'; color:#fff; display:inline-block; line-height:1; font-weight:700; transform: translateY(6px); }
-    body.is-home .home-back::before{ content: ':>' !important; }
+    body.is-home .home-back::before{ content: '≡' !important; }
     .feed { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-vert); }
     .block { width: 100%; max-width: 1200px; }
     .block__title { font-family: inherit; font-weight: 600; margin: 0 0 20px; text-align: left; font-size: calc(var(--nav-fs) * 1.05); line-height: 1.2; letter-spacing: 0.005em; }
@@ -66,7 +66,11 @@
     .mnav__btn{min-width:220px;height:40px;line-height:40px;padding:0 16px;background:#000;color:#fff;border:none;border-radius:0;font: inherit;font-size:1rem;text-transform:uppercase;letter-spacing:.02em;appearance:none;-webkit-appearance:none}
     .mhead{display:none}
     @media (max-width: 640px){
-      :root { --page-xpad: 10px; }
+  :root { --page-xpad: 10px; }
+  .nav{ left:auto; right: var(--page-xpad); top: var(--nav-gap); display:flex; }
+  .nav .nav__item{ display:block; }
+  body:not(.is-home) section.page{ padding-top: 10px; }
+}
 @media (max-width: 640px){ .media{cursor: default;} }
   </style>
 </head>
