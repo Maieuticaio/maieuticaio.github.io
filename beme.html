@@ -5,88 +5,110 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Портфолио — один HTML</title>
   <style>
-    :root { --page-xpad: 50px; --nav-item-h: 44px; --gap-vert: 84px; --border-w: 2px; --overlay-dim: rgba(0,0,0,.72); --nav-fs: 1.125rem; --nav-gap: 8px; }
+    :root { --page-xpad: 50px; --nav-item-h: 44px; --gap-vert: 84px; --border-w: 2px; --nav-fs: 1.125rem; --nav-gap: 8px; }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Noto Sans', Arial, 'Apple Color Emoji','Segoe UI Emoji'; color: #000; background: #fff; line-height: 1.4; }
-    .nav { position: fixed; top: var(--nav-gap); right: 0; z-index: 40; display: flex; flex-direction: column; gap: var(--nav-gap); pointer-events: auto; font-size: var(--nav-fs); }
+
+    .nav { position: fixed; top: var(--nav-gap); right: 0; z-index: 40; display: flex; flex-direction: column; gap: var(--nav-gap); font-size: var(--nav-fs); }
     .nav__item { position: relative; background: #000; color: #fff; height: var(--nav-item-h); border: none; margin: 0; padding: 0 15px; width: fit-content; align-self: flex-end; transition: width .25s ease; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; white-space: nowrap; overflow: hidden; border-radius: 0; clip-path: polygon(var(--x1,0%) var(--y1,2%), var(--x2,100%) var(--y2,1%), var(--x3,100%) var(--y3,98%), var(--x4,0%) var(--y4,99%)); outline: var(--border-w) solid #000; outline-offset: 0; }
     .nav__item .label { transition: opacity .18s ease; text-transform: uppercase; }
     .nav__item.collapsed { width: 10px; max-width: 10px; min-width: 0; padding: 0; }
     .nav__item.collapsed .label { opacity: 0; }
     .nav__item.active { outline-color: #111; }
+
     main { min-height: 100vh; padding: 0 var(--page-xpad) 80px; }
     body.is-home main { padding: 0; }
+
     section.page { display: none; padding-top: 50px; }
     section.page.active { display: block; }
+
     #home { padding-top: 0; position: relative; min-height: 100vh; overflow: hidden; }
     .shapes-layer { position: absolute; inset: 0; pointer-events: none; }
     .drop{position:absolute;width:var(--s,36px);height:calc(var(--s,36px)*1.6);pointer-events:none}
     .drop::before{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:var(--s,36px);height:calc(var(--s,36px)*1.1);background-repeat:no-repeat;background-size:100% 100%;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>");}
-    .about { display: flex; gap: 24px; align-items: flex-start; justify-content: flex-start; flex-direction: row; }
+
+    .home-back{ position: fixed; left: 16px; bottom: 16px; z-index: 45; width: 42px; height: 63px; background:#000; color:#fff; border:none; border-radius:0; cursor:pointer; padding: 0; display: flex; align-items:center; justify-content:center; font: inherit; outline: none; -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>"); mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; }
+    .home-back::before{ content: '>'; color:#fff; display:inline-block; line-height:1; font-weight:700; transform: translateY(6px); }
+    body.is-home .home-back::before{ content: ':>' !important; }
+
+    .feed { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-vert); }
+    .block { width: 100%; max-width: 1200px; }
+    .block__title { font-family: inherit; font-weight: 600; margin: 0 0 20px; text-align: left; font-size: calc(var(--nav-fs) * 1.05); line-height: 1.2; letter-spacing: 0.005em; }
+
+    .gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -ms-overflow-style: none; margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); }
+    .gallery::-webkit-scrollbar { display: none; width: 0; height: 0; }
+    .media { height: 200px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: transparent; color: inherit; border: none; border-radius: 0; cursor: pointer; position: relative; }
+    .media img, .media video, .media svg { height: 100%; width: auto; display: block; pointer-events: none; }
+    .gallery + .gallery { margin-top: 12px; }
+    .block__desc { max-width: 60ch; margin-top: 10px; margin-left: 0; text-align: left; font-size: 0.95rem; }
+
+    .about { display: flex; gap: 24px; align-items: flex-start; justify-content: flex-start; }
     .about__image { flex: 0 0 33.333%; max-width: 33.333%; }
     .about__image img { display: block; width: 100%; height: auto; object-fit: cover; }
     .about__text { flex: 1 1 auto; min-width: 280px; font-size: 0.95rem; }
     .about__text > :first-child { margin-top: 0; }
-    .home-back{ position: fixed; left: 16px; bottom: 16px; z-index: 45; width: 42px; height: 63px; background:#000; color:#fff; border:none; border-radius:0; cursor:pointer; padding: 0; display: flex; align-items:center; justify-content:center; font: inherit; outline: none; -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>"); mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; }
-    .home-back::before{ content: '>'; color:#fff; display:inline-block; line-height:1; font-weight:700; transform: translateY(6px); }
-    body.is-home .home-back::before{ content: ':>' !important; letter-spacing: 0; }
-    .feed { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-vert); }
-    .block { width: 100%; max-width: 1200px; }
-    .block__title { font-family: inherit; font-weight: 600; margin: 0 0 16px; text-align: left; font-size: calc(var(--nav-fs) * 1.05); line-height: 1.2; letter-spacing: 0.005em; }
-    .gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -ms-overflow-style: none; margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); }
-.gallery + .gallery { margin-top: 12px; }
-    .gallery::-webkit-scrollbar { display: none; width: 0; height: 0; }
-    .gallery::-webkit-scrollbar-thumb { background: transparent; }
-    .gallery::-webkit-scrollbar-track { background: transparent; }
-    .media { height: 200px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: transparent; color: inherit; border: none; border-radius: 0; cursor: pointer; position: relative; aspect-ratio: auto; }
-    .media img, .media video, .media svg { height: 100%; width: auto; display: block; pointer-events: none; }
-    .block__desc { max-width: 60ch; margin-top: 10px; margin-left: 0; text-align: left; font-size: 0.95rem; }
-    @media (max-width: 640px) { :root { --page-xpad: 10px; } #about { padding-right: 0; } .about { flex-direction: column; align-items: stretch; } .about__image { flex: 0 0 auto; max-width: 100%; } .about__image img { width: 100%; height: auto; object-fit: contain; } .about__text { font-size: 1rem; } .gallery { margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); } .nav{ right: 0; } .nav .nav__item{ transition: transform .25s ease, opacity .2s ease; } .nav.folded{ overflow: hidden; height: var(--nav-item-h); } .nav.folded .nav__item:not(.active){ transform: translateY(100%); opacity: 0; pointer-events: none; } .nav.expanded{ overflow: visible; height: auto; } .nav.expanded .nav__item{ transform: translateY(0); opacity: 1; pointer-events: auto; } .nav__item.collapsed{ width: auto; max-width: none; padding: 0 15px; } } #about { padding-right: 0; } .about { flex-direction: column; align-items: stretch; } .about__image { flex: 0 0 auto; max-width: 100%; } .about__image img { width: 100%; height: auto; object-fit: contain; } .about__text { font-size: 1rem; } .gallery { margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); } /* mobile nav fold/expand */ .nav{ right: 0; } .nav .nav__item{ transition: transform .25s ease, opacity .2s ease; } .nav.folded{ overflow: hidden; height: var(--nav-item-h); } .nav.folded .nav__item:not(.active){ transform: translateY(100%); opacity: 0; pointer-events: none; } .nav.expanded{ overflow: visible; height: auto; } .nav.expanded .nav__item{ transform: translateY(0); opacity: 1; pointer-events: auto; } .nav__item.collapsed{ width: auto; max-width: none; padding: 0 15px; } } #about { padding-right: 0; } .about { flex-direction: column; align-items: stretch; } .about__image { flex: 0 0 auto; max-width: 100%; } .about__image img { width: 100%; height: auto; object-fit: contain; } .about__text { font-size: 1rem; } .gallery { margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); } }
-    @media (prefers-reduced-motion: reduce) { .drop { animation: none !important; } }
+
     .spark{ position:fixed; width:10px; height:10px; background:#000; pointer-events:none; will-change:transform,opacity; z-index:60; opacity:1; }
     .spark.circle{ border-radius:50%; }
     .spark.semi{ border-radius:50% 50% 0 0 / 50% 50% 0 0; overflow:hidden; }
-  .viewer{position:fixed;inset:0;background:rgba(128,128,128,.5);display:none;z-index:100;padding:0 100px;box-sizing:border-box;align-items:center;justify-content:center}
-.viewer.open{display:flex}
-.viewer__scroller{position:relative;width:100%;height:100%;overflow:auto;display:flex;align-items:center;justify-content:center}
-.viewer__frame{position:relative;display:inline-block;max-width:100%;max-height:100%}
-.viewer__img{display:block;width:auto;height:auto;max-width:100%;max-height:100%}
-.viewer__btn{position:fixed;top:50%;transform:translateY(-50%);width:44px;height:44px;border:none;border-radius:50%;background:#000;color:#fff;font-size:22px;line-height:1;display:grid;place-items:center;cursor:pointer;z-index:110}
-.viewer__prev{left:28px}
-.viewer__next{right:28px}
-.viewer__close{position:absolute;top:12px;right:12px;width:auto;height:auto;padding:6px 8px;border:none;border-radius:0;background:transparent;color:#000;font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer}
-@media (max-width: 640px){$1}
-@media (max-width: 640px){
-  .home-back::before{ content: '>' !important; transform: translateY(6px); }
-  body.is-home .home-back::before{ content: '≡' !important; transform: translateY(6px); }
-}
-  .viewer__prev,.viewer__next{display:none}
-}
-@media (hover: hover) {
-  .nav__item.collapsed:hover { width: auto; max-width: none; padding: 0 15px; }
-  .nav__item.collapsed:hover .label { opacity: 1; }
-}
-.mnav{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:80;background:rgba(128,128,128,.5)}
-.mnav.open{display:flex}
-.mnav__inner{display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center}
-.mnav__btn{min-width:220px;min-height:56px;padding:0 16px;background:#000;color:#fff;border:none;border-radius:0;font: inherit;font-size:1rem;text-transform:uppercase;letter-spacing:.02em}
-@media (min-width: 641px){.mnav{display:none !important}}
-@media (max-width: 640px){.nav{display:none !important}}
-</style>
+
+    .viewer{position:fixed;inset:0;background:rgba(128,128,128,.5);display:none;z-index:100;padding:0 100px;box-sizing:border-box;align-items:center;justify-content:center}
+    .viewer.open{display:flex}
+    .viewer__scroller{position:relative;width:100%;height:100%;overflow:auto;display:flex;align-items:center;justify-content:center}
+    .viewer__frame{position:relative;display:inline-block;max-width:100%;max-height:100%}
+    .viewer__img{display:block;width:auto;height:auto;max-width:100%;max-height:100%}
+    .viewer__btn{position:fixed;top:50%;transform:translateY(-50%);width:44px;height:44px;border:none;border-radius:50%;background:#000;color:#fff;font-size:22px;line-height:1;display:grid;place-items:center;cursor:pointer;z-index:110}
+    .viewer__prev{left:28px}
+    .viewer__next{right:28px}
+    .viewer__close{position:absolute;top:-16px;right:-16px;width:auto;height:auto;padding:6px 8px;border:none;border-radius:0;background:transparent;color:#000;font-size:28px;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:120}
+
+    @media (hover: hover) { .nav__item.collapsed:hover { width: auto; max-width: none; padding: 0 15px; } .nav__item.collapsed:hover .label { opacity: 1; } }
+
+    .mnav{position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:80;background:rgba(128,128,128,.5)}
+    .mnav.open{display:flex}
+    .mnav__inner{display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center}
+    .mnav__btn{min-width:220px;min-height:56px;padding:0 16px;background:#000;color:#fff;border:none;border-radius:0;font: inherit;font-size:1rem;text-transform:uppercase;letter-spacing:.02em}
+
+    .mhead{display:none}
+
+    @media (max-width: 640px){
+      :root { --page-xpad: 10px; }
+      .nav{display:none !important}
+      .about { flex-direction: column; align-items: stretch; }
+      .about__image { flex: 0 0 auto; max-width: 100%; }
+      .about__image img { width: 100%; height: auto; object-fit: contain; }
+      .about__text { font-size: 1rem; }
+      .gallery { margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); }
+      .home-back::before{ content: '>' !important; transform: translateY(6px); }
+      body.is-home .home-back::before{ content: '≡' !important; transform: translateY(6px); }
+      body.is-home .mhead{display:none}
+      body:not(.is-home) .mhead{position:sticky;top:0;z-index:50;display:flex;flex-direction:column;align-items:flex-end;gap:var(--nav-gap);padding:var(--nav-gap) var(--page-xpad) 0;background:transparent}
+      .mhead .nav__item{align-self:flex-end}
+      .mhead.collapsed .nav__item:not(.active){display:none}
+      .mhead.expanded .nav__item{display:flex}
+    }
+  </style>
 </head>
 <body>
   <nav class="nav" id="nav">
+    <button class="nav__item" data-target="pictures"><span class="label">КАРТИНКИ</span></button>
+    <button class="nav__item" data-target="things"><span class="label">ШТУКИ</span></button>
+    <button class="nav__item" data-target="edtech"><span class="label">ED‑TECH</span></button>
+    <button class="nav__item" data-target="about"><span class="label">ОБО МНЕ</span></button>
+  </nav>
+  <button class="home-back" id="homeBack" aria-label=":>" title=":>"></button>
+  <div class="mhead" id="mhead" aria-hidden="true">
     <button class="nav__item" data-target="pictures"><span class="label">Картинки</span></button>
     <button class="nav__item" data-target="things"><span class="label">Штуки</span></button>
     <button class="nav__item" data-target="edtech"><span class="label">Ed‑tech</span></button>
     <button class="nav__item" data-target="about"><span class="label">Обо мне</span></button>
-  </nav>
-  <button class="home-back" id="homeBack" aria-label=":>" title=":>"></button>
+  </div>
   <main>
     <section class="page active" id="home">
       <div class="shapes-layer" id="shapes"></div>
     </section>
+
     <section class="page" id="pictures">
       <div class="feed">
         <article class="block">
@@ -103,6 +125,7 @@
           </div>
           <div class="block__desc">Иллюстрации для урока об Анне Ахматовой для старшей школы в Учи.ру.</div>
         </article>
+
         <article class="block">
           <h2 class="block__title">Андрей Платонов</h2>
           <div class="gallery" data-gallery>
@@ -124,6 +147,7 @@
         </article>
       </div>
     </section>
+
     <section class="page" id="things">
       <div class="feed">
         <article class="block">
@@ -138,6 +162,7 @@
         </article>
       </div>
     </section>
+
     <section class="page" id="edtech">
       <div class="feed">
         <article class="block">
@@ -151,6 +176,7 @@
         </article>
       </div>
     </section>
+
     <section class="page" id="about">
       <div class="about">
         <div class="about__image">
@@ -163,6 +189,7 @@
       </div>
     </section>
   </main>
+
   <div class="mnav" id="mnav" aria-hidden="true">
     <div class="mnav__inner">
       <button class="mnav__btn" data-target="pictures">КАРТИНКИ</button>
@@ -171,7 +198,8 @@
       <button class="mnav__btn" data-target="about">ОБО МНЕ</button>
     </div>
   </div>
-<div class="viewer" id="viewer" aria-hidden="true">
+
+  <div class="viewer" id="viewer" aria-hidden="true">
     <button class="viewer__btn viewer__prev" id="viewerPrev" aria-label="Предыдущий">‹</button>
     <div class="viewer__scroller" id="viewerScroll">
       <div class="viewer__frame" id="viewerFrame">
@@ -181,6 +209,7 @@
     </div>
     <button class="viewer__btn viewer__next" id="viewerNext" aria-label="Следующий">›</button>
   </div>
+
   <script>
     const $ = (s, r = document) => r.querySelector(s);
     const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -240,7 +269,7 @@
           d.el.style.transform = `translate(${Math.round(d.x)}px, ${Math.round(d.y)}px)`;
           const h = d.s * 1.1;
           const t = Math.min(12, h * 0.25);
-          if(!d.hit && (d.y + h) >= (H - t)){ 
+          if(!d.hit && (d.y + h) >= (H - t)){
             d.hit = true;
             const op = parseFloat(d.el.style.opacity || '1');
             spawnDrip(Math.round(d.x + d.s/2), H - t, d.s, Math.max(0.3, Math.min(1, op)));
@@ -341,8 +370,10 @@
       const navItems = $$('.nav__item');
       const nav = $('#nav');
       const mobile = window.matchMedia('(max-width: 640px)').matches;
+      const mheadEl = $('#mhead');
       sections.forEach(s => s.classList.toggle('active', s.id === id));
       navItems.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+      if(mheadEl){ [...mheadEl.querySelectorAll('.nav__item')].forEach(b=> b.classList.toggle('active', b.dataset.target===id)); }
       const isHome = id === 'home';
       document.body.classList.toggle('is-home', isHome);
       navItems.forEach(b => {
@@ -350,16 +381,18 @@
         else { if(!mobile) b.classList.toggle('collapsed', b.dataset.target !== id); else b.classList.remove('collapsed'); }
       });
       if(nav){ if(!isHome && mobile){ nav.classList.add('folded'); nav.classList.remove('expanded'); } else { nav.classList.remove('folded'); nav.classList.remove('expanded'); } }
+      if(mheadEl){ if(!isHome && mobile){ mheadEl.classList.add('collapsed'); mheadEl.classList.remove('expanded'); } else { mheadEl.classList.remove('collapsed'); mheadEl.classList.remove('expanded'); } }
       if(location.hash.replace('#','') !== id){ history.replaceState(null, '', '#'+id); }
       currentPage = id;
       if(isHome){ startRain(true); } else { stopRain(); }
     }
 
-window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', () => {
       const navItems = $$('.nav__item');
       const nav = $('#nav');
       const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
       navItems.forEach(btn => {
+        if(btn.closest('#mhead')) return;
         jitterNavItem(btn);
         btn.addEventListener('click', () => {
           const target = btn.dataset.target;
@@ -372,12 +405,12 @@ window.addEventListener('DOMContentLoaded', () => {
               return;
             }
             if(nav.classList.contains('expanded')){ setPage(target); nav.classList.add('folded'); nav.classList.remove('expanded'); return; }
-            setPage(target);
-            return;
+            setPage(target); return;
           }
           setPage(target);
         });
       });
+
       const homeBack = $('#homeBack');
       const mnav = $('#mnav');
       const closeMnav = ()=>{ if(!mnav) return; mnav.classList.remove('open'); mnav.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; };
@@ -388,7 +421,7 @@ window.addEventListener('DOMContentLoaded', () => {
           const isHome = document.body.classList.contains('is-home');
           if(mobileNow){
             if(isHome){
-              if(mnav.classList.contains('open')){ mnav.classList.remove('open'); mnav.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; }
+              if(mnav.classList.contains('open')){ closeMnav(); }
               else { mnav.classList.add('open'); mnav.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; }
             } else {
               setPage('home');
@@ -398,17 +431,36 @@ window.addEventListener('DOMContentLoaded', () => {
           if(isHome){ fireworkFromButton(); } else { setPage('home'); }
         });
       }
+
       if(mnav){
         mnav.addEventListener('click', (e)=>{ if(e.target === mnav) closeMnav(); });
         mnav.querySelectorAll('.mnav__btn').forEach(btn=>{
           btn.addEventListener('click', ()=>{ setPage(btn.dataset.target); closeMnav(); });
         });
       }
+
+      const mheadEl = $('#mhead');
+      if(mheadEl){
+        mheadEl.addEventListener('click', (e)=>{
+          const btn = e.target.closest('.nav__item');
+          if(!btn) return;
+          const mobileNow = window.matchMedia('(max-width: 640px)').matches;
+          if(!mobileNow) return;
+          if(btn.classList.contains('active')){
+            mheadEl.classList.toggle('expanded');
+            mheadEl.classList.toggle('collapsed');
+          } else {
+            setPage(btn.dataset.target);
+            mheadEl.classList.add('collapsed');
+            mheadEl.classList.remove('expanded');
+          }
+        });
+      }
+
       const target = (location.hash || '#home').replace('#','');
       setPage(['home','pictures','things','edtech','about'].includes(target) ? target : 'home');
       if(document.body.classList.contains('is-home')){ startRain(true); }
     });
-      /* init block deduped */
 
     window.addEventListener('resize', () => {
       clearTimeout(window.__rsTO);
@@ -456,17 +508,12 @@ window.addEventListener('DOMContentLoaded', () => {
     viewer.addEventListener('click', (e)=>{ if(e.target===viewer) closeViewer(); });
     window.addEventListener('keydown', (e)=>{ if(!viewer.classList.contains('open')) return; if(e.key==='Escape') closeViewer(); if(e.key==='ArrowLeft') navViewer(-1); if(e.key==='ArrowRight') navViewer(1); });
     let touchStartX = 0; let touchStartY = 0; let touchMoved = false;
-    viewerScroll.addEventListener('touchstart', (e)=>{ const t=e.touches[0]; touchStartX=t.clientX; touchStartY=t.clientY; touchMoved=false; }, {passive:true});
-    viewerScroll.addEventListener('touchmove', (e)=>{ touchMoved=true; }, {passive:true});
-    viewerScroll.addEventListener('touchend', (e)=>{ if(!touchMoved) return; const t=e.changedTouches[0]; const dx=t.clientX - touchStartX; const dy=t.clientY - touchStartY; if(Math.abs(dx) > Math.max(50, Math.abs(dy)*1.5)){ if(dx<0) navViewer(1); else navViewer(-1); } });
     const viewerFrame = document.getElementById('viewerFrame');
-    viewerFrame.addEventListener('click', (e)=>{
-      if(!viewer.classList.contains('open')) return;
-      if(e.target === viewerClose || e.target.closest('#viewerClose')) return;
-      const r = viewerFrame.getBoundingClientRect();
-      const x = e.clientX - r.left;
-      if(x < r.width/2) { navViewer(-1); } else { navViewer(1); }
-    });
+    const viewerScrollEl = document.getElementById('viewerScroll');
+    viewerScrollEl.addEventListener('touchstart', (e)=>{ const t=e.touches[0]; touchStartX=t.clientX; touchStartY=t.clientY; touchMoved=false; }, {passive:true});
+    viewerScrollEl.addEventListener('touchmove', ()=>{ touchMoved=true; }, {passive:true});
+    viewerScrollEl.addEventListener('touchend', (e)=>{ if(!touchMoved) return; const t=e.changedTouches[0]; const dx=t.clientX - touchStartX; const dy=t.clientY - touchStartY; if(Math.abs(dx) > Math.max(50, Math.abs(dy)*1.5)){ if(dx<0) navViewer(1); else navViewer(-1); } });
+    viewerFrame.addEventListener('click', (e)=>{ if(!viewer.classList.contains('open')) return; if(e.target === viewerClose || e.target.closest('#viewerClose')) return; const r = viewerFrame.getBoundingClientRect(); const x = e.clientX - r.left; if(x < r.width/2) { navViewer(-1); } else { navViewer(1); } });
   </script>
 </body>
 </html>
