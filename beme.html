@@ -42,7 +42,7 @@
     .media { height: 200px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: transparent; color: inherit; border: none; border-radius: 0; cursor: pointer; position: relative; aspect-ratio: auto; }
     .media img, .media video, .media svg { height: 100%; width: auto; display: block; pointer-events: none; }
     .block__desc { max-width: 60ch; margin-top: 10px; margin-left: 0; text-align: left; font-size: 0.95rem; }
-    @media (max-width: 640px) { :root { --page-xpad: 10px; } #about { padding-right: 0; } .about { flex-direction: column; align-items: stretch; } .about__image { flex: 0 0 auto; max-width: 100%; } .about__image img { width: 100%; height: auto; object-fit: contain; } .about__text { font-size: 1rem; } .gallery { margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); } }
+    @media (max-width: 640px) { :root { --page-xpad: 10px; } #about { padding-right: 0; } .about { flex-direction: column; align-items: stretch; } .about__image { flex: 0 0 auto; max-width: 100%; } .about__image img { width: 100%; height: auto; object-fit: contain; } .about__text { font-size: 1rem; } .gallery { margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); } /* mobile nav fold/expand */ .nav{ right: 0; } .nav .nav__item{ transition: transform .25s ease, opacity .2s ease; } .nav.folded{ overflow: hidden; height: var(--nav-item-h); } .nav.folded .nav__item:not(.active){ transform: translateY(100%); opacity: 0; pointer-events: none; } .nav.expanded{ overflow: visible; height: auto; } .nav.expanded .nav__item{ transform: translateY(0); opacity: 1; pointer-events: auto; } .nav__item.collapsed{ width: auto; max-width: none; padding: 0 15px; } } #about { padding-right: 0; } .about { flex-direction: column; align-items: stretch; } .about__image { flex: 0 0 auto; max-width: 100%; } .about__image img { width: 100%; height: auto; object-fit: contain; } .about__text { font-size: 1rem; } .gallery { margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); } }
     @media (prefers-reduced-motion: reduce) { .drop { animation: none !important; } }
     .spark{ position:fixed; width:10px; height:10px; background:#000; pointer-events:none; will-change:transform,opacity; z-index:60; opacity:1; }
     .spark.circle{ border-radius:50%; }
@@ -221,7 +221,8 @@
         for(const d of drops){
           d.y += d.vy * dt;
           d.el.style.transform = `translate(${Math.round(d.x)}px, ${Math.round(d.y)}px)`;
-          if(!d.hit && d.y >= H - 2){
+          const h = d.s * 1.1;
+          if(!d.hit && (d.y + h) >= H){
             d.hit = true;
             const op = parseFloat(d.el.style.opacity || '1');
             spawnDrip(Math.round(d.x + d.s/2), H - 1, d.s, Math.max(0.3, Math.min(1, op)));
@@ -318,22 +319,45 @@
     function setPage(id){
       const sections = $$('.page');
       const navItems = $$('.nav__item');
+      const nav = $('#nav');
+      const mobile = window.matchMedia('(max-width: 640px)').matches;
       sections.forEach(s => s.classList.toggle('active', s.id === id));
       navItems.forEach(b => b.classList.toggle('active', b.dataset.target === id));
       const isHome = id === 'home';
       document.body.classList.toggle('is-home', isHome);
       navItems.forEach(b => {
         if(isHome){ b.classList.remove('collapsed'); }
-        else { b.classList.toggle('collapsed', b.dataset.target !== id); }
+        else { if(!mobile) b.classList.toggle('collapsed', b.dataset.target !== id); else b.classList.remove('collapsed'); }
       });
+      if(nav){ if(!isHome && mobile){ nav.classList.add('folded'); nav.classList.remove('expanded'); } else { nav.classList.remove('folded'); nav.classList.remove('expanded'); } }
       if(location.hash.replace('#','') !== id){ history.replaceState(null, '', '#'+id); }
       currentPage = id;
       if(isHome){ startRain(true); } else { stopRain(); }
     }
 
-    window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', () => {
       const navItems = $$('.nav__item');
-      navItems.forEach(btn => { jitterNavItem(btn); btn.addEventListener('click', () => setPage(btn.dataset.target)); });
+      const nav = $('#nav');
+      const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
+      navItems.forEach(btn => {
+        jitterNavItem(btn);
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.target;
+          const onHome = document.body.classList.contains('is-home');
+          if(isMobile()){
+            if(onHome){ setPage(target); return; }
+            if(btn.classList.contains('active')){
+              if(nav.classList.contains('folded')){ nav.classList.remove('folded'); nav.classList.add('expanded'); }
+              else { nav.classList.add('folded'); nav.classList.remove('expanded'); }
+              return;
+            }
+            if(nav.classList.contains('expanded')){ setPage(target); nav.classList.add('folded'); nav.classList.remove('expanded'); return; }
+            setPage(target);
+            return;
+          }
+          setPage(target);
+        });
+      });
       const homeBack = $('#homeBack');
       if(homeBack){ jitterNavItem(homeBack); homeBack.addEventListener('click', () => { const isHome = document.body.classList.contains('is-home'); if(isHome){ fireworkFromButton(); } else { setPage('home'); } }); }
       $$('.gallery').forEach(gal => { gal.addEventListener('wheel', (e) => { if(Math.abs(e.deltaY) > Math.abs(e.deltaX)){ e.preventDefault(); gal.scrollLeft += e.deltaY; } }, { passive:false }); });
@@ -341,6 +365,7 @@
       setPage(['home','pictures','things','edtech','about'].includes(target) ? target : 'home');
       if(document.body.classList.contains('is-home')){ startRain(true); }
     });
+      /* init block deduped */
 
     window.addEventListener('resize', () => {
       clearTimeout(window.__rsTO);
