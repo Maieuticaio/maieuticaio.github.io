@@ -21,7 +21,7 @@
     section.page.active { display: block; }
     #home { padding-top: 0; position: relative; min-height: 100vh; overflow: hidden; }
     .shapes-layer { position: absolute; inset: 0; pointer-events: none; }
-    .drop{position:absolute;width:var(--s,36px);height:calc(var(--s,36px)*1.6);pointer-events:none}
+    .drop{position:absolute;width:var(--s,36px);height:calc(var(--s,36px)*1.6);pointer-events:none;will-change:transform,filter;}
     .drop::before{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:var(--s,36px);height:calc(var(--s,36px)*1.1);background-repeat:no-repeat;background-size:100% 100%;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>");}
     .home-back{ position: fixed; right: 16px; left: auto; bottom: 16px; z-index: 45; width: 55px; height: 82px; background:#000; color:#fff; border:none; border-radius:0; cursor:pointer; padding: 0; display: flex; align-items:center; justify-content:center; font: inherit; outline: none; -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>"); mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; }
     .home-back::before{ content: '>'; color:#fff; display:inline-block; line-height:1; font-weight:700; transform: translateY(6px); }
@@ -40,7 +40,7 @@
     .about__image img { display: block; width: 100%; height: auto; object-fit: cover; }
     .about__text { flex: 1 1 auto; min-width: 280px; font-size: 0.95rem; }
     .about__text > :first-child { margin-top: 0; }
-    .spark{ position:fixed; width:10px; height:10px; background:#000; pointer-events:none; will-change:transform,opacity; z-index:60; opacity:1; }
+    .spark{ position:fixed; width:10px; height:10px; background:#000; pointer-events:none; will-change:transform,opacity,filter; z-index:60; opacity:1; }
     .spark.circle{ border-radius:50%; }
     .spark.semi{ border-radius:50% 50% 0 0 / 50% 50% 0 0; overflow:hidden; }
     .viewer{position:fixed;inset:0;background:#fff;display:none;z-index:100;padding:0 100px;box-sizing:border-box;align-items:center;justify-content:center}
@@ -235,6 +235,7 @@
         el.className = 'drop';
         const s = Math.round(22 + Math.random()*18);
         el.style.setProperty('--s', s+'px');
+        { const blur = Math.max(1, Math.round((40 - s) * 0.2) + 1); el.style.filter = 'blur(' + blur + 'px)'; }
         const alpha = 0.3 + 0.7 * ((s - 22) / 18);
         el.style.opacity = String(Math.max(0.3, Math.min(1, alpha)));
         const W = layer.clientWidth || window.innerWidth;
@@ -285,14 +286,16 @@
         el.style.width = s+'px'; el.style.height = s+'px';
         el.style.position='fixed'; el.style.left = (x - s/2) + 'px'; el.style.top = (y - s/2) + 'px';
         el.style.opacity = String(opacity);
+        const blur = Math.max(1, Math.round((40 - size) * 0.2) + 1);
+        el.style.filter = 'blur(' + blur + 'px)';
         el.style.zIndex='70';
         document.body.appendChild(el);
         const ang = (-Math.PI) + Math.random()*Math.PI;
-        let vx = Math.cos(ang) * (120 + Math.random()*160);
-        let vy = Math.sin(ang) * (180 + Math.random()*220);
+        let vx = Math.cos(ang) * (192 + Math.random()*256);
+        let vy = Math.sin(ang) * (288 + Math.random()*352);
         const ax = 0;
         const ay = 1200;
-        parts.push({ el, x: x - s/2, y: y - s/2, vx, vy, ax, ay, life: 0, max: 0.6 });
+        parts.push({ el, x: x - s/2, y: y - s/2, vx, vy, ax, ay, life: 0, max: 0.9 });
       }
       let last = performance.now();
       function step(now){
