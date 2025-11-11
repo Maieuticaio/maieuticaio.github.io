@@ -229,6 +229,7 @@
   <script>
     const $ = (s, r = document) => r.querySelector(s);
     const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+    const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
     let currentPage = 'home';
 
     function jitterNavItem(el){
@@ -316,7 +317,7 @@
         const shapes = ['square','circle','semi'];
         const shape = shapes[Math.floor(Math.random()*shapes.length)];
         const el = document.createElement('div');
-        el.className = 'spark' + (shape==='square'?'':(shape==='circle'?' circle':' semi'));
+        el.className = 'spark' + (shape==='square'?"":(shape==='circle'?" circle":" semi"));
         const s = Math.max(2, Math.round(size * (0.08 + Math.random()*0.06)));
         el.style.width = s+'px'; el.style.height = s+'px';
         el.style.position='fixed'; el.style.left = (x - s/2) + 'px'; el.style.top = (y - s/2) + 'px';
@@ -357,7 +358,7 @@
       for(let i=0;i<N;i++){
         const t = types[Math.floor(Math.random()*types.length)];
         const el = document.createElement('div');
-        el.className = 'spark' + (t==='square'?'':(t==='circle'?' circle':' semi'));
+        el.className = 'spark' + (t==='square'?"":(t==='circle'?" circle":" semi"));
         const s = Math.round(6 + Math.random()*8);
         el.style.width = s+'px'; el.style.height = s+'px'; el.style.position='fixed'; el.style.zIndex='200';
         document.body.appendChild(el);
@@ -393,7 +394,7 @@
       const navItems = $$('.nav__item');
       const nav = $('#nav');
       const mheadEl = $('#mhead');
-      const mobile = window.matchMedia('(max-width: 640px)').matches;
+      const mobile = isMobile();
       sections.forEach(s => s.classList.toggle('active', s.id === id));
       navItems.forEach(b => b.classList.toggle('active', b.dataset.target === id));
       if(mheadEl){ [...mheadEl.querySelectorAll('.nav__item')].forEach(b=> b.classList.toggle('active', b.dataset.target===id)); }
@@ -401,9 +402,7 @@
       document.body.classList.toggle('is-home', isHome);
       navItems.forEach(b => {
         if(isHome){ b.classList.remove('collapsed'); }
-        else {
-          if(mobile){ b.classList.remove('collapsed'); }
-        }
+        else { if(mobile){ b.classList.remove('collapsed'); } }
       });
       if(nav){ if(!isHome && mobile){ nav.classList.add('folded'); nav.classList.remove('expanded'); } else { nav.classList.remove('folded'); nav.classList.remove('expanded'); } }
       if(mheadEl){ if(!isHome && mobile){ mheadEl.classList.add('collapsed'); mheadEl.classList.remove('expanded'); } else { mheadEl.classList.remove('collapsed'); mheadEl.classList.remove('expanded'); } }
@@ -416,7 +415,8 @@
     window.addEventListener('DOMContentLoaded', () => {
       const nav = $('#nav');
       const navItems = $$('.nav__item');
-      const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
+      const homeBack = $('#homeBack');
+      const mnav = $('#mnav');
 
       function applyUniformNav(){
         if(!nav) return;
@@ -437,39 +437,29 @@
           const onHome = document.body.classList.contains('is-home');
           if(isMobile()){
             if(onHome){ setPage(target); return; }
-            if(btn.classList.contains('active')){ nav.classList.toggle('expanded'); return; }
-            nav.classList.remove('expanded');
+            if(btn.classList.contains('active')){ if(nav) nav.classList.toggle('expanded'); return; }
+            if(nav) nav.classList.remove('expanded');
             setPage(target); return;
-          }
-            if(btn.classList.contains('active')){ return; }
-            setPage(target); return;
-          }
-          if(!onHome){
-            if(btn.classList.contains('active')){ nav.classList.toggle('expanded'); return; }
-            nav.classList.remove('expanded');
+          } else {
+            if(!onHome && btn.classList.contains('active')){ if(nav) nav.classList.toggle('expanded'); return; }
+            if(nav) nav.classList.remove('expanded');
             setPage(target);
-            return;
           }
-          setPage(target);
         });
       });
 
       if(nav){
-        nav.addEventListener('mouseenter', ()=>{ if(!isMobile() && document.body.classList.contains('is-home')){ nav.classList.add('expanded'); nav.classList.remove('fold-under'); }});
-        nav.addEventListener('mouseleave', ()=>{ if(!isMobile() && document.body.classList.contains('is-home')){ nav.classList.remove('fold-under');
-            nav.classList.remove('expanded'); nav.classList.remove('expanded'); }});
+        nav.addEventListener('mouseenter', ()=>{ if(!isMobile() && document.body.classList.contains('is-home')){ nav.classList.add('expanded'); }});
+        nav.addEventListener('mouseleave', ()=>{ if(!isMobile() && document.body.classList.contains('is-home')){ nav.classList.remove('expanded'); }});
       }
 
-      const homeBack = $('#homeBack');
-      const mnav = $('#mnav');
       const closeMnav = ()=>{ if(!mnav) return; mnav.classList.remove('open'); mnav.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; };
       if(homeBack){
         jitterNavItem(homeBack);
         homeBack.addEventListener('click', () => {
-          const mobileNow = window.matchMedia('(max-width: 640px)').matches;
-          const isHome = document.body.classList.contains('is-home');
-          if(mobileNow){
-            if(isHome){
+          const onHome = document.body.classList.contains('is-home');
+          if(isMobile()){
+            if(onHome){
               if(mnav.classList.contains('open')){ closeMnav(); }
               else { mnav.classList.add('open'); mnav.setAttribute('aria-hidden','false'); document.body.style.overflow = 'hidden'; }
             } else {
@@ -477,7 +467,7 @@
             }
             return;
           }
-          if(isHome){ fireworkFromButton(); } else { setPage('home'); }
+          if(onHome){ fireworkFromButton(); } else { setPage('home'); }
         });
       }
 
@@ -488,24 +478,6 @@
         });
       }
 
-      const mheadEl = $('#mhead');
-      if(mheadEl){
-        mheadEl.addEventListener('click', (e)=>{
-          const btn = e.target.closest('.nav__item');
-          if(!btn) return;
-          const mobileNow = window.matchMedia('(max-width: 640px)').matches;
-          if(!mobileNow) return;
-          if(btn.classList.contains('active')){
-            mheadEl.classList.toggle('expanded');
-            mheadEl.classList.toggle('collapsed');
-          } else {
-            setPage(btn.dataset.target);
-            mheadEl.classList.add('collapsed');
-            mheadEl.classList.remove('expanded');
-          }
-        });
-      }
-
       function initPageFromHash(){
         const target = (location.hash || '#home').replace('#','');
         const page = ['home','pictures','things','edtech','about'].includes(target) ? target : 'home';
@@ -513,12 +485,6 @@
         reorderNav(page);
         applyUniformNav();
         if(document.body.classList.contains('is-home')){
-          const desktop = !isMobile();
-          if(desktop){
-            const nav = $('#nav');
-            const navItems = $$('.nav__item');
-            if(!navItems.some(b=> b.classList.contains('active')) && navItems[0]){ navItems[0].classList.add('active'); }
-          }
           startRain(true);
         }
       }
@@ -531,7 +497,6 @@
           applyUniformNav();
           setActiveIndex();
           if(document.body.classList.contains('is-home')) startRain(true);
-          
         }, 180);
       });
 
@@ -543,10 +508,7 @@
       const viewerScroll = document.getElementById('viewerScroll');
       const viewerFrame = document.getElementById('viewerFrame');
       let vGallery = null; let vIndex = -1;
-      viewerPrev.addEventListener('click', ()=>navViewer(-1));
-      viewerNext.addEventListener('click', ()=>navViewer(1));
-      viewerClose.addEventListener('click', closeViewer);
-      viewer.addEventListener('click', (e)=>{ if(e.target === viewer) closeViewer(); });
+
       function srcFromMediaEl(node){
         const img = node.querySelector('img');
         if(img && (img.currentSrc || img.src)) return img.currentSrc || img.src;
@@ -562,18 +524,20 @@
         if(!items.length) return; if(vIndex<0) vIndex=0; if(vIndex>=items.length) vIndex=items.length-1;
         const src = srcFromMediaEl(items[vIndex]);
         if(!src) return;
-        viewerImg.onload = null;
         viewerImg.src = src;
         viewer.classList.add('open');
         viewer.setAttribute('aria-hidden','false');
         document.body.style.overflow = 'hidden';
-        viewerScroll.scrollTo({left:0, top:0, behavior:'instant'});
-        
+        viewerScroll.scrollTo({left:0, top:0, behavior:'auto'});
       }
       function closeViewer(){ viewer.classList.remove('open'); viewer.setAttribute('aria-hidden','true'); document.body.style.overflow=''; viewerImg.removeAttribute('src'); vGallery=null; vIndex=-1; }
       function navViewer(dir){ if(!vGallery) return; const items=[...vGallery.querySelectorAll('.media')]; vIndex=(vIndex+dir+items.length)%items.length; openViewer(vGallery, vIndex); }
+      if(viewerPrev) viewerPrev.addEventListener('click', ()=>navViewer(-1));
+      if(viewerNext) viewerNext.addEventListener('click', ()=>navViewer(1));
+      if(viewerClose) viewerClose.addEventListener('click', closeViewer);
+      if(viewer) viewer.addEventListener('click', (e)=>{ if(e.target === viewer) closeViewer(); });
       document.addEventListener('click', (e)=>{ const media=e.target.closest('.media'); if(!media) return; if(isMobile()) return; const gal=media.closest('[data-gallery]'); if(!gal) return; const items=[...gal.querySelectorAll('.media')]; const idx=items.indexOf(media); openViewer(gal, idx); });
-      viewerFrame.addEventListener('click', (e)=>{ if(!viewer.classList.contains('open')) return; if(e.target === viewerClose || e.target.closest('#viewerClose')) return; const r = viewerFrame.getBoundingClientRect(); const x = e.clientX - r.left; if(x < r.width/2) { navViewer(-1); } else { navViewer(1); } });
+      if(viewerFrame) viewerFrame.addEventListener('click', (e)=>{ if(!viewer.classList.contains('open')) return; if(e.target === viewerClose || e.target.closest('#viewerClose')) return; const r = viewerFrame.getBoundingClientRect(); const x = e.clientX - r.left; if(x < r.width/2) { navViewer(-1); } else { navViewer(1); } });
     });
   </script>
 </body>
