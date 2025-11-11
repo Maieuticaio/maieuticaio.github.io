@@ -35,7 +35,7 @@
     .media img, .media video, .media svg { height: 100%; width: auto; display: block; pointer-events: none; }
     .gallery + .gallery { margin-top: 12px; }
     .block__desc { max-width: 60ch; margin-top: 10px; margin-left: 0; text-align: left; font-size: 0.95rem; }
-    .about { display: flex; gap: 24px; align-items: flex-start; justify-content: flex-start; }
+    .about { display: flex; flex-direction: row; gap: 24px; align-items: flex-start; justify-content: flex-start; }
     .about__image { flex: 0 0 33.333%; max-width: 33.333%; }
     .about__image img { display: block; width: 100%; height: auto; object-fit: cover; }
     .about__text { flex: 1 1 auto; min-width: 280px; font-size: 0.95rem; }
@@ -74,6 +74,10 @@
   body:not(.is-home) .nav .nav__item.active{ display:block; }
   body:not(.is-home) .nav.expanded .nav__item{ display:block; }
   body:not(.is-home) section.page{ padding-top: 10px; }
+  #about .about{ flex-direction: column; align-items: stretch; }
+  #about .about__image{ flex: 0 0 auto; max-width: 100%; }
+  #about .about__image img{ width: 100%; height: auto; object-fit: contain; }
+  #about .about__text{ margin-top: 60px; }
 }
 @media (max-width: 640px){ .media{cursor: default;} }
   </style>
@@ -494,4 +498,3 @@
   </script>
 </body>
 </html>
-
