@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Портфолио — один HTML</title>
   <style>
-    :root { --page-xpad: 50px; --nav-item-h: 44px; --gap-vert: 50px; --border-w: 2px; --overlay-dim: rgba(0,0,0,.72); --nav-fs: 1.125rem; --nav-gap: 8px; }
+    :root { --page-xpad: 50px; --nav-item-h: 44px; --gap-vert: 84px; --border-w: 2px; --overlay-dim: rgba(0,0,0,.72); --nav-fs: 1.125rem; --nav-gap: 8px; }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Noto Sans', Arial, 'Apple Color Emoji','Segoe UI Emoji'; color: #000; background: #fff; line-height: 1.4; }
@@ -23,14 +23,14 @@
     .shapes-layer { position: absolute; inset: 0; pointer-events: none; }
     .drop{position:absolute;width:var(--s,36px);height:calc(var(--s,36px)*1.6);pointer-events:none}
     .drop::before{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:0;width:var(--s,36px);height:calc(var(--s,36px)*1.1);background-repeat:no-repeat;background-size:100% 100%;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>");}
-    .about { display: flex; gap: 24px; align-items: flex-start; justify-content: flex-end; }
-    .about__image { flex: 0 0 33.333vw; max-width: 33.333vw; }
+    .about { display: flex; gap: 24px; align-items: flex-start; justify-content: flex-start; flex-direction: row; }
+    .about__image { flex: 0 0 33.333%; max-width: 33.333%; }
     .about__image img { display: block; width: 100%; height: auto; object-fit: cover; }
     .about__text { flex: 1 1 auto; min-width: 280px; font-size: 0.95rem; }
     .about__text > :first-child { margin-top: 0; }
-    .home-back{ position: fixed; right: 0; bottom: var(--nav-gap); z-index: 45; height: var(--nav-item-h); background:#000; color:#fff; border:none; border-radius:0; cursor:pointer; padding: 0 15px; display: flex; align-items:center; justify-content:center; font: inherit; clip-path: polygon(var(--x1,0%) var(--y1,2%), var(--x2,100%) var(--y2,1%), var(--x3,100%) var(--y3,98%), var(--x4,0%) var(--y4,99%)); outline: var(--border-w) solid #000; outline-offset: 0; }
-    .home-back::before{ content: '>'; color:#fff; display:inline-block; line-height:1; }
-    body.is-home .home-back::before{ content: ':>'; }
+    .home-back{ position: fixed; left: 16px; bottom: 16px; z-index: 45; width: 42px; height: 63px; background:#000; color:#fff; border:none; border-radius:0; cursor:pointer; padding: 0; display: flex; align-items:center; justify-content:center; font: inherit; outline: none; -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>"); mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>"); -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat:no-repeat; mask-repeat:no-repeat; -webkit-mask-position:center; mask-position:center; }
+    .home-back::before{ content: '>'; color:#fff; display:inline-block; line-height:1; font-weight:700; transform: translateY(6px); }
+    body.is-home .home-back::before{ content: ':>' !important; }
     .feed { display: flex; flex-direction: column; align-items: flex-start; gap: var(--gap-vert); }
     .block { width: 100%; max-width: 1200px; }
     .block__title { font-family: inherit; font-weight: 600; margin: 0 0 16px; text-align: left; font-size: calc(var(--nav-fs) * 1.05); line-height: 1.2; letter-spacing: 0.005em; }
@@ -42,12 +42,12 @@
     .media { height: 200px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: transparent; color: inherit; border: none; border-radius: 0; cursor: pointer; position: relative; aspect-ratio: auto; }
     .media img, .media video, .media svg { height: 100%; width: auto; display: block; pointer-events: none; }
     .block__desc { max-width: 60ch; margin-top: 10px; margin-left: 0; text-align: left; font-size: 0.95rem; }
-    @media (max-width: 640px) { :root { --page-xpad: 10px; } #about { padding-right: 0; } .about { flex-direction: column; align-items: stretch; } .about__image { flex: 0 0 auto; max-width: 100%; } .about__image img { width: 100%; height: auto; object-fit: contain; } .about__text { font-size: 1rem; } .gallery { margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); } } #about { padding-right: 0; } .about { flex-direction: column; align-items: stretch; } .about__image { flex: 0 0 auto; max-width: 100%; } .about__image img { width: 100%; height: auto; object-fit: contain; } .about__text { font-size: 1rem; } }
+    @media (max-width: 640px) { :root { --page-xpad: 10px; } #about { padding-right: 0; } .about { flex-direction: column; align-items: stretch; } .about__image { flex: 0 0 auto; max-width: 100%; } .about__image img { width: 100%; height: auto; object-fit: contain; } .about__text { font-size: 1rem; } .gallery { margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); } }
     @media (prefers-reduced-motion: reduce) { .drop { animation: none !important; } }
     .spark{ position:fixed; width:10px; height:10px; background:#000; pointer-events:none; will-change:transform,opacity; z-index:60; opacity:1; }
     .spark.circle{ border-radius:50%; }
     .spark.semi{ border-radius:50% 50% 0 0 / 50% 50% 0 0; overflow:hidden; }
-  .viewer{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;z-index:100;padding:0 100px;box-sizing:border-box;align-items:center;justify-content:center}
+  .viewer{position:fixed;inset:0;background:rgba(128,128,128,.5);display:none;z-index:100;padding:0 100px;box-sizing:border-box;align-items:center;justify-content:center}
 .viewer.open{display:flex}
 .viewer__scroller{position:relative;width:100%;height:100%;overflow:auto;display:flex;align-items:center;justify-content:center}
 .viewer__frame{position:relative;display:inline-block;max-width:100%;max-height:100%}
@@ -59,6 +59,10 @@
 @media (max-width: 640px){
   .viewer{padding:10px}
   .viewer__prev,.viewer__next{display:none}
+}
+@media (hover: hover) {
+  .nav__item.collapsed:hover { width: auto; max-width: none; padding: 0 15px; }
+  .nav__item.collapsed:hover .label { opacity: 1; }
 }
 </style>
 </head>
@@ -177,20 +181,10 @@
       el.style.setProperty('--y4',r(96.5,99)+'%');
     }
 
-    function setPage(id){
-      const sections = $$('.page');
-      const navItems = $$('.nav__item');
-      sections.forEach(s => s.classList.toggle('active', s.id === id));
-      navItems.forEach(b => b.classList.toggle('active', b.dataset.target === id));
-      const isHome = id === 'home';
-      document.body.classList.toggle('is-home', isHome);
-      navItems.forEach(b => {
-        if(isHome){ b.classList.remove('collapsed'); }
-        else { b.classList.toggle('collapsed', b.dataset.target !== id); }
-      });
-      if(location.hash.replace('#','') !== id){ history.replaceState(null, '', '#'+id); }
-      currentPage = id;
-      if(isHome){ startRain(true); } else { stopRain(); }
+    function stopRain(){
+      const layer = $('#shapes');
+      if(window.__rainRAF){ cancelAnimationFrame(window.__rainRAF); window.__rainRAF = null; }
+      if(layer){ layer.innerHTML=''; layer.removeAttribute('data-mode'); }
     }
 
     function startRain(force=false){
@@ -207,13 +201,15 @@
         el.className = 'drop';
         const s = Math.round(22 + Math.random()*18);
         el.style.setProperty('--s', s+'px');
+        const alpha = 0.3 + 0.7 * ((s - 22) / 18);
+        el.style.opacity = String(Math.max(0.3, Math.min(1, alpha)));
         const W = layer.clientWidth || window.innerWidth;
         const H = layer.clientHeight || window.innerHeight;
         const x = Math.random() * Math.max(0, W - s);
         const y = -Math.random()*H*0.6 - s;
         const vy = (70 + Math.random()*70) * 1.3333;
         layer.appendChild(el);
-        return { el, s, x, y, vy };
+        return { el, s, x, y, vy, hit: false };
       };
       for(let i=0;i<COUNT;i++) drops.push(makeDrop());
       let last = performance.now();
@@ -225,10 +221,16 @@
         for(const d of drops){
           d.y += d.vy * dt;
           d.el.style.transform = `translate(${Math.round(d.x)}px, ${Math.round(d.y)}px)`;
+          if(!d.hit && d.y >= H - 2){
+            d.hit = true;
+            const op = parseFloat(d.el.style.opacity || '1');
+            spawnDrip(Math.round(d.x + d.s/2), H - 1, d.s, Math.max(0.3, Math.min(1, op)));
+          }
           if(d.y > H + d.s*1.3){
             d.y = -d.s - Math.random()*H*0.6;
             d.x = Math.random()*Math.max(0, W - d.s);
             d.vy = (70 + Math.random()*70) * 1.3333;
+            d.hit = false;
           }
         }
         window.__rainRAF = requestAnimationFrame(loop);
@@ -236,10 +238,42 @@
       window.__rainRAF = requestAnimationFrame(loop);
     }
 
-    function stopRain(){
-      const layer = $('#shapes');
-      if(window.__rainRAF){ cancelAnimationFrame(window.__rainRAF); window.__rainRAF = null; }
-      if(layer){ layer.innerHTML=''; layer.removeAttribute('data-mode'); }
+    function spawnDrip(x, y, size, opacity){
+      const n = Math.max(6, Math.round(size/6));
+      const parts = [];
+      for(let i=0;i<n;i++){
+        const el = document.createElement('div');
+        el.className = 'spark circle';
+        const s = Math.max(3, Math.round(size * (0.12 + Math.random()*0.18)));
+        el.style.width = s+'px'; el.style.height = s+'px';
+        el.style.position='fixed'; el.style.left = (x - s/2) + 'px'; el.style.top = (y - s/2) + 'px';
+        el.style.opacity = String(opacity);
+        el.style.zIndex='70';
+        document.body.appendChild(el);
+        const ang = (-Math.PI) + Math.random()*Math.PI;
+        let vx = Math.cos(ang) * (120 + Math.random()*160);
+        let vy = Math.sin(ang) * (180 + Math.random()*220);
+        const ax = 0;
+        const ay = 1200;
+        parts.push({ el, x: x - s/2, y: y - s/2, vx, vy, ax, ay, life: 0, max: 0.6 });
+      }
+      let last = performance.now();
+      function step(now){
+        const dt = (now - last)/1000; last = now;
+        let alive = 0;
+        for(const p of parts){
+          p.vx += p.ax * dt; p.vy += p.ay * dt;
+          p.x  += p.vx * dt; p.y  += p.vy * dt;
+          p.life += dt;
+          const fade = Math.max(0, 1 - p.life/p.max);
+          p.el.style.left = p.x + 'px';
+          p.el.style.top  = p.y + 'px';
+          p.el.style.opacity = String(fade * opacity);
+          if(p.life < p.max) alive++; else p.el.remove();
+        }
+        if(alive) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
     }
 
     function fireworkFromButton(){
@@ -281,6 +315,22 @@
       requestAnimationFrame(tick);
     }
 
+    function setPage(id){
+      const sections = $$('.page');
+      const navItems = $$('.nav__item');
+      sections.forEach(s => s.classList.toggle('active', s.id === id));
+      navItems.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+      const isHome = id === 'home';
+      document.body.classList.toggle('is-home', isHome);
+      navItems.forEach(b => {
+        if(isHome){ b.classList.remove('collapsed'); }
+        else { b.classList.toggle('collapsed', b.dataset.target !== id); }
+      });
+      if(location.hash.replace('#','') !== id){ history.replaceState(null, '', '#'+id); }
+      currentPage = id;
+      if(isHome){ startRain(true); } else { stopRain(); }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       const navItems = $$('.nav__item');
       navItems.forEach(btn => { jitterNavItem(btn); btn.addEventListener('click', () => setPage(btn.dataset.target)); });
@@ -300,46 +350,55 @@
         if(document.body.classList.contains('is-home')) startRain(true);
       }, 180);
     });
+
     const viewer = document.getElementById('viewer');
-  const viewerImg = document.getElementById('viewerImg');
-  const viewerPrev = document.getElementById('viewerPrev');
-  const viewerNext = document.getElementById('viewerNext');
-  const viewerClose = document.getElementById('viewerClose');
-  const viewerScroll = document.getElementById('viewerScroll');
-  let vGallery = null; let vIndex = -1;
-  function srcFromMediaEl(node){
-    const img = node.querySelector('img');
-    if(img && (img.currentSrc || img.src)) return img.currentSrc || img.src;
-    const vid = node.querySelector('video');
-    if(vid && (vid.currentSrc || vid.src)) return vid.currentSrc || vid.src;
-    const svg = node.querySelector('svg');
-    if(svg){ const s = new XMLSerializer().serializeToString(svg); const withNs = s.includes('xmlns')?s:s.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"'); return 'data:image/svg+xml;utf8,'+encodeURIComponent(withNs); }
-    return '';
-  }
-  function openViewer(gallery, index){
-    vGallery = gallery; vIndex = index;
-    const items = [...vGallery.querySelectorAll('.media')];
-    if(!items.length) return; if(vIndex<0) vIndex=0; if(vIndex>=items.length) vIndex=items.length-1;
-    const src = srcFromMediaEl(items[vIndex]);
-    if(!src) return;
-    viewerImg.src = src;
-    viewer.classList.add('open');
-    viewer.setAttribute('aria-hidden','false');
-    document.body.style.overflow = 'hidden';
-    viewerScroll.scrollTo({left:0, top:0, behavior:'instant'});
-  }
-  function closeViewer(){ viewer.classList.remove('open'); viewer.setAttribute('aria-hidden','true'); document.body.style.overflow=''; viewerImg.removeAttribute('src'); vGallery=null; vIndex=-1; }
-  function navViewer(dir){ if(!vGallery) return; const items=[...vGallery.querySelectorAll('.media')]; vIndex=(vIndex+dir+items.length)%items.length; openViewer(vGallery, vIndex); }
-  document.addEventListener('click', (e)=>{ const media=e.target.closest('.media'); if(media){ const gal=media.closest('[data-gallery]'); if(gal){ const items=[...gal.querySelectorAll('.media')]; const idx=items.indexOf(media); openViewer(gal, idx); } }});
-  viewerPrev.addEventListener('click', ()=>navViewer(-1));
-  viewerNext.addEventListener('click', ()=>navViewer(1));
-  viewerClose.addEventListener('click', closeViewer);
-  viewer.addEventListener('click', (e)=>{ if(e.target===viewer) closeViewer(); });
-  window.addEventListener('keydown', (e)=>{ if(!viewer.classList.contains('open')) return; if(e.key==='Escape') closeViewer(); if(e.key==='ArrowLeft') navViewer(-1); if(e.key==='ArrowRight') navViewer(1); });
-  let touchStartX = 0; let touchStartY = 0; let touchMoved = false;
-  viewerScroll.addEventListener('touchstart', (e)=>{ const t=e.touches[0]; touchStartX=t.clientX; touchStartY=t.clientY; touchMoved=false; }, {passive:true});
-  viewerScroll.addEventListener('touchmove', (e)=>{ touchMoved=true; }, {passive:true});
-  viewerScroll.addEventListener('touchend', (e)=>{ if(!touchMoved) return; const t=e.changedTouches[0]; const dx=t.clientX - touchStartX; const dy=t.clientY - touchStartY; if(Math.abs(dx) > Math.max(50, Math.abs(dy)*1.5)){ if(dx<0) navViewer(1); else navViewer(-1); } });
-</script>
+    const viewerImg = document.getElementById('viewerImg');
+    const viewerPrev = document.getElementById('viewerPrev');
+    const viewerNext = document.getElementById('viewerNext');
+    const viewerClose = document.getElementById('viewerClose');
+    const viewerScroll = document.getElementById('viewerScroll');
+    let vGallery = null; let vIndex = -1;
+    function srcFromMediaEl(node){
+      const img = node.querySelector('img');
+      if(img && (img.currentSrc || img.src)) return img.currentSrc || img.src;
+      const vid = node.querySelector('video');
+      if(vid && (vid.currentSrc || vid.src)) return vid.currentSrc || vid.src;
+      const svg = node.querySelector('svg');
+      if(svg){ const s = new XMLSerializer().serializeToString(svg); const withNs = s.includes('xmlns')?s:s.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"'); return 'data:image/svg+xml;utf8,'+encodeURIComponent(withNs); }
+      return '';
+    }
+    function openViewer(gallery, index){
+      vGallery = gallery; vIndex = index;
+      const items = [...vGallery.querySelectorAll('.media')];
+      if(!items.length) return; if(vIndex<0) vIndex=0; if(vIndex>=items.length) vIndex=items.length-1;
+      const src = srcFromMediaEl(items[vIndex]);
+      if(!src) return;
+      viewerImg.src = src;
+      viewer.classList.add('open');
+      viewer.setAttribute('aria-hidden','false');
+      document.body.style.overflow = 'hidden';
+      viewerScroll.scrollTo({left:0, top:0, behavior:'instant'});
+    }
+    function closeViewer(){ viewer.classList.remove('open'); viewer.setAttribute('aria-hidden','true'); document.body.style.overflow=''; viewerImg.removeAttribute('src'); vGallery=null; vIndex=-1; }
+    function navViewer(dir){ if(!vGallery) return; const items=[...vGallery.querySelectorAll('.media')]; vIndex=(vIndex+dir+items.length)%items.length; openViewer(vGallery, vIndex); }
+    document.addEventListener('click', (e)=>{ const media=e.target.closest('.media'); if(media){ const gal=media.closest('[data-gallery]'); if(gal){ const items=[...gal.querySelectorAll('.media')]; const idx=items.indexOf(media); openViewer(gal, idx); } }});
+    viewerPrev.addEventListener('click', ()=>navViewer(-1));
+    viewerNext.addEventListener('click', ()=>navViewer(1));
+    viewerClose.addEventListener('click', closeViewer);
+    viewer.addEventListener('click', (e)=>{ if(e.target===viewer) closeViewer(); });
+    window.addEventListener('keydown', (e)=>{ if(!viewer.classList.contains('open')) return; if(e.key==='Escape') closeViewer(); if(e.key==='ArrowLeft') navViewer(-1); if(e.key==='ArrowRight') navViewer(1); });
+    let touchStartX = 0; let touchStartY = 0; let touchMoved = false;
+    viewerScroll.addEventListener('touchstart', (e)=>{ const t=e.touches[0]; touchStartX=t.clientX; touchStartY=t.clientY; touchMoved=false; }, {passive:true});
+    viewerScroll.addEventListener('touchmove', (e)=>{ touchMoved=true; }, {passive:true});
+    viewerScroll.addEventListener('touchend', (e)=>{ if(!touchMoved) return; const t=e.changedTouches[0]; const dx=t.clientX - touchStartX; const dy=t.clientY - touchStartY; if(Math.abs(dx) > Math.max(50, Math.abs(dy)*1.5)){ if(dx<0) navViewer(1); else navViewer(-1); } });
+    const viewerFrame = document.getElementById('viewerFrame');
+    viewerFrame.addEventListener('click', (e)=>{
+      if(!viewer.classList.contains('open')) return;
+      if(e.target === viewerClose || e.target.closest('#viewerClose')) return;
+      const r = viewerFrame.getBoundingClientRect();
+      const x = e.clientX - r.left;
+      if(x < r.width/2) { navViewer(-1); } else { navViewer(1); }
+    });
+  </script>
 </body>
 </html>
