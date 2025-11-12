@@ -34,8 +34,10 @@
     .media { height: 200px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: transparent; color: inherit; border: none; border-radius: 0; cursor: pointer; position: relative; }
     .gallery.taller .media { height: 266.67px; }
     .gallery.taller2 .media { height: 400px; }
+    .gallery.taller2 .media.video { height: auto; width: min(100%, 960px); aspect-ratio: 16 / 9; }
     #pictures .media { background: transparent; }
-    .media img, .media video, .media svg, .media iframe { height: 100%; width: auto; display: block; pointer-events: auto; }
+    .media img, .media video, .media svg { height: 100%; width: auto; display: block; pointer-events: auto; }
+    .media iframe { width: 100%; height: 100%; display: block; pointer-events: auto; }
     .gallery + .gallery { margin-top: 12px; }
     .block__desc { max-width: 60ch; margin-top: 10px; margin-left: 0; text-align: left; font-size: 0.95rem; }
     .about { display: flex; flex-direction: row; gap: 24px; align-items: flex-start; justify-content: flex-start; }
@@ -194,12 +196,7 @@
         </article>
       </div>
     </section>
-    <section class="page" id="edtech">
-      <div class="feed">
-        <article class="block">
-          <h2 class="block__title">География</h2>
-          <div class="gallery taller2" data-gallery>
-            <div class="media">
+    $1<div class="media video">
               <iframe width="356" height="200" src="https://www.youtube.com/embed/BF9R6ZQqAv8" title="География — демонстрация" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
             </div>
           </div>
@@ -213,7 +210,7 @@
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/edtech/concept1.png" alt="Концепты интерактивов — 1" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/edtech/concept2.png" alt="Концепты интерактивов — 2" loading="lazy"></div>
           </div>
-          <div class="block__desc">Поиски концептов интерактивов в рамках креативных поисков в Учи.ру.</div>
+          <div class="block__desc">Визуализация концептов интерактивов в рамках креативных поисков в Учи.ру.</div>
         </article>
       
       </div>
