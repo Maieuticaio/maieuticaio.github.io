@@ -32,7 +32,9 @@
     .gallery { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; scrollbar-width: none; -ms-overflow-style: none; margin-left: calc(-1 * var(--page-xpad)); margin-right: calc(-1 * var(--page-xpad)); padding-left: var(--page-xpad); padding-right: var(--page-xpad); }
     .gallery::-webkit-scrollbar { display: none; width: 0; height: 0; }
     .media { height: 200px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: transparent; color: inherit; border: none; border-radius: 0; cursor: pointer; position: relative; }
-    .media img, .media video, .media svg { height: 100%; width: auto; display: block; pointer-events: none; }
+    .gallery.taller .media { height: 266.67px; }
+    #pictures .media { background: transparent; }
+    .media img, .media video, .media svg, .media iframe { height: 100%; width: auto; display: block; pointer-events: auto; }
     .gallery + .gallery { margin-top: 12px; }
     .block__desc { max-width: 60ch; margin-top: 10px; margin-left: 0; text-align: left; font-size: 0.95rem; }
     .about { display: flex; flex-direction: row; gap: 24px; align-items: flex-start; justify-content: flex-start; }
@@ -67,19 +69,19 @@
     .mnav__btn{min-width:220px;height:40px;line-height:40px;padding:0 16px;background:#000;color:#fff;border:none;border-radius:0;font: inherit;font-size:1rem;text-transform:uppercase;letter-spacing:.02em;appearance:none;-webkit-appearance:none}
     .mhead{display:none}
     @media (max-width: 640px){
-  :root { --page-xpad: 10px; }
-  .nav{ left:auto; right:0; top: var(--nav-gap); display:flex; }
-  body.is-home .nav{ display:none !important; }
-  body:not(.is-home) .nav .nav__item{ display:none; }
-  body:not(.is-home) .nav .nav__item.active{ display:block; }
-  body:not(.is-home) .nav.expanded .nav__item{ display:block; }
-  body:not(.is-home) section.page{ padding-top: 10px; }
-  #about .about{ flex-direction: column; align-items: stretch; }
-  #about .about__image{ flex: 0 0 auto; max-width: 100%; }
-  #about .about__image img{ width: 100%; height: auto; object-fit: contain; }
-  #about .about__text{ margin-top: 60px; }
-}
-@media (max-width: 640px){ .media{cursor: default;} }
+      :root { --page-xpad: 10px; }
+      .nav{ left:auto; right:0; top: var(--nav-gap); display:flex; }
+      body.is-home .nav{ display:none !important; }
+      body:not(.is-home) .nav .nav__item{ display:none; }
+      body:not(.is-home) .nav .nav__item.active{ display:block; }
+      body:not(.is-home) .nav.expanded .nav__item{ display:block; }
+      body:not(.is-home) section.page{ padding-top: 10px; }
+      #about .about{ flex-direction: column; align-items: stretch; }
+      #about .about__image{ flex: 0 0 auto; max-width: 100%; }
+      #about .about__image img{ width: 100%; height: auto; object-fit: contain; }
+      #about .about__text{ margin-top: 60px; }
+    }
+    @media (max-width: 640px){ .media{cursor: default;} }
   </style>
 </head>
 <body>
@@ -135,6 +137,46 @@
           </div>
           <div class="block__desc">Иллюстрации к уроку по книге «Прекрасный яростный мир» для уроков старшей школы в Учи.ру.</div>
         </article>
+        <article class="block">
+          <h2 class="block__title">Старик и море</h2>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/o1.svg" alt="Старик и море — илл. o1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/o2.svg" alt="Старик и море — илл. o2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/o3.svg" alt="Старик и море — илл. o3" loading="lazy"></div>
+          </div>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/1.svg" alt="Старик и море — илл. 1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/2.svg" alt="Старик и море — илл. 2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/3.svg" alt="Старик и море — илл. 3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/4.svg" alt="Старик и море — илл. 4" loading="lazy"></div>
+            <div class="media">
+              <img class="anim-seq" alt="Старик и море — кадры" data-interval="500" data-frames="https://maieuticaio.github.io/folder/ichi/hemingway/f1.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f2.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f3.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f4.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f5.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f6.svg" />
+            </div>
+          </div>
+          <div class="block__desc">Иллюстрации к уроку по книге «Старик и море» Эрнеста Хемингуэя для уроков старшей школы в Учи.ру.</div>
+        </article>
+        <article class="block">
+          <h2 class="block__title">Учебник</h2>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/0.svg" alt="Учебник 0" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/1.svg" alt="Учебник 1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/2.svg" alt="Учебник 2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/3.svg" alt="Учебник 3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/4.svg" alt="Учебник 4" loading="lazy"></div>
+          </div>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/5.png" alt="Учебник 5" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/6.png" alt="Учебник 6" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/12.svg" alt="Учебник 12" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/13.svg" alt="Учебник 13" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/11.svg" alt="Учебник 11" loading="lazy"></div>
+          </div>
+          <div class="gallery taller" data-gallery><div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/8.png" alt="Учебник 8" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/9.svg" alt="Учебник 9" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/10.svg" alt="Учебник 10" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Иллюстрации к статьям электронного учебника по литературе в Учи.ру.</div>
+        </article>
       </div>
     </section>
     <section class="page" id="things">
@@ -154,13 +196,13 @@
     <section class="page" id="edtech">
       <div class="feed">
         <article class="block">
-          <h2 class="block__title">Интерактивы</h2>
+          <h2 class="block__title">География</h2>
           <div class="gallery" data-gallery>
-            <div class="media" style="width: 300px"></div>
-            <div class="media" style="width: 200px"></div>
-            <div class="media" style="width: 260px"></div>
+            <div class="media">
+              <iframe width="356" height="200" src="https://www.youtube.com/embed/BF9R6ZQqAv8" title="География — демонстрация" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+            </div>
           </div>
-          <div class="block__desc">Описание образовательных интерактивов.</div>
+          <div class="block__desc">Создание стиля иллюстраций и анимаций для предмета «География»; участие в разработке концепций уроков и визуального повествования; работа с методистами и дизайнерами над учебными интерактивами; интеграция в платформу Учи.ру (средняя и старшая школа).</div>
         </article>
       </div>
     </section>
@@ -235,7 +277,7 @@
         el.className = 'drop';
         const s = Math.round(22 + Math.random()*18);
         el.style.setProperty('--s', s+'px');
-        { const blur = Math.max(1, Math.round((40 - s) * 0.2) + 1); el.style.filter = 'blur(' + blur + 'px)'; }
+        { const blur = Math.max(1, Math.round((40 - s) * 0.1) + 1); el.style.filter = 'blur(' + blur + 'px)'; }
         const alpha = 0.3 + 0.7 * ((s - 22) / 18);
         el.style.opacity = String(Math.max(0.3, Math.min(1, alpha)));
         const W = layer.clientWidth || window.innerWidth;
@@ -286,7 +328,7 @@
         el.style.width = s+'px'; el.style.height = s+'px';
         el.style.position='fixed'; el.style.left = (x - s/2) + 'px'; el.style.top = (y - s/2) + 'px';
         el.style.opacity = String(opacity);
-        const blur = Math.max(1, Math.round((40 - size) * 0.2) + 1);
+        const blur = Math.max(1, Math.round((40 - size) * 0.1) + 1);
         el.style.filter = 'blur(' + blur + 'px)';
         el.style.zIndex='70';
         document.body.appendChild(el);
@@ -369,17 +411,30 @@
         else { if(mobile){ b.classList.remove('collapsed'); } }
       });
       if(nav){ if(!isHome && mobile){ nav.classList.add('folded'); nav.classList.remove('expanded'); } else { nav.classList.remove('folded'); nav.classList.remove('expanded'); } }
-      if(mheadEl){ if(!isHome && mobile){ mheadEl.classList.add('collapsed'); mheadEl.classList.remove('expanded'); } else { mheadEl.classList.remove('collapsed'); mheadEl.classList.remove('expanded'); } }
       if(location.hash.replace('#','') !== id){ history.replaceState(null, '', '#'+id); }
       reorderNav(id);
       currentPage = id;
       if(isHome){ startRain(true); } else { stopRain(); }
+      document.dispatchEvent(new Event('pagechange'));
     }
     window.addEventListener('DOMContentLoaded', () => {
       const nav = $('#nav');
       const navItems = $$('.nav__item');
       const homeBack = $('#homeBack');
       const mnav = $('#mnav');
+      const animTimers = new Set();
+      function stopAnimSeq(){ animTimers.forEach(id=>clearInterval(id)); animTimers.clear(); }
+      function startAnimSeq(root){
+        const scope = root || document;
+        $$('.anim-seq', scope).forEach(img=>{
+          const list = (img.dataset.frames||'').split(',').map(s=>s.trim()).filter(Boolean);
+          if(!list.length) return;
+          let i = 0; img.src = list[0];
+          const iv = Math.max(100, +(img.dataset.interval||500));
+          const id = setInterval(()=>{ i = (i+1)%list.length; img.src = list[i]; }, iv);
+          animTimers.add(id);
+        });
+      }
       function applyUniformNav(){
         const navEl = $('#nav'); if(!navEl) return;
         let max = 0; const items = $$('.nav__item');
@@ -446,8 +501,11 @@
         setPage(page);
         reorderNav(page);
         applyUniformNav();
+        stopAnimSeq();
         if(document.body.classList.contains('is-home')){
           startRain(true);
+        } else if(page === 'pictures'){
+          startAnimSeq($('#pictures'));
         }
       }
       initPageFromHash();
@@ -497,6 +555,7 @@
       if(viewer) viewer.addEventListener('click', (e)=>{ if(e.target === viewer) closeViewer(); });
       document.addEventListener('click', (e)=>{ const media=e.target.closest('.media'); if(!media) return; if(isMobile()) return; const gal=media.closest('[data-gallery]'); if(!gal) return; const items=[...gal.querySelectorAll('.media')]; const idx=items.indexOf(media); openViewer(gal, idx); });
       if(viewerFrame) viewerFrame.addEventListener('click', (e)=>{ if(!viewer.classList.contains('open')) return; if(e.target === viewerClose || e.target.closest('#viewerClose')) return; const r = viewerFrame.getBoundingClientRect(); const x = e.clientX - r.left; if(x < r.width/2) { navViewer(-1); } else { navViewer(1); } });
+      document.addEventListener('pagechange', ()=>{ stopAnimSeq(); if(!document.body.classList.contains('is-home')){ const active = $('.page.active'); if(active && active.id==='pictures') startAnimSeq(active); } });
     });
   </script>
 </body>
