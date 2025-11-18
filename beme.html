@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Портфолио</title>
+  <title>Портфолио — один HTML</title>
   <style>
     :root { --page-xpad: 50px; --nav-item-h: 40px; --gap-vert: 84px; --border-w: 2px; --nav-fs: 1.125rem; --nav-gap: 8px; }
     * { box-sizing: border-box; }
     html, body { height: 100%; }
     body { margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Noto Sans', Arial, 'Apple Color Emoji','Segoe UI Emoji'; color: #000; background: #fff; line-height: 1.4; }
     .nav { position: fixed; top: var(--nav-gap); left: 0; right: auto; z-index: 90; display: flex; flex-direction: column; gap: var(--nav-gap); font-size: var(--nav-fs); line-height: 0; }
-    .nav__item { position: relative; background: #000; color: #fff; height: 40px; line-height: 40px; border: none; margin: 0; padding: 0 15px; width: 100px; min-width: 100px; max-width: 100px; align-self: flex-start; display: block; text-align: center; cursor: pointer; user-select: none; white-space: nowrap; overflow: hidden; border-radius: 0; appearance: none; -webkit-appearance: none; }
+    .nav__item { position: relative; background: #000; color: #fff; height: 40px; line-height: 40px; border: none; margin: 0; padding: 0 15px; width: var(--nav-fixed-w, 100px); min-width: var(--nav-fixed-w, 100px); max-width: var(--nav-fixed-w, 100px); align-self: flex-start; display: block; text-align: center; cursor: pointer; user-select: none; white-space: nowrap; overflow: hidden; border-radius: 0; appearance: none; -webkit-appearance: none; }
     .nav__item .label { transition: opacity .18s ease; text-transform: uppercase; }
     .nav__item.collapsed { width: 10px; max-width: 10px; min-width: 0; padding: 0; }
     .nav__item.collapsed .label { opacity: 0; }
@@ -38,6 +38,11 @@
     #pictures .media { background: transparent; }
     .media img, .media video, .media svg { height: 100%; width: auto; display: block; pointer-events: auto; }
     .media iframe { width: 100%; height: 100%; display: block; pointer-events: auto; }
+    .media.video .vid-toggle{position:absolute;right:8px;top:8px;z-index:5;width:32px;height:32px;border:none;border-radius:0;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;font:inherit;line-height:1}
+    .media.video .vid-toggle svg{width:18px;height:18px;display:block}
+    .media.video .vid-toggle svg *{fill:#fff;stroke:#fff;stroke-width:2} 
+    .media.video .vid-toggle svg{width:18px;height:18px;display:block}
+    .media.video .vid-toggle svg *{fill:#fff;stroke:#fff;stroke-width:2}  
     .gallery + .gallery { margin-top: 12px; }
     .block__desc { max-width: 60ch; margin-top: 10px; margin-left: 0; text-align: left; font-size: 0.95rem; }
     .about { display: flex; flex-direction: row; gap: 24px; align-items: flex-start; justify-content: flex-start; }
@@ -98,7 +103,7 @@
   <div class="mhead" id="mhead" aria-hidden="true">
     <button class="nav__item" data-target="pictures"><span class="label">Картинки</span></button>
     <button class="nav__item" data-target="things"><span class="label">Штуки</span></button>
-    <button class="nav__item" data-target="edtech"><span class="label">Ed‑tech</span></button>
+    <button class="nav__item" data-target="edtech"><span class="label">Ed-tech</span></button>
     <button class="nav__item" data-target="about"><span class="label">Обо мне</span></button>
   </div>
   <main>
@@ -146,22 +151,21 @@
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/o1.svg" alt="Старик и море — илл. o1" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/o2.svg" alt="Старик и море — илл. o2" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/o3.svg" alt="Старик и море — илл. o3" loading="lazy"></div>
+            <div class="media">
+              <img class="anim-seq" alt="Старик и море — кадры" data-interval="500" data-frames="https://maieuticaio.github.io/folder/ichi/hemingway/f1.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f2.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f3.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f4.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f5.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f6.svg" />
+            </div>
           </div>
           <div class="gallery" data-gallery>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/1.svg" alt="Старик и море — илл. 1" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/2.svg" alt="Старик и море — илл. 2" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/3.svg" alt="Старик и море — илл. 3" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/4.svg" alt="Старик и море — илл. 4" loading="lazy"></div>
-            <div class="media">
-              <img class="anim-seq" alt="Старик и море — кадры" data-interval="500" data-frames="https://maieuticaio.github.io/folder/ichi/hemingway/f1.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f2.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f3.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f4.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f5.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f6.svg" />
-            </div>
           </div>
           <div class="block__desc">Иллюстрации к уроку по книге «Старик и море» Эрнеста Хемингуэя для уроков старшей школы в Учи.ру.</div>
         </article>
         <article class="block">
           <h2 class="block__title">Учебник</h2>
           <div class="gallery" data-gallery>
-            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/0.svg" alt="Учебник 0" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/1.svg" alt="Учебник 1" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/2.svg" alt="Учебник 2" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/3.svg" alt="Учебник 3" loading="lazy"></div>
@@ -174,7 +178,9 @@
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/13.svg" alt="Учебник 13" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/11.svg" alt="Учебник 11" loading="lazy"></div>
           </div>
-          <div class="gallery taller" data-gallery><div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/8.png" alt="Учебник 8" loading="lazy"></div>
+          <div class="gallery taller" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/0.svg" alt="Учебник 0" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/8.png" alt="Учебник 8" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/9.svg" alt="Учебник 9" loading="lazy"></div>
             <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/10.svg" alt="Учебник 10" loading="lazy"></div>
           </div>
@@ -193,6 +199,21 @@
             <div class="media" style="width: 300px"></div>
           </div>
           <div class="block__desc">Куклы, рождённые в рамках проекта «Сломанные слёзы». Связь: <a href="https://t.me/broken_tears" target="_blank" rel="noopener">@broken_tears</a>.</div>
+        </article>
+        <article class="block">
+          <h2 class="block__title">bt 2</h2>
+          <div class="gallery" data-gallery>
+            <div class="media video">
+              <video src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha_video.mp4" playsinline muted autoplay loop></video>
+              <button class="vid-toggle" aria-label="Toggle sound">🔇</button>
+            </div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha1.jpeg" alt="bt2 dasha1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha2.jpeg" alt="bt2 dasha2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha3.jpeg" alt="bt2 dasha3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha4.jpeg" alt="bt2 dasha4" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha5.jpeg" alt="bt2 dasha5" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha6.jpeg" alt="bt2 dasha6" loading="lazy"></div>
+          </div>
         </article>
       </div>
     </section>
@@ -509,6 +530,19 @@
           btn.addEventListener('click', ()=>{ setPage(btn.dataset.target); closeMnav(); });
         });
       }
+      function initVideos(){
+        const ICON_VOL = "<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M3 9h4l5-4v14l-5-4H3z'></path><path d='M16 8c2 1.6 2 6.4 0 8' fill='none' stroke-linecap='square'></path></svg>";
+        const ICON_MUTE = "<svg viewBox='0 0 24 24' aria-hidden='true'><path d='M3 9h4l5-4v14l-5-4H3z'></path><path d='M16 9l5 5M21 9l-5 5' fill='none' stroke-linecap='square'></path></svg>";
+        $$('.media.video video').forEach(v=>{
+          v.muted=true; v.loop=true; v.playsInline=true; v.autoplay=true; v.play().catch(()=>{});
+          const wrap=v.closest('.media.video');
+          let btn=wrap.querySelector('.vid-toggle');
+          if(!btn){ btn=document.createElement('button'); btn.className='vid-toggle'; wrap.appendChild(btn); }
+          const setIcon=(muted)=>{ btn.innerHTML = muted ? ICON_MUTE : ICON_VOL; btn.setAttribute('aria-label', muted ? 'Unmute' : 'Mute'); };
+          setIcon(v.muted);
+          btn.addEventListener('click',(e)=>{ e.stopPropagation(); v.muted=!v.muted; setIcon(v.muted); v.play().catch(()=>{}); });
+        });
+      }
       function initPageFromHash(){
         const target = (location.hash || '#home').replace('#','');
         const page = ['home','pictures','things','edtech','about'].includes(target) ? target : 'home';
@@ -523,6 +557,7 @@
         }
       }
       initPageFromHash();
+      initVideos();
       window.addEventListener('resize', () => {
         clearTimeout(window.__rsTO);
         window.__rsTO = setTimeout(()=>{
@@ -567,7 +602,7 @@
       if(viewerNext) viewerNext.addEventListener('click', ()=>navViewer(1));
       if(viewerClose) viewerClose.addEventListener('click', closeViewer);
       if(viewer) viewer.addEventListener('click', (e)=>{ if(e.target === viewer) closeViewer(); });
-      document.addEventListener('click', (e)=>{ const media=e.target.closest('.media'); if(!media) return; if(isMobile()) return; const gal=media.closest('[data-gallery]'); if(!gal) return; const items=[...gal.querySelectorAll('.media')]; const idx=items.indexOf(media); openViewer(gal, idx); });
+      document.addEventListener('click', (e)=>{ const media=e.target.closest('.media'); if(!media) return; if(isMobile()) return; if(media.querySelector('video, iframe')) return; const gal=media.closest('[data-gallery]'); if(!gal) return; const items=[...gal.querySelectorAll('.media')]; const idx=items.indexOf(media); openViewer(gal, idx); });
       if(viewerFrame) viewerFrame.addEventListener('click', (e)=>{ if(!viewer.classList.contains('open')) return; if(e.target === viewerClose || e.target.closest('#viewerClose')) return; const r = viewerFrame.getBoundingClientRect(); const x = e.clientX - r.left; if(x < r.width/2) { navViewer(-1); } else { navViewer(1); } });
       document.addEventListener('pagechange', ()=>{ stopAnimSeq(); if(!document.body.classList.contains('is-home')){ const active = $('.page.active'); if(active && active.id==='pictures') startAnimSeq(active); } });
     });
