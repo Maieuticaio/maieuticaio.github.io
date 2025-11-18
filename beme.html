@@ -38,6 +38,7 @@
     #pictures .media { background: transparent; }
     .media img, .media video, .media svg { height: 100%; width: auto; display: block; pointer-events: auto; }
     .media iframe { width: 100%; height: 100%; display: block; pointer-events: auto; }
+    
     .media.video .vid-toggle{position:absolute;right:8px;top:8px;z-index:5;width:32px;height:32px;border:none;border-radius:0;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;font:inherit;line-height:1}
     .media.video .vid-toggle svg{width:18px;height:18px;display:block}
     .media.video .vid-toggle svg *{fill:#fff;stroke:#fff;stroke-width:2} 
@@ -58,7 +59,8 @@
     .viewer__scroller{position:relative;width:100%;height:100%;overflow:auto;display:flex;align-items:center;justify-content:center;scrollbar-width:none;-ms-overflow-style:none}
     .viewer__scroller::-webkit-scrollbar{width:0;height:0;display:none}
     .viewer__frame{position:relative;display:inline-block;max-width:100%;max-height:100%}
-    .viewer__img{display:block;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:center}
+    $1
+    .viewer__vid{display:none;width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain;object-position:center}
     .viewer__btn{position:fixed;top:50%;transform:translateY(-50%);width:44px;height:44px;border:none;border-radius:50%;background:#000;color:#fff;font-size:22px;line-height:1;display:grid;place-items:center;cursor:pointer;z-index:110}
     .viewer__prev{left:28px}
     .viewer__next{right:28px}
@@ -265,7 +267,7 @@
     <button class="viewer__btn viewer__prev" id="viewerPrev" aria-label="Предыдущий">‹</button>
     <div class="viewer__scroller" id="viewerScroll">
       <div class="viewer__frame" id="viewerFrame">
-        <img class="viewer__img" id="viewerImg" alt="Просмотр" />
+        <img class="viewer__img" $1<video class="viewer__vid" id="viewerVid" controls playsinline></video>
         <button class="viewer__close" id="viewerClose" aria-label="Закрыть">×</button>
       </div>
     </div>
@@ -569,6 +571,7 @@
       });
       const viewer = document.getElementById('viewer');
       const viewerImg = document.getElementById('viewerImg');
+      const viewerVid = document.getElementById('viewerVid');
       const viewerPrev = document.getElementById('viewerPrev');
       const viewerNext = document.getElementById('viewerNext');
       const viewerClose = document.getElementById('viewerClose');
@@ -590,19 +593,19 @@
         if(!items.length) return; if(vIndex<0) vIndex=0; if(vIndex>=items.length) vIndex=items.length-1;
         const src = srcFromMediaEl(items[vIndex]);
         if(!src) return;
-        viewerImg.src = src;
+        if(items[vIndex].querySelector('video')){ if(viewerVid){ viewerImg.style.display='none'; viewerVid.style.display='block'; viewerVid.src = src; } } else { if(viewerImg){ viewerImg.style.display='block'; if(viewerVid){ try{viewerVid.pause();}catch(e){} viewerVid.removeAttribute('src'); viewerVid.style.display='none'; } viewerImg.src = src; } }
         viewer.classList.add('open');
         viewer.setAttribute('aria-hidden','false');
         document.body.style.overflow = 'hidden';
         viewerScroll.scrollTo({left:0, top:0, behavior:'auto'});
       }
-      function closeViewer(){ viewer.classList.remove('open'); viewer.setAttribute('aria-hidden','true'); document.body.style.overflow=''; viewerImg.removeAttribute('src'); vGallery=null; vIndex=-1; }
+      function closeViewer(){ viewer.classList.remove('open'); viewer.setAttribute('aria-hidden','true'); document.body.style.overflow=''; if(viewerVid){ try{viewerVid.pause();}catch(e){} viewerVid.removeAttribute('src'); viewerVid.style.display='none'; } viewerImg.removeAttribute('src'); viewerImg.style.display='block'; vGallery=null; vIndex=-1; }
       function navViewer(dir){ if(!vGallery) return; const items=[...vGallery.querySelectorAll('.media')]; vIndex=(vIndex+dir+items.length)%items.length; openViewer(vGallery, vIndex); }
       if(viewerPrev) viewerPrev.addEventListener('click', ()=>navViewer(-1));
       if(viewerNext) viewerNext.addEventListener('click', ()=>navViewer(1));
       if(viewerClose) viewerClose.addEventListener('click', closeViewer);
       if(viewer) viewer.addEventListener('click', (e)=>{ if(e.target === viewer) closeViewer(); });
-      document.addEventListener('click', (e)=>{ const media=e.target.closest('.media'); if(!media) return; if(isMobile()) return; if(media.querySelector('video, iframe')) return; const gal=media.closest('[data-gallery]'); if(!gal) return; const items=[...gal.querySelectorAll('.media')]; const idx=items.indexOf(media); openViewer(gal, idx); });
+      document.addEventListener('click', (e)=>{ const media=e.target.closest('.media'); if(!media) return; if(isMobile()) return; if(media.querySelector('iframe')) return; const gal=media.closest('[data-gallery]'); if(!gal) return; const items=[...gal.querySelectorAll('.media')]; const idx=items.indexOf(media); openViewer(gal, idx); });
       if(viewerFrame) viewerFrame.addEventListener('click', (e)=>{ if(!viewer.classList.contains('open')) return; if(e.target === viewerClose || e.target.closest('#viewerClose')) return; const r = viewerFrame.getBoundingClientRect(); const x = e.clientX - r.left; if(x < r.width/2) { navViewer(-1); } else { navViewer(1); } });
       document.addEventListener('pagechange', ()=>{ stopAnimSeq(); if(!document.body.classList.contains('is-home')){ const active = $('.page.active'); if(active && active.id==='pictures') startAnimSeq(active); } });
     });
