@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Предсказание</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: #111;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .wrapper {
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .btn-main {
+      padding: 12px 26px;
+      border-radius: 999px;
+      border: none;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      cursor: pointer;
+      background: #111;
+      color: #fff;
+      box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.2s ease;
+    }
+
+    .btn-main:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(0,0,0,0.4);
+    }
+
+    .btn-main:active {
+      transform: translateY(1px);
+      box-shadow: 0 5px 12px rgba(0,0,0,0.35);
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .card-area {
+      margin: 20px auto 16px;
+      height: 230px;
+      width: 180px;
+      position: relative;
+    }
+
+    .card {
+      width: 140px;
+      height: 200px;
+      border-radius: 12px;
+      border: 2px solid #222;
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      font-weight: 600;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+      user-select: none;
+      transition: transform 0.16s ease, opacity 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    /* позиции трёх видимых карт */
+    .card-pos-top {
+      transform: translate(calc(-50% - 5px), calc(-50% - 5px));
+      z-index: 3;
+      opacity: 1;
+    }
+
+    .card-pos-middle {
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      opacity: 1;
+    }
+
+    .card-pos-bottom {
+      transform: translate(calc(-50% + 5px), calc(-50% + 5px));
+      z-index: 1;
+      opacity: 0.9;
+    }
+
+    /* уход верхней карты влево-вверх и исчезновение */
+    .card-out {
+      transform: translate(calc(-50% - 10px), calc(-50% - 10px));
+      opacity: 0;
+    }
+
+    /* выбранная карта: лёгкий зум и "приземление" */
+    .card.chosen {
+      animation: chosenCard 0.6s ease-out;
+    }
+
+    @keyframes chosenCard {
+      0% {
+        transform: translate(calc(-50% - 5px), calc(-50% - 5px)) scale(1);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.18);
+      }
+      40% {
+        transform: translate(calc(-50% - 5px), calc(-50% - 15px)) scale(1.2);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+      }
+      100% {
+        transform: translate(calc(-50% - 5px), calc(-50% - 5px)) scale(1);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+      }
+    }
+
+    #prediction {
+      min-height: 3.5em;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #222;
+    }
+
+    .restart {
+      margin-top: 18px;
+      font-size: 0.9rem;
+      color: #333;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .restart:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- главный экран: только кнопка -->
+    <div id="startScreen" class="screen active">
+      <button id="startButton" class="btn-main">Получить предсказание</button>
+    </div>
+
+    <!-- экран с колодой и предсказанием -->
+    <div id="readingScreen" class="screen">
+      <div class="card-area">
+        <div class="card card-pos-top" id="cardTop">?</div>
+        <div class="card card-pos-middle" id="cardMid">?</div>
+        <div class="card card-pos-bottom" id="cardBottom">?</div>
+      </div>
+      <div id="prediction"></div>
+      <div id="restart" class="restart" style="display:none;">Начать заново</div>
+    </div>
+  </div>
+
+  <script>
+    const totalCards = 32;
+
+    // Предсказания для карт 1–32 (можно потом заменить)
+    const predictions = {
+      1: "Ответ уже рядом — прислушайся к первому импульсу.",
+      2: "Сейчас время подождать: ситуация ещё дозревает.",
+      3: "Проси о помощи — другой человек станет ключом.",
+      4: "Сделай один маленький шаг уже сегодня.",
+      5: "Откажись от лишнего, и станет видно, куда идти.",
+      6: "Информация придёт через письмо, сообщение или звонок.",
+      7: "Сделай выбор сердцем, а потом перепроверь разумом.",
+      8: "Смена плана пойдёт на пользу делу.",
+      9: "Ситуация обернётся лучше, чем ты ожидаешь.",
+      10: "Не торопи людей: каждый движется в своём ритме.",
+      11: "Вопрос связан с усталостью — сначала восстанови силы.",
+      12: "Сделка или договор окажутся выгодными.",
+      13: "Отпусти прошлое, иначе оно потянет назад.",
+      14: "Сейчас правильнее сказать «нет», даже если неловко.",
+      15: "К тебе придёт неожиданная поддержка.",
+      16: "Риск окупится, если ты заранее просчитаешь последствия.",
+      17: "Сначала наведи порядок вокруг себя, потом принимай решения.",
+      18: "Не всё ясно: спроси ещё один раз или уточни детали.",
+      19: "Истинный ответ — в твоём теле: прислушайся к ощущениям.",
+      20: "То, чего ты боишься, на деле меньше, чем кажется.",
+      21: "Время учиться: новый навык изменит ход событий.",
+      22: "Не бери на себя чужую ответственность.",
+      23: "Пока не время для резких шагов — сделай разведку.",
+      24: "Знак: ты идёшь в верном направлении, продолжай.",
+      25: "В ближайшее время придётся сделать выбор в чью-то пользу.",
+      26: "Смена окружения даст больше, чем попытки всё контролировать.",
+      27: "Будь честна с собой: чего ты на самом деле хочешь?",
+      28: "Не делись планами со всеми подряд — защити идею.",
+      29: "Ответ «да», но путь к нему будет нелинейным.",
+      30: "Ответ «нет», но позже появится другая возможность.",
+      31: "Вселенная шутит: относись к ситуации проще.",
+      32: "То, о чём ты спросила, важнее, чем кажется. Отнесись серьёзно."
+    };
+
+    const startScreen = document.getElementById("startScreen");
+    const readingScreen = document.getElementById("readingScreen");
+    const startButton = document.getElementById("startButton");
+
+    const cardTop = document.getElementById("cardTop");
+    const cardMid = document.getElementById("cardMid");
+    const cardBottom = document.getElementById("cardBottom");
+
+    const predictionEl = document.getElementById("prediction");
+    const restartEl = document.getElementById("restart");
+
+    let topEl = cardTop;
+    let midEl = cardMid;
+    let bottomEl = cardBottom;
+
+    let deckIndex = 1;
+
+    function nextNum() {
+      const n = deckIndex;
+      deckIndex++;
+      if (deckIndex > totalCards) deckIndex = 1;
+      return n;
+    }
+
+    function initStack() {
+      // случайная точка старта
+      deckIndex = 1 + Math.floor(Math.random() * totalCards);
+      topEl.textContent = nextNum();
+      midEl.textContent = nextNum();
+      bottomEl.textContent = nextNum();
+
+      topEl.className = "card card-pos-top";
+      midEl.className = "card card-pos-middle";
+      bottomEl.className = "card card-pos-bottom";
+
+      topEl.style.opacity = "1";
+      midEl.style.opacity = "1";
+      bottomEl.style.opacity = "0.9";
+    }
+
+    startButton.addEventListener("click", () => {
+      startScreen.classList.remove("active");
+      readingScreen.classList.add("active");
+      predictionEl.textContent = "";
+      restartEl.style.display = "none";
+      initStack();
+      startReading();
+    });
+
+    restartEl.addEventListener("click", () => {
+      readingScreen.classList.remove("active");
+      startScreen.classList.add("active");
+      predictionEl.textContent = "";
+    });
+
+    function startReading() {
+      const targetNum = 1 + Math.floor(Math.random() * totalCards);
+      const steps = 14 + Math.floor(Math.random() * 10); // количество шагов перелистывания
+      const stepDelay = 160; // скорость — быстрее
+
+      let stepIndex = 0;
+      let isFinished = false;
+
+      function doStep() {
+        if (isFinished) return;
+
+        const isLast = stepIndex === steps - 1;
+
+        // анимируем уход верхней карты
+        topEl.classList.add("card-out");
+
+        setTimeout(() => {
+          // снимаем классы позиции, чтобы перекинуть роли
+          topEl.classList.remove("card-pos-top", "card-out");
+          midEl.classList.remove("card-pos-middle");
+          bottomEl.classList.remove("card-pos-bottom");
+
+          const oldTop = topEl;
+          topEl = midEl;
+          midEl = bottomEl;
+          bottomEl = oldTop;
+
+          // назначаем новые позиции
+          topEl.classList.add("card-pos-top");
+          midEl.classList.add("card-pos-middle");
+          bottomEl.classList.add("card-pos-bottom");
+
+          topEl.style.opacity = "1";
+          midEl.style.opacity = "1";
+          bottomEl.style.opacity = "0.9";
+
+          if (isLast) {
+            // финальная карта — принудительно ставим целевое число
+            topEl.textContent = targetNum;
+
+            // убираем нижние карты, чтобы не мешали
+            midEl.style.opacity = "0";
+            bottomEl.style.opacity = "0";
+
+            // анимация выбранной карты
+            topEl.classList.add("chosen");
+
+            setTimeout(() => {
+              predictionEl.textContent =
+                predictions[targetNum] || "Эта карта пока молчит.";
+              restartEl.style.display = "block";
+              isFinished = true;
+            }, 600);
+          } else {
+            // обычный шаг: обновляем нижнюю карту новым номером
+            bottomEl.textContent = nextNum();
+
+            stepIndex++;
+            setTimeout(doStep, stepDelay);
+          }
+        }, 140); // чуть меньше, чем stepDelay, чтобы было живо
+      }
+
+      doStep();
+    }
+  </script>
+</body>
+</html>
