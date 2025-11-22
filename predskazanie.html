@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -30,24 +28,13 @@
       color: #fff;
       transition: transform 0.12s ease, opacity 0.2s ease;
     }
+    .btn-main:hover { transform: translateY(-1px); }
+    .btn-main:active { transform: translateY(1px); }
 
-    .btn-main:hover {
-      transform: translateY(-1px);
-    }
+    .screen { display: none; }
+    .screen.active { display: block; }
 
-    .btn-main:active {
-      transform: translateY(1px);
-    }
-
-    .screen {
-      display: none;
-    }
-
-    .screen.active {
-      display: block;
-    }
-
-    /* главный экран — кнопка строго по центру окна */
+    /* главный экран — кнопка в центре */
     #startScreen {
       position: fixed;
       inset: 0;
@@ -57,12 +44,9 @@
       background: #ffffff;
       z-index: 10;
     }
+    #startScreen.active { display: flex; }
 
-    #startScreen.active {
-      display: flex;
-    }
-
-    /* экран с колодой: тоже полноэкранный центр */
+    /* экран с колодой — центр */
     #readingScreen {
       position: fixed;
       inset: 0;
@@ -71,10 +55,7 @@
       justify-content: center;
       background: #ffffff;
     }
-
-    #readingScreen.active {
-      display: flex;
-    }
+    #readingScreen.active { display: flex; }
 
     .reading-center {
       display: flex;
@@ -83,11 +64,26 @@
       width: 100%;
     }
 
-    /* обёртка с фиксированной высотой — её центр совпадает с центром экрана */
     .card-wrapper {
       position: relative;
       width: 320px;
-      height: 340px;
+      height: 420px;
+    }
+
+    /* общая тень от "стола" под колодой */
+    .card-wrapper::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 260px;
+      height: 40px;
+      transform: translate(-50%, 110px);
+      background: radial-gradient(ellipse at center,
+        rgba(0,0,0,0.12) 0,
+        rgba(0,0,0,0) 70%);
+      pointer-events: none;
+      filter: blur(5px);
     }
 
     .card-area {
@@ -96,28 +92,69 @@
     }
 
     .card {
-      width: 280px;
-      height: 280px;
+      width: 240px;   /* вертикальный прямоугольник 3:2 */
+      height: 360px;
       border-radius: 24px;
       position: absolute;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
       user-select: none;
-      transition: transform 0.24s ease-in-out, opacity 0.24s ease-in-out;
+      transition: transform 0.24s ease-in-out, opacity 0.24s ease-in-out, box-shadow 0.28s ease;
       overflow: hidden;
-      will-change: transform, opacity;
+      will-change: transform, opacity, box-shadow;
+      background: transparent; /* без плашки под картой */
+      box-shadow: none;        /* основная "тень" будет псевдоэлементом */
     }
 
-    /* внутренности карты для 3D-переворота */
+    /* тень самой карты — чёрный размытый прямоугольник 15% */
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 12px;
+      width: 70%;
+      height: 18px;
+      transform: translateX(-50%) scaleX(1);
+      background: rgba(0,0,0,0.15);
+      filter: blur(8px);
+      border-radius: 999px;
+      pointer-events: none;
+      opacity: 1;
+      transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+    }
+
+    /* тень при увеличенной карте — шире / чуть выше */
+    .card-final.card-zoom::before {
+      transform: translateX(-50%) scaleX(1.35) scaleY(1.1);
+      opacity: 1;
+    }
+
+    /* тень при "приземлении" — компактнее и плотнее */
+    .card-landing::before {
+      transform: translateX(-50%) scaleX(0.95) scaleY(0.95);
+      opacity: 1;
+    }
+
+    /* анимация тени во время переворота: сужается до 0 и снова расширяется */
+    @keyframes shadow-flip {
+      0%   { transform: translateX(-50%) scaleX(1.35) scaleY(1.1); }
+      50%  { transform: translateX(-50%) scaleX(0.05) scaleY(0.6); }
+      100% { transform: translateX(-50%) scaleX(1.35) scaleY(1.1); }
+    }
+
+    .card-shadow-flip::before {
+      animation: shadow-flip 0.5s ease-in-out;
+    }
+
     .card-inner {
       position: relative;
       width: 100%;
       height: 100%;
       transform-style: preserve-3d;
-      transition: transform 0.55s ease;
+      transition: transform 0.5s ease;
       will-change: transform;
-      z-index: 1; /* содержимое под затемнителем */
+      z-index: 1;
     }
 
     .card-face {
@@ -127,29 +164,31 @@
       backface-visibility: hidden;
     }
 
-    /* рубашка */
+    /* рубашка — bgcards2.png */
     .card-back {
-      background-image: url("https://maieuticaio.github.io/folder/experiments/bgcards.png");
+      background-image: url("https://maieuticaio.github.io/folder/experiments/bgcards2.png");
       background-size: cover;
       background-position: center;
     }
 
-    /* лицевая сторона (пока просто серый квадрат с цифрой) */
+    /* лицевая сторона (серый плейсхолдер с цифрой) */
     .card-front {
       background: #e0e0e0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 3rem;
+      font-size: 2.6rem;
       font-weight: 600;
       transform: rotateY(180deg);
     }
 
-    .card-label {
-      pointer-events: none;
+    .card-label { pointer-events: none; }
+
+    /* до переворота фронт прячем */
+    .card:not(.flipped) .card-front {
+      visibility: hidden;
     }
 
-    /* при flipped показываем лицевую сторону */
     .card.flipped .card-inner {
       transform: rotateY(180deg);
     }
@@ -159,11 +198,11 @@
       position: absolute;
       inset: 0;
       pointer-events: none;
-      z-index: 2;           /* затемнение поверх содержимого */
+      z-index: 2;
       background: transparent;
     }
 
-    /* три карты в стопке по высоте и затемнению */
+    /* три карты в стопке + затемнение 15%/20% */
     .card-pos-top {
       transform: translate(calc(-50% - 5px), calc(-50% - 5px));
       z-index: 3;
@@ -182,7 +221,6 @@
       opacity: 0.95;
     }
 
-    /* затемнение: теперь 15% и 20% */
     .card-pos-middle::after {
       background: rgba(0, 0, 0, 0.15);
     }
@@ -191,26 +229,35 @@
       background: rgba(0, 0, 0, 0.20);
     }
 
-    /* верхняя карта уходит чуть влево-вверх и исчезает */
+    /* уходящая карта */
     .card-out {
       transform: translate(calc(-50% - 8px), calc(-50% - 8px));
       opacity: 0;
     }
 
-    /* финальная карта — ближе к тексту (было -50px, стало -30px) */
+    /* финальная карта — чуть выше текста (база без зума) */
     .card-final {
       transform: translate(calc(-50% - 5px), calc(-50% - 30px));
       z-index: 3;
       opacity: 1;
     }
 
-    /* текст и кнопка — ближе к карте (подтянуто вверх) */
+    /* увеличенная финальная карта — зум ВСЕЙ карты */
+    .card-final.card-zoom {
+      transform: translate(calc(-50% - 5px), calc(-50% - 30px)) scale(1.2);
+    }
+
+    /* более резкое, короткое приземление */
+    .card-landing {
+      transition: transform 0.16s ease-out, opacity 0.2s ease-in-out, box-shadow 0.16s ease-out;
+    }
+
     .below {
       position: absolute;
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      margin-top: -4px;  /* ближе к карте */
+      margin-top: -4px;
       width: 100%;
       text-align: center;
     }
@@ -235,14 +282,11 @@
       opacity: 0;
       transition: opacity 0.3s ease;
     }
-
-    .restart:hover {
-      opacity: 0.8;
-    }
+    .restart:hover { opacity: 0.8; }
   </style>
 </head>
 <body>
-  <!-- главный экран: только кнопка, по центру -->
+  <!-- главный экран -->
   <div id="startScreen" class="screen active">
     <button id="startButton" class="btn-main">Получить предсказание</button>
   </div>
@@ -286,200 +330,236 @@
   </div>
 
   <script>
-    const totalCards = 32;
+    document.addEventListener("DOMContentLoaded", () => {
+      const totalCards = 32;
 
-    const predictions = {
-      1: "Ответ уже рядом — прислушайся к первому импульсу.",
-      2: "Сейчас время подождать: ситуация ещё дозревает.",
-      3: "Проси о помощи — другой человек станет ключом.",
-      4: "Сделай один маленький шаг уже сегодня.",
-      5: "Откажись от лишнего, и станет видно, куда идти.",
-      6: "Информация придёт через письмо, сообщение или звонок.",
-      7: "Сделай выбор сердцем, а потом перепроверь разумом.",
-      8: "Смена плана пойдёт на пользу делу.",
-      9: "Ситуация обернётся лучше, чем ты ожидаешь.",
-      10: "Не торопи людей: каждый движется в своём ритме.",
-      11: "Вопрос связан с усталостью — сначала восстанови силы.",
-      12: "Сделка или договор окажутся выгодными.",
-      13: "Отпусти прошлое, иначе оно потянет назад.",
-      14: "Сейчас правильнее сказать «нет», даже если неловко.",
-      15: "К тебе придёт неожиданная поддержка.",
-      16: "Риск окупится, если ты заранее просчитаешь последствия.",
-      17: "Сначала наведи порядок вокруг себя, потом принимай решения.",
-      18: "Не всё ясно: спроси ещё один раз или уточни детали.",
-      19: "Истинный ответ — в твоём теле: прислушайся к ощущениям.",
-      20: "То, чего ты боишься, на деле меньше, чем кажется.",
-      21: "Время учиться: новый навык изменит ход событий.",
-      22: "Не бери на себя чужую ответственность.",
-      23: "Пока не время для резких шагов — сделай разведку.",
-      24: "Знак: ты идёшь в верном направлении, продолжай.",
-      25: "В ближайшее время придётся сделать выбор в чью-то пользу.",
-      26: "Смена окружения даст больше, чем попытки всё контролировать.",
-      27: "Будь честна с собой: чего ты на самом деле хочешь?",
-      28: "Не делись планами со всеми подряд — защити идею.",
-      29: "Ответ «да», но путь к нему будет нелинейным.",
-      30: "Ответ «нет», но позже появится другая возможность.",
-      31: "Вселенная шутит: относись к ситуации проще.",
-      32: "То, о чём ты спросила, важнее, чем кажется. Отнесись серьёзно."
-    };
+      const predictions = {
+        1: "Ответ уже рядом — прислушайся к первому импульсу.",
+        2: "Сейчас время подождать: ситуация ещё дозревает.",
+        3: "Проси о помощи — другой человек станет ключом.",
+        4: "Сделай один маленький шаг уже сегодня.",
+        5: "Откажись от лишнего, и станет видно, куда идти.",
+        6: "Информация придёт через письмо, сообщение или звонок.",
+        7: "Сделай выбор сердцем, а потом перепроверь разумом.",
+        8: "Смена плана пойдёт на пользу делу.",
+        9: "Ситуация обернётся лучше, чем ты ожидаешь.",
+        10: "Не торопи людей: каждый движется в своём ритме.",
+        11: "Вопрос связан с усталостью — сначала восстанови силы.",
+        12: "Сделка или договор окажутся выгодными.",
+        13: "Отпусти прошлое, иначе оно потянет назад.",
+        14: "Сейчас правильнее сказать «нет», даже если неловко.",
+        15: "К тебе придёт неожиданная поддержка.",
+        16: "Риск окупится, если ты заранее просчитаешь последствия.",
+        17: "Сначала наведи порядок вокруг себя, потом принимай решения.",
+        18: "Не всё ясно: спроси ещё один раз или уточни детали.",
+        19: "Истинный ответ — в твоём теле: прислушайся к ощущениям.",
+        20: "То, чего ты боишься, на деле меньше, чем кажется.",
+        21: "Время учиться: новый навык изменит ход событий.",
+        22: "Не бери на себя чужую ответственность.",
+        23: "Пока не время для резких шагов — сделай разведку.",
+        24: "Знак: ты идёшь в верном направлении, продолжай.",
+        25: "В ближайшее время придётся сделать выбор в чью-то пользу.",
+        26: "Смена окружения даст больше, чем попытки всё контролировать.",
+        27: "Будь честна с собой: чего ты на самом деле хочешь?",
+        28: "Не делись планами со всеми подряд — защити идею.",
+        29: "Ответ «да», но путь к нему будет нелинейным.",
+        30: "Ответ «нет», но позже появится другая возможность.",
+        31: "Вселенная шутит: относись к ситуации проще.",
+        32: "То, о чём ты спросила, важнее, чем кажется. Отнесись серьёзно."
+      };
 
-    const startScreen = document.getElementById("startScreen");
-    const readingScreen = document.getElementById("readingScreen");
-    const startButton = document.getElementById("startButton");
+      const startScreen = document.getElementById("startScreen");
+      const readingScreen = document.getElementById("readingScreen");
+      const startButton = document.getElementById("startButton");
 
-    const cardTop = document.getElementById("cardTop");
-    const cardMid = document.getElementById("cardMid");
-    const cardBottom = document.getElementById("cardBottom");
+      const cardTop = document.getElementById("cardTop");
+      const cardMid = document.getElementById("cardMid");
+      const cardBottom = document.getElementById("cardBottom");
 
-    const predictionEl = document.getElementById("prediction");
-    const restartEl = document.getElementById("restart");
+      const predictionEl = document.getElementById("prediction");
+      const restartEl = document.getElementById("restart");
 
-    let topEl = cardTop;
-    let midEl = cardMid;
-    let bottomEl = cardBottom;
+      let topEl = cardTop;
+      let midEl = cardMid;
+      let bottomEl = cardBottom;
 
-    let deckIndex = 1;
+      let deckIndex = 1;
 
-    function setCardNumber(cardElement, num) {
-      cardElement.dataset.num = num;
-      const label = cardElement.querySelector(".card-label");
-      if (label) label.textContent = num;
-    }
-
-    function nextNum() {
-      const n = deckIndex;
-      deckIndex++;
-      if (deckIndex > totalCards) deckIndex = 1;
-      return n;
-    }
-
-    function resetCardState(cardElement, positionClass) {
-      cardElement.className = "card " + positionClass;
-      cardElement.classList.remove("flipped");
-    }
-
-    function initStack() {
-      deckIndex = 1 + Math.floor(Math.random() * totalCards);
-
-      setCardNumber(cardTop, nextNum());
-      setCardNumber(cardMid, nextNum());
-      setCardNumber(cardBottom, nextNum());
-
-      resetCardState(cardTop, "card-pos-top");
-      resetCardState(cardMid, "card-pos-middle");
-      resetCardState(cardBottom, "card-pos-bottom");
-
-      topEl = cardTop;
-      midEl = cardMid;
-      bottomEl = cardBottom;
-
-      topEl.style.opacity = "1";
-      midEl.style.opacity = "1";
-      bottomEl.style.opacity = "0.95";
-    }
-
-    startButton.addEventListener("click", () => {
-      startScreen.classList.remove("active");
-      readingScreen.classList.add("active");
-
-      predictionEl.textContent = "";
-      predictionEl.style.opacity = "0";
-      restartEl.style.display = "none";
-      restartEl.style.opacity = "0";
-
-      initStack();
-      startReading();
-    });
-
-    restartEl.addEventListener("click", () => {
-      readingScreen.classList.remove("active");
-      startScreen.classList.add("active");
-
-      predictionEl.textContent = "";
-      predictionEl.style.opacity = "0";
-      restartEl.style.display = "none";
-      restartEl.style.opacity = "0";
-    });
-
-    function startReading() {
-      const targetNum = 1 + Math.floor(Math.random() * totalCards);
-      // 7–12 шагов перетасовки
-      const steps = 7 + Math.floor(Math.random() * 6);
-      const stepDelay = 220;
-
-      let stepIndex = 0;
-      let isFinished = false;
-
-      function doStep() {
-        if (isFinished) return;
-
-        const isLast = stepIndex === steps - 1;
-
-        topEl.classList.add("card-out");
-
-        setTimeout(() => {
-          topEl.classList.remove("card-pos-top", "card-out", "card-final", "flipped");
-          midEl.classList.remove("card-pos-middle");
-          bottomEl.classList.remove("card-pos-bottom", "flipped");
-
-          const oldTop = topEl;
-          topEl = midEl;
-          midEl = bottomEl;
-          bottomEl = oldTop;
-
-          topEl.classList.add("card-pos-top");
-          midEl.classList.add("card-pos-middle");
-          bottomEl.classList.add("card-pos-bottom");
-
-          topEl.style.opacity = "1";
-          midEl.style.opacity = "1";
-          bottomEl.style.opacity = "0.95";
-
-          if (isLast) {
-            // финальная карта: номер станет виден после переворота
-            setCardNumber(topEl, targetNum);
-
-            midEl.style.opacity = "0";
-            bottomEl.style.opacity = "0";
-
-            // смещаем карту вверх (но ближе к тексту)
-            setTimeout(() => {
-              topEl.classList.remove("card-pos-top");
-              topEl.classList.add("card-final");
-            }, 40);
-
-            // переворот карты
-            setTimeout(() => {
-              topEl.classList.add("flipped");
-            }, 320);
-
-            // после переворота — текст
-            setTimeout(() => {
-              predictionEl.textContent =
-                predictions[targetNum] || "Эта карта пока молчит.";
-              predictionEl.style.opacity = "1";
-
-              // через секунду — кнопка "Начать заново"
-              setTimeout(() => {
-                restartEl.style.display = "block";
-                requestAnimationFrame(() => {
-                  restartEl.style.opacity = "1";
-                });
-              }, 1000);
-
-              isFinished = true;
-            }, 900);
-          } else {
-            // обычный шаг: обновляем нижнюю карту новым номером
-            setCardNumber(bottomEl, nextNum());
-            stepIndex++;
-            setTimeout(doStep, stepDelay);
-          }
-        }, 200);
+      function setCardNumber(cardElement, num) {
+        cardElement.dataset.num = num;
+        const label = cardElement.querySelector(".card-label");
+        if (label) label.textContent = num;
       }
 
-      doStep();
-    }
+      function nextNum() {
+        const n = deckIndex;
+        deckIndex++;
+        if (deckIndex > totalCards) deckIndex = 1;
+        return n;
+      }
+
+      function resetCardState(cardElement, positionClass) {
+        cardElement.className = "card " + positionClass;
+        cardElement.classList.remove(
+          "flipped",
+          "card-zoom",
+          "card-landing",
+          "card-shadow-flip"
+        );
+      }
+
+      function initStack() {
+        deckIndex = 1 + Math.floor(Math.random() * totalCards);
+
+        setCardNumber(cardTop, nextNum());
+        setCardNumber(cardMid, nextNum());
+        setCardNumber(cardBottom, nextNum());
+
+        resetCardState(cardTop, "card-pos-top");
+        resetCardState(cardMid, "card-pos-middle");
+        resetCardState(cardBottom, "card-pos-bottom");
+
+        topEl = cardTop;
+        midEl = cardMid;
+        bottomEl = cardBottom;
+
+        topEl.style.opacity = "1";
+        midEl.style.opacity = "1";
+        bottomEl.style.opacity = "0.95";
+      }
+
+      startButton.addEventListener("click", () => {
+        startScreen.classList.remove("active");
+        readingScreen.classList.add("active");
+
+        predictionEl.textContent = "";
+        predictionEl.style.opacity = "0";
+        restartEl.style.display = "none";
+        restartEl.style.opacity = "0";
+
+        initStack();
+        startReading();
+      });
+
+      restartEl.addEventListener("click", () => {
+        readingScreen.classList.remove("active");
+        startScreen.classList.add("active");
+
+        predictionEl.textContent = "";
+        predictionEl.style.opacity = "0";
+        restartEl.style.display = "none";
+        restartEl.style.opacity = "0";
+      });
+
+      function clearCardAllClasses(el) {
+        el.className = "card";
+      }
+
+      function startReading() {
+        const targetNum = 1 + Math.floor(Math.random() * totalCards);
+        const steps = 7 + Math.floor(Math.random() * 6); // 7–12 шагов
+        const stepDelay = 260;
+        const moveDuration = 240;
+
+        let stepIndex = 0;
+        let isFinished = false;
+
+        function doStep() {
+          if (isFinished) return;
+
+          const isLast = stepIndex === steps - 1;
+
+          // верхняя карта улетает
+          topEl.classList.add("card-out");
+
+          setTimeout(() => {
+            const oldTop = topEl;
+
+            clearCardAllClasses(oldTop);
+            clearCardAllClasses(midEl);
+            clearCardAllClasses(bottomEl);
+
+            // перекидываем ссылки
+            topEl = midEl;
+            midEl = bottomEl;
+            bottomEl = oldTop;
+
+            // верхняя и средняя с обычными transition
+            topEl.style.transition = "";
+            midEl.style.transition = "";
+
+            topEl.classList.add("card-pos-top");
+            midEl.classList.add("card-pos-middle");
+
+            // нижняя телепортируется без анимации
+            bottomEl.style.transition = "none";
+            bottomEl.classList.add("card-pos-bottom");
+
+            if (isLast) {
+              setCardNumber(topEl, targetNum);
+            } else {
+              setCardNumber(bottomEl, nextNum());
+            }
+
+            topEl.style.opacity = "1";
+            midEl.style.opacity = "1";
+            bottomEl.style.opacity = "0.95";
+
+            void bottomEl.offsetWidth;
+            bottomEl.style.transition = "";
+
+            if (isLast) {
+              midEl.style.opacity = "0";
+              bottomEl.style.opacity = "0";
+
+              // выбранная карта: подлет, зум всей карты, тень расширяется/смягчается
+              setTimeout(() => {
+                topEl.classList.remove("card-pos-top");
+                topEl.classList.add("card-final", "card-zoom");
+              }, 40);
+
+              // переворот в увеличенном состоянии + анимация тени (сужение до 0 и обратно)
+              setTimeout(() => {
+                topEl.classList.add("flipped", "card-shadow-flip");
+              }, 320);
+
+              // приземление: резкий короткий переход, убираем zoom,
+              // включаем компактную плотную тень (card-landing)
+              setTimeout(() => {
+                topEl.classList.add("card-landing");
+                topEl.classList.remove("card-zoom");
+              }, 900);
+
+              // затем появляется текст
+              setTimeout(() => {
+                predictionEl.textContent =
+                  predictions[targetNum] || "Эта карта пока молчит.";
+                predictionEl.style.opacity = "1";
+
+                // и кнопка "начать заново"
+                setTimeout(() => {
+                  restartEl.style.display = "block";
+                  if (window.requestAnimationFrame) {
+                    requestAnimationFrame(() => {
+                      restartEl.style.opacity = "1";
+                    });
+                  } else {
+                    restartEl.style.opacity = "1";
+                  }
+                }, 1000);
+
+                isFinished = true;
+              }, 950);
+            } else {
+              stepIndex++;
+              setTimeout(doStep, stepDelay);
+            }
+          }, moveDuration);
+        }
+
+        doStep();
+      }
+    });
   </script>
 </body>
 </html>
