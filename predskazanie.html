@@ -124,6 +124,7 @@
     .card-area {
       position: absolute;
       inset: 0;
+      cursor: pointer;
     }
 
     .card {
@@ -269,10 +270,17 @@
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      margin-top: -32px;
+      margin-top: -12px;           /* было -32px, отодвинули текст вниз на 20px */
       width: 100%;
       max-width: 320px;
       text-align: center;
+    }
+
+    .hint {
+      font-size: 0.85rem;
+      color: #777;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
 
     #prediction {
@@ -327,7 +335,6 @@
       font-size: 16px;
       line-height: 1;
       pointer-events: none;
-      /* чуть ниже центра для визуального баланса */
       transform: translateY(3px);
       z-index: 1;
     }
@@ -351,7 +358,7 @@
   <div id="readingScreen" class="screen">
     <div class="reading-center">
       <div class="card-wrapper">
-        <div class="card-area">
+        <div class="card-area" id="cardArea">
           <div class="card card-pos-top" id="cardTop">
             <div class="card-inner">
               <div class="card-face card-back"></div>
@@ -379,13 +386,13 @@
         </div>
 
         <div class="below">
+          <div id="hint" class="hint">Выбери карту</div>
           <div id="authorBottom" class="author-line-bottom">
             <a href="#" class="author-link" onclick="return false;">имя автора</a>
           </div>
           <div id="prediction"></div>
           <div id="restart" class="restart">
             <button class="restart-drop" type="button" aria-label="Начать заново">
-              <!-- чёрная капля -->
               <svg class="restart-svg" viewBox="0 0 40 64" aria-hidden="true">
                 <path d="M20 0
                          C 30 16, 38 28, 38 40
@@ -393,7 +400,6 @@
                          C 10 64, 2 54, 2 40
                          C 2 28, 10 16, 20 0 Z" />
               </svg>
-              <!-- стрелка назад -->
               <span class="restart-arrow">&lt;</span>
             </button>
           </div>
@@ -449,16 +455,21 @@
       const cardTop    = document.getElementById("cardTop");
       const cardMid    = document.getElementById("cardMid");
       const cardBottom = document.getElementById("cardBottom");
+      const cardArea   = document.getElementById("cardArea");
 
       const predictionEl = document.getElementById("prediction");
       const restartEl    = document.getElementById("restart");
       const authorBottom = document.getElementById("authorBottom");
+      const hintEl       = document.getElementById("hint");
 
       let topEl = cardTop;
       let midEl = cardMid;
       let bottomEl = cardBottom;
 
       let deckIndex = 1;
+      let isShuffling = false;
+      let shuffleTimeoutId = null;
+      let hasChosen = false;
 
       function setCardNumber(cardElement, num) {
         cardElement.dataset.num = num;
@@ -503,54 +514,30 @@
         bottomEl.style.opacity = "0.95";
       }
 
-      startButton.addEventListener("click", () => {
-        startScreen.classList.remove("active");
-        readingScreen.classList.add("active");
-
-        predictionEl.textContent = "";
-        predictionEl.style.opacity = "0";
-        restartEl.style.display = "none";
-        restartEl.style.opacity = "0";
-        authorBottom.style.display = "none";
-        authorBottom.style.opacity = "0";
-
-        initStack();
-        startReading();
-      });
-
-      restartEl.addEventListener("click", () => {
-        readingScreen.classList.remove("active");
-        startScreen.classList.add("active");
-
-        predictionEl.textContent = "";
-        predictionEl.style.opacity = "0";
-        restartEl.style.display = "none";
-        restartEl.style.opacity = "0";
-        authorBottom.style.display = "none";
-        authorBottom.style.opacity = "0";
-      });
-
       function clearCardAllClasses(el) {
         el.className = "card";
       }
 
-      function startReading() {
-        const targetNum   = 1 + Math.floor(Math.random() * totalCards);
-        const steps       = 7 + Math.floor(Math.random() * 6);
-        const stepDelay   = 260;
-        const moveDuration= 240;
+      function startShuffling() {
+        isShuffling = true;
+        hasChosen = false;
 
-        let stepIndex  = 0;
-        let isFinished = false;
+        hintEl.style.opacity = "1";
 
-        function doStep() {
-          if (isFinished) return;
+        const stepDelay    = 260;
+        const moveDuration = 240;
 
-          const isLast = stepIndex === steps - 1;
+        function shuffleStep() {
+          if (!isShuffling) return;
 
           topEl.classList.add("card-out");
 
           setTimeout(() => {
+            if (!isShuffling) {
+              topEl.classList.remove("card-out");
+              return;
+            }
+
             const oldTop = topEl;
 
             clearCardAllClasses(oldTop);
@@ -570,11 +557,7 @@
             bottomEl.style.transition = "none";
             bottomEl.classList.add("card-pos-bottom");
 
-            if (isLast) {
-              setCardNumber(topEl, targetNum);
-            } else {
-              setCardNumber(bottomEl, nextNum());
-            }
+            setCardNumber(bottomEl, nextNum());
 
             topEl.style.opacity = "1";
             midEl.style.opacity = "1";
@@ -583,60 +566,110 @@
             void bottomEl.offsetWidth;
             bottomEl.style.transition = "";
 
-            if (isLast) {
-              midEl.style.opacity    = "0";
-              bottomEl.style.opacity = "0";
-
-              setTimeout(() => {
-                topEl.classList.remove("card-pos-top");
-                topEl.classList.add("card-final", "card-zoom");
-              }, 40);
-
-              setTimeout(() => {
-                topEl.classList.add("flipped", "card-shadow-flip");
-              }, 320);
-
-              setTimeout(() => {
-                topEl.classList.add("card-landing");
-                topEl.classList.remove("card-zoom");
-              }, 900);
-
-              setTimeout(() => {
-                predictionEl.textContent =
-                  predictions[targetNum] || "Эта карта пока молчит.";
-                predictionEl.style.opacity = "1";
-
-                authorBottom.style.display = "flex";
-                if (window.requestAnimationFrame) {
-                  requestAnimationFrame(() => {
-                    authorBottom.style.opacity = "1";
-                  });
-                } else {
-                  authorBottom.style.opacity = "1";
-                }
-
-                setTimeout(() => {
-                  restartEl.style.display = "flex";
-                  if (window.requestAnimationFrame) {
-                    requestAnimationFrame(() => {
-                      restartEl.style.opacity = "1";
-                    });
-                  } else {
-                    restartEl.style.opacity = "1";
-                  }
-                }, 1000);
-
-                isFinished = true;
-              }, 950);
-            } else {
-              stepIndex++;
-              setTimeout(doStep, stepDelay);
-            }
+            shuffleTimeoutId = setTimeout(shuffleStep, stepDelay);
           }, moveDuration);
         }
 
-        doStep();
+        shuffleStep();
       }
+
+      function revealCurrentTop() {
+        if (hasChosen) return;
+        hasChosen = true;
+        isShuffling = false;
+
+        if (shuffleTimeoutId) {
+          clearTimeout(shuffleTimeoutId);
+          shuffleTimeoutId = null;
+        }
+
+        hintEl.style.opacity = "0";
+
+        midEl.style.opacity = "0";
+        bottomEl.style.opacity = "0";
+
+        const cardNum = parseInt(topEl.dataset.num, 10) || 1;
+
+        setTimeout(() => {
+          topEl.classList.remove("card-pos-top");
+          topEl.classList.add("card-final", "card-zoom");
+        }, 40);
+
+        setTimeout(() => {
+          topEl.classList.add("flipped", "card-shadow-flip");
+        }, 320);
+
+        setTimeout(() => {
+          topEl.classList.add("card-landing");
+          topEl.classList.remove("card-zoom");
+        }, 900);
+
+        setTimeout(() => {
+          predictionEl.textContent =
+            predictions[cardNum] || "Эта карта пока молчит.";
+          predictionEl.style.opacity = "1";
+
+          authorBottom.style.display = "flex";
+          if (window.requestAnimationFrame) {
+            requestAnimationFrame(() => {
+              authorBottom.style.opacity = "1";
+            });
+          } else {
+            authorBottom.style.opacity = "1";
+          }
+
+          setTimeout(() => {
+            restartEl.style.display = "flex";
+            if (window.requestAnimationFrame) {
+              requestAnimationFrame(() => {
+                restartEl.style.opacity = "1";
+              });
+            } else {
+              restartEl.style.opacity = "1";
+            }
+          }, 1000);
+        }, 950);
+      }
+
+      startButton.addEventListener("click", () => {
+        startScreen.classList.remove("active");
+        readingScreen.classList.add("active");
+
+        predictionEl.textContent = "";
+        predictionEl.style.opacity = "0";
+        restartEl.style.display = "none";
+        restartEl.style.opacity = "0";
+        authorBottom.style.display = "none";
+        authorBottom.style.opacity = "0";
+        hintEl.style.opacity = "0";
+
+        initStack();
+        startShuffling();
+      });
+
+      restartEl.addEventListener("click", () => {
+        isShuffling = false;
+        if (shuffleTimeoutId) {
+          clearTimeout(shuffleTimeoutId);
+          shuffleTimeoutId = null;
+        }
+
+        readingScreen.classList.remove("active");
+        startScreen.classList.add("active");
+
+        predictionEl.textContent = "";
+        predictionEl.style.opacity = "0";
+        restartEl.style.display = "none";
+        restartEl.style.opacity = "0";
+        authorBottom.style.display = "none";
+        authorBottom.style.opacity = "0";
+        hintEl.style.opacity = "0";
+      });
+
+      cardArea.addEventListener("click", () => {
+        if (!isShuffling) return;
+        revealCurrentTop();
+      });
     });
   </script>
 </body>
