@@ -11,7 +11,7 @@
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #ffffff;
+      background: #fff;
       color: #111;
     }
 
@@ -31,20 +31,16 @@
     .btn-main:hover { transform: translateY(-1px); }
     .btn-main:active { transform: translateY(1px); }
 
-    .screen { display: none; }
-    .screen.active { display: block; }
-
-    /* главный экран — центр */
-    #startScreen {
+    .screen {
       position: fixed;
       inset: 0;
       display: none;
       align-items: center;
       justify-content: center;
-      background: #ffffff;
-      z-index: 10;
+      background: #fff;
     }
-    #startScreen.active { display: flex; }
+    .screen.active { display: flex; }
+    #startScreen { z-index: 10; }
 
     .start-content {
       display: flex;
@@ -56,8 +52,8 @@
     }
 
     .hero-frame {
-      max-height: 400px;
-      max-width: 320px;
+      max-height: 650px;
+      max-width: 520px;
       overflow: hidden;
       display: flex;
       align-items: center;
@@ -66,51 +62,36 @@
 
     .hero-frame img {
       display: block;
-      max-height: 400px;
+      max-height: 650px;
       max-width: 100%;
       height: auto;
       width: auto;
     }
 
-    .author-line {
+    .author-line,
+    .author-line-bottom {
       width: 100%;
       max-width: 320px;
       margin: 0 auto;
       display: flex;
-      justify-content: flex-end; /* ссылка справа */
-    }
-
-    .author-link {
-      font-size: 0.8rem;   /* уменьшенный шрифт */
-      color: #777;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    .author-link:hover {
-      color: #555;
-    }
-
-    /* нижняя строка с автором под картой */
-    .author-line-bottom {
-      width: 100%;
-      max-width: 320px;
-      margin: 0 auto 0;      /* было 4px сверху — убрали */
-      display: none;
       justify-content: flex-end;
+    }
+
+    .author-line { max-width: 520px; }
+
+    .author-line-bottom {
+      display: none;
       opacity: 0;
       transition: opacity 0.3s ease;
     }
 
-    /* экран с колодой — центр */
-    #readingScreen {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      background: #ffffff;
+    .author-link {
+      font-size: 0.8rem;
+      color: #777;
+      text-decoration: none;
+      cursor: pointer;
     }
-    #readingScreen.active { display: flex; }
+    .author-link:hover { color: #555; }
 
     .reading-center {
       display: flex;
@@ -125,7 +106,6 @@
       height: 420px;
     }
 
-    /* общая "тень стола" */
     .card-wrapper::before {
       content: "";
       position: absolute;
@@ -147,7 +127,7 @@
     }
 
     .card {
-      width: 240px;   /* вертикальный прямоугольник 3:2 */
+      width: 240px;
       height: 360px;
       border-radius: 24px;
       position: absolute;
@@ -155,14 +135,12 @@
       top: 50%;
       transform: translate(-50%, -50%);
       user-select: none;
-      transition: transform 0.24s ease-in-out, opacity 0.24s ease-in-out, box-shadow 0.28s ease;
+      transition: transform 0.24s ease-in-out, opacity 0.24s ease-in-out;
       overflow: hidden;
-      will-change: transform, opacity, box-shadow;
+      will-change: transform, opacity;
       background: transparent;
-      box-shadow: none;
     }
 
-    /* тень карты — чёрный размытый прозрачный прямоугольник */
     .card::before {
       content: "";
       position: absolute;
@@ -179,19 +157,16 @@
       transition: transform 0.2s ease-out, opacity 0.2s ease-out;
     }
 
-    /* тень при увеличенной карте */
     .card-final.card-zoom::before {
       transform: translateX(-50%) scaleX(1.35) scaleY(1.1);
       opacity: 1;
     }
 
-    /* тень при приземлении — компактнее и плотнее */
     .card-landing::before {
       transform: translateX(-50%) scaleX(0.95) scaleY(0.95);
       opacity: 1;
     }
 
-    /* анимация тени при перевороте */
     @keyframes shadow-flip {
       0%   { transform: translateX(-50%) scaleX(1.35) scaleY(1.1); }
       50%  { transform: translateX(-50%) scaleX(0.05) scaleY(0.6); }
@@ -237,13 +212,8 @@
 
     .card-label { pointer-events: none; }
 
-    .card:not(.flipped) .card-front {
-      visibility: hidden;
-    }
-
-    .card.flipped .card-inner {
-      transform: rotateY(180deg);
-    }
+    .card:not(.flipped) .card-front { visibility: hidden; }
+    .card.flipped .card-inner { transform: rotateY(180deg); }
 
     .card::after {
       content: "";
@@ -272,13 +242,8 @@
       opacity: 0.95;
     }
 
-    .card-pos-middle::after {
-      background: rgba(0, 0, 0, 0.15);
-    }
-
-    .card-pos-bottom::after {
-      background: rgba(0, 0, 0, 0.20);
-    }
+    .card-pos-middle::after { background: rgba(0, 0, 0, 0.15); }
+    .card-pos-bottom::after { background: rgba(0, 0, 0, 0.20); }
 
     .card-out {
       transform: translate(calc(-50% - 8px), calc(-50% - 8px));
@@ -296,7 +261,7 @@
     }
 
     .card-landing {
-      transition: transform 0.16s ease-out, opacity 0.2s ease-in-out, box-shadow 0.16s ease-out;
+      transition: transform 0.16s ease-out, opacity 0.2s ease-in-out;
     }
 
     .below {
@@ -304,7 +269,7 @@
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      margin-top: 0;              /* было -4px, теперь 0 */
+      margin-top: -32px;
       width: 100%;
       max-width: 320px;
       text-align: center;
@@ -316,22 +281,64 @@
       line-height: 1.5;
       color: #222;
       opacity: 0;
-      margin-top: 8px; /* отступ после имени автора */
+      margin-top: 8px;
       transition: opacity 0.3s ease;
     }
 
     .restart {
       margin-top: 18px;
-      font-size: 0.9rem;
-      color: #333;
-      cursor: pointer;
-      text-decoration: underline;
-      text-underline-offset: 3px;
       display: none;
       opacity: 0;
       transition: opacity 0.3s ease;
+      justify-content: center;
     }
-    .restart:hover { opacity: 0.8; }
+
+    /* Капля без тени, как в примере */
+    .restart-drop {
+      position: relative;
+      width: 36px;
+      height: 64px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      outline: none;
+      transition: transform 0.12s ease;
+    }
+
+    .restart-drop::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: #000;
+      /* узкая капля */
+      clip-path: polygon(
+        50% 0%,
+        82% 32%,
+        90% 60%,
+        78% 100%,
+        22% 100%,
+        10% 60%,
+        18% 32%
+      );
+    }
+
+    .restart-drop:hover   { transform: translateY(-1px); }
+    .restart-drop:active  { transform: translateY(1px) scale(0.97); }
+
+    .restart-arrow {
+      position: relative;
+      color: #fff;
+      font-size: 16px;
+      line-height: 1;
+      z-index: 1;
+      pointer-events: none;
+      /* чуть ниже геометрического центра для визуального баланса */
+      transform: translateY(2px);
+    }
   </style>
 </head>
 <body>
@@ -378,15 +385,19 @@
             </div>
           </div>
         </div>
+
         <div class="below">
-          <!-- сначала имя автора под картой -->
           <div id="authorBottom" class="author-line-bottom">
             <a href="#" class="author-link" onclick="return false;">имя автора</a>
           </div>
-          <!-- потом отступ (margin-top у prediction) и текст -->
           <div id="prediction"></div>
-          <div id="restart" class="restart">Начать заново</div>
+          <div id="restart" class="restart">
+            <button class="restart-drop" type="button" aria-label="Начать заново">
+              <span class="restart-arrow">&lt;</span>
+            </button>
+          </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -524,7 +535,7 @@
 
       function startReading() {
         const targetNum = 1 + Math.floor(Math.random() * totalCards);
-        const steps = 7 + Math.floor(Math.random() * 6); // 7–12 шагов
+        const steps = 7 + Math.floor(Math.random() * 6);
         const stepDelay = 260;
         const moveDuration = 240;
 
@@ -536,7 +547,6 @@
 
           const isLast = stepIndex === steps - 1;
 
-          // верхняя карта улетает
           topEl.classList.add("card-out");
 
           setTimeout(() => {
@@ -546,19 +556,16 @@
             clearCardAllClasses(midEl);
             clearCardAllClasses(bottomEl);
 
-            // перекидываем ссылки
             topEl = midEl;
             midEl = bottomEl;
             bottomEl = oldTop;
 
-            // верхняя и средняя с обычными переходами
             topEl.style.transition = "";
             midEl.style.transition = "";
 
             topEl.classList.add("card-pos-top");
             midEl.classList.add("card-pos-middle");
 
-            // нижняя телепортируется без анимации
             bottomEl.style.transition = "none";
             bottomEl.classList.add("card-pos-bottom");
 
@@ -579,24 +586,20 @@
               midEl.style.opacity = "0";
               bottomEl.style.opacity = "0";
 
-              // выбранная карта подлетает и увеличивается
               setTimeout(() => {
                 topEl.classList.remove("card-pos-top");
                 topEl.classList.add("card-final", "card-zoom");
               }, 40);
 
-              // переворот + анимация тени (сужается и расширяется)
               setTimeout(() => {
                 topEl.classList.add("flipped", "card-shadow-flip");
               }, 320);
 
-              // приземление: убираем zoom, тень становится компактнее
               setTimeout(() => {
                 topEl.classList.add("card-landing");
                 topEl.classList.remove("card-zoom");
               }, 900);
 
-              // текст и нижняя подпись
               setTimeout(() => {
                 predictionEl.textContent =
                   predictions[targetNum] || "Эта карта пока молчит.";
@@ -611,9 +614,8 @@
                   authorBottom.style.opacity = "1";
                 }
 
-                // кнопка "начать заново"
                 setTimeout(() => {
-                  restartEl.style.display = "block";
+                  restartEl.style.display = "flex";
                   if (window.requestAnimationFrame) {
                     requestAnimationFrame(() => {
                       restartEl.style.opacity = "1";
