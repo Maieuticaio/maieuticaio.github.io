@@ -94,13 +94,9 @@
     .card-wrapper {
       position: relative;
       width: 320px;
+      max-width: 100%;
       height: 420px;
-      transition: transform 0.3s ease;
-    }
-
-    /* сдвиг всего веера вправо на 50px в режиме веера */
-    .card-wrapper.fan-shift {
-      transform: translateX(50px);
+      /* без transform, чтобы подпись оставалась строго по центру */
     }
 
     .card-wrapper::before {
@@ -270,20 +266,41 @@
       top: 50%;
     }
 
-    /* Раздвижение веера (симметрично, до сдвига wrapper'а) */
+    /* Веер: сдвиг вправо, но подпись остаётся по центру */
     .card-fan-1 { /* нижняя, тёмная */
-      transform: translate(-50%, -50%) translate(40px, 6px) rotate(-10deg);
+      transform: translate(-50%, -50%) translate(70px, 6px) rotate(-10deg);
       z-index: 1;
     }
 
     .card-fan-2 { /* средняя */
-      transform: translate(-50%, -50%) translate(0px, -4px) rotate(-24deg);
+      transform: translate(-50%, -50%) translate(30px, -4px) rotate(-24deg);
       z-index: 2;
     }
 
     .card-fan-3 { /* верхняя, без затемнения */
-      transform: translate(-50%, -50%) translate(-40px, -16px) rotate(-38deg);
+      transform: translate(-50%, -50%) translate(-10px, -16px) rotate(-38deg);
       z-index: 3;
+    }
+
+    /* На маленьких экранах — веер уже, чтобы не вылез за край */
+    @media (max-width: 480px) {
+      .card-wrapper {
+        width: 280px;
+        height: 380px;
+      }
+      .card {
+        width: 210px;
+        height: 315px;
+      }
+      .card-fan-1 {
+        transform: translate(-50%, -50%) translate(40px, 4px) rotate(-10deg);
+      }
+      .card-fan-2 {
+        transform: translate(-50%, -50%) translate(10px, -4px) rotate(-22deg);
+      }
+      .card-fan-3 {
+        transform: translate(-50%, -50%) translate(-20px, -14px) rotate(-34deg);
+      }
     }
 
     /* Затемнение в веере */
@@ -327,7 +344,6 @@
       justify-content: center;
     }
 
-    /* Капля через SVG, без тени */
     .restart-drop {
       position: relative;
       width: 36px;
@@ -470,7 +486,6 @@
       32: "То, о чём ты спросила, важнее, чем кажется. Отнесись серьёзно."
     };
 
-    // ссылки для карт — потом подставишь свои
     const cardLinks = {
       1: "https://example.com/card1",
       2: "https://example.com/card2",
@@ -510,16 +525,16 @@
     const readingScreen = document.getElementById("readingScreen");
     const startButton   = document.getElementById("startButton");
 
-    const cardWrapper = document.getElementById("cardWrapper");
-    const cardTop     = document.getElementById("cardTop");
-    const cardMid     = document.getElementById("cardMid");
-    const cardBottom  = document.getElementById("cardBottom");
-    const cardArea    = document.getElementById("cardArea");
+    const cardTop    = document.getElementById("cardTop");
+    const cardMid    = document.getElementById("cardMid");
+    const cardBottom = document.getElementById("cardBottom");
 
     const predictionEl  = document.getElementById("prediction");
     const restartEl     = document.getElementById("restart");
     const restartButton = document.getElementById("restartButton");
     const hintEl        = document.getElementById("hint");
+
+    const cards = [cardTop, cardMid, cardBottom];
 
     let topEl = cardTop;
     let midEl = cardMid;
@@ -530,7 +545,7 @@
     let isFanMode = false;
 
     function setCardNumber(cardElement, num) {
-      cardElement.dataset.num = num;
+      cardElement.dataset.num = String(num);
       const label = cardElement.querySelector(".card-label");
       if (label) label.textContent = num;
     }
@@ -555,9 +570,6 @@
     }
 
     function initStack() {
-      // возвращаем стопку в центр
-      cardWrapper.classList.remove("fan-shift");
-
       deckIndex = 1 + Math.floor(Math.random() * totalCards);
 
       setCardNumber(cardTop, nextNum());
@@ -637,9 +649,6 @@
       isFanMode = true;
       hasChosen = false;
 
-      // сдвигаем весь веер вправо на 50px
-      cardWrapper.classList.add("fan-shift");
-
       const used = new Set();
       const nums = [];
       while (nums.length < 3) {
@@ -654,7 +663,7 @@
       setCardNumber(cardMid, nums[1]);
       setCardNumber(cardBottom, nums[2]);
 
-      [cardTop, cardMid, cardBottom].forEach(c => {
+      cards.forEach(c => {
         clearCardAllClasses(c);
         c.style.opacity = "1";
       });
@@ -663,6 +672,14 @@
       cardTop.classList.add("card-fan", "card-fan-1", "card-fan-shadow-bottom");
       cardMid.classList.add("card-fan", "card-fan-2", "card-fan-shadow-middle");
       cardBottom.classList.add("card-fan", "card-fan-3", "card-fan-shadow-top");
+
+      // в режиме веера клики вешаем напрямую на карты
+      cards.forEach(card => {
+        card.onclick = () => {
+          revealCard(card);
+        };
+        card.style.cursor = "pointer";
+      });
 
       hintEl.textContent = "Выбери карту";
       hintEl.style.opacity = "0";
@@ -676,13 +693,10 @@
       isFanMode = false;
       hasChosen = true;
 
-      // возвращаем wrapper на место, фан больше не нужен
-      cardWrapper.classList.remove("fan-shift");
-
       hintEl.style.opacity = "0";
 
-      const cards = [cardTop, cardMid, cardBottom];
       cards.forEach(c => {
+        c.onclick = null; // убираем выбор других карт
         if (c !== cardEl) {
           c.style.transition = "opacity 0.3s ease";
           c.style.opacity = "0";
@@ -727,7 +741,6 @@
           cardEl.onclick = null;
         }
 
-        // капля назад появляется сразу после текста, без задержки
         restartEl.style.display = "flex";
         if (window.requestAnimationFrame) {
           requestAnimationFrame(() => {
@@ -765,12 +778,6 @@
       restartEl.style.display = "none";
       restartEl.style.opacity = "0";
       hintEl.style.opacity = "0";
-    });
-
-    cardArea.addEventListener("click", (e) => {
-      const cardEl = e.target.closest(".card");
-      if (!cardEl) return;
-      revealCard(cardEl);
     });
   </script>
 </body>
