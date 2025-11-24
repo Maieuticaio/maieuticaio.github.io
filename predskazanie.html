@@ -68,21 +68,12 @@
       width: auto;
     }
 
-    .author-line,
-    .author-line-bottom {
+    .author-line {
       width: 100%;
-      max-width: 320px;
+      max-width: 520px;
       margin: 0 auto;
       display: flex;
       justify-content: flex-end;
-    }
-
-    .author-line { max-width: 520px; }
-
-    .author-line-bottom {
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
     }
 
     .author-link {
@@ -104,6 +95,12 @@
       position: relative;
       width: 320px;
       height: 420px;
+      transition: transform 0.3s ease;
+    }
+
+    /* сдвиг всего веера вправо на 50px в режиме веера */
+    .card-wrapper.fan-shift {
+      transform: translateX(50px);
     }
 
     .card-wrapper::before {
@@ -225,6 +222,7 @@
       background: transparent;
     }
 
+    /* позиции для тасовки */
     .card-pos-top {
       transform: translate(calc(-50% - 5px), calc(-50% - 5px));
       z-index: 3;
@@ -265,12 +263,40 @@
       transition: transform 0.16s ease-out, opacity 0.2s ease-in-out;
     }
 
+    /* Веер — поворот вокруг левого нижнего угла, центр тот же */
+    .card-fan {
+      transform-origin: 0% 100%;
+      left: 50%;
+      top: 50%;
+    }
+
+    /* Раздвижение веера (симметрично, до сдвига wrapper'а) */
+    .card-fan-1 { /* нижняя, тёмная */
+      transform: translate(-50%, -50%) translate(40px, 6px) rotate(-10deg);
+      z-index: 1;
+    }
+
+    .card-fan-2 { /* средняя */
+      transform: translate(-50%, -50%) translate(0px, -4px) rotate(-24deg);
+      z-index: 2;
+    }
+
+    .card-fan-3 { /* верхняя, без затемнения */
+      transform: translate(-50%, -50%) translate(-40px, -16px) rotate(-38deg);
+      z-index: 3;
+    }
+
+    /* Затемнение в веере */
+    .card-fan-shadow-bottom::after { background: rgba(0,0,0,0.22); }
+    .card-fan-shadow-middle::after { background: rgba(0,0,0,0.13); }
+    .card-fan-shadow-top::after    { background: transparent; }
+
     .below {
       position: absolute;
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      margin-top: -12px;           /* было -32px, отодвинули текст вниз на 20px */
+      margin-top: -12px;
       width: 100%;
       max-width: 320px;
       text-align: center;
@@ -357,7 +383,7 @@
   <!-- экран с колодой -->
   <div id="readingScreen" class="screen">
     <div class="reading-center">
-      <div class="card-wrapper">
+      <div class="card-wrapper" id="cardWrapper">
         <div class="card-area" id="cardArea">
           <div class="card card-pos-top" id="cardTop">
             <div class="card-inner">
@@ -387,12 +413,9 @@
 
         <div class="below">
           <div id="hint" class="hint">Выбери карту</div>
-          <div id="authorBottom" class="author-line-bottom">
-            <a href="#" class="author-link" onclick="return false;">имя автора</a>
-          </div>
           <div id="prediction"></div>
           <div id="restart" class="restart">
-            <button class="restart-drop" type="button" aria-label="Начать заново">
+            <button id="restartButton" class="restart-drop" type="button" aria-label="Начать заново">
               <svg class="restart-svg" viewBox="0 0 40 64" aria-hidden="true">
                 <path d="M20 0
                          C 30 16, 38 28, 38 40
@@ -410,266 +433,344 @@
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const totalCards = 32;
+    const totalCards = 32;
 
-      const predictions = {
-        1: "Ответ уже рядом — прислушайся к первому импульсу.",
-        2: "Сейчас время подождать: ситуация ещё дозревает.",
-        3: "Проси о помощи — другой человек станет ключом.",
-        4: "Сделай один маленький шаг уже сегодня.",
-        5: "Откажись от лишнего, и станет видно, куда идти.",
-        6: "Информация придёт через письмо, сообщение или звонок.",
-        7: "Сделай выбор сердцем, а потом перепроверь разумом.",
-        8: "Смена плана пойдёт на пользу делу.",
-        9: "Ситуация обернётся лучше, чем ты ожидаешь.",
-        10: "Не торопи людей: каждый движется в своём ритме.",
-        11: "Вопрос связан с усталостью — сначала восстанови силы.",
-        12: "Сделка или договор окажутся выгодными.",
-        13: "Отпусти прошлое, иначе оно потянет назад.",
-        14: "Сейчас правильнее сказать «нет», даже если неловко.",
-        15: "К тебе придёт неожиданная поддержка.",
-        16: "Риск окупится, если ты заранее просчитаешь последствия.",
-        17: "Сначала наведи порядок вокруг себя, потом принимай решения.",
-        18: "Не всё ясно: спроси ещё один раз или уточни детали.",
-        19: "Истинный ответ — в твоём теле: прислушайся к ощущениям.",
-        20: "То, чего ты боишься, на деле меньше, чем кажется.",
-        21: "Время учиться: новый навык изменит ход событий.",
-        22: "Не бери на себя чужую ответственность.",
-        23: "Пока не время для резких шагов — сделай разведку.",
-        24: "Знак: ты идёшь в верном направлении, продолжай.",
-        25: "В ближайшее время придётся сделать выбор в чью-то пользу.",
-        26: "Смена окружения даст больше, чем попытки всё контролировать.",
-        27: "Будь честна с собой: чего ты на самом деле хочешь?",
-        28: "Не делись планами со всеми подряд — защити идею.",
-        29: "Ответ «да», но путь к нему будет нелинейным.",
-        30: "Ответ «нет», но позже появится другая возможность.",
-        31: "Вселенная шутит: относись к ситуации проще.",
-        32: "То, о чём ты спросила, важнее, чем кажется. Отнесись серьёзно."
-      };
+    const predictions = {
+      1: "Ответ уже рядом — прислушайся к первому импульсу.",
+      2: "Сейчас время подождать: ситуация ещё дозревает.",
+      3: "Проси о помощи — другой человек станет ключом.",
+      4: "Сделай один маленький шаг уже сегодня.",
+      5: "Откажись от лишнего, и станет видно, куда идти.",
+      6: "Информация придёт через письмо, сообщение или звонок.",
+      7: "Сделай выбор сердцем, а потом перепроверь разумом.",
+      8: "Смена плана пойдёт на пользу делу.",
+      9: "Ситуация обернётся лучше, чем ты ожидаешь.",
+      10: "Не торопи людей: каждый движется в своём ритме.",
+      11: "Вопрос связан с усталостью — сначала восстанови силы.",
+      12: "Сделка или договор окажутся выгодными.",
+      13: "Отпусти прошлое, иначе оно потянет назад.",
+      14: "Сейчас правильнее сказать «нет», даже если неловко.",
+      15: "К тебе придёт неожиданная поддержка.",
+      16: "Риск окупится, если ты заранее просчитаешь последствия.",
+      17: "Сначала наведи порядок вокруг себя, потом принимай решения.",
+      18: "Не всё ясно: спроси ещё один раз или уточни детали.",
+      19: "Истинный ответ — в твоём теле: прислушайся к ощущениям.",
+      20: "То, чего ты боишься, на деле меньше, чем кажется.",
+      21: "Время учиться: новый навык изменит ход событий.",
+      22: "Не бери на себя чужую ответственность.",
+      23: "Пока не время для резких шагов — сделай разведку.",
+      24: "Знак: ты идёшь в верном направлении, продолжай.",
+      25: "В ближайшее время придётся сделать выбор в чью-то пользу.",
+      26: "Смена окружения даст больше, чем попытки всё контролировать.",
+      27: "Будь честна с собой: чего ты на самом деле хочешь?",
+      28: "Не делись планами со всеми подряд — защити идею.",
+      29: "Ответ «да», но путь к нему будет нелинейным.",
+      30: "Ответ «нет», но позже появится другая возможность.",
+      31: "Вселенная шутит: относись к ситуации проще.",
+      32: "То, о чём ты спросила, важнее, чем кажется. Отнесись серьёзно."
+    };
 
-      const startScreen   = document.getElementById("startScreen");
-      const readingScreen = document.getElementById("readingScreen");
-      const startButton   = document.getElementById("startButton");
+    // ссылки для карт — потом подставишь свои
+    const cardLinks = {
+      1: "https://example.com/card1",
+      2: "https://example.com/card2",
+      3: "https://example.com/card3",
+      4: "https://example.com/card4",
+      5: "https://example.com/card5",
+      6: "https://example.com/card6",
+      7: "https://example.com/card7",
+      8: "https://example.com/card8",
+      9: "https://example.com/card9",
+      10: "https://example.com/card10",
+      11: "https://example.com/card11",
+      12: "https://example.com/card12",
+      13: "https://example.com/card13",
+      14: "https://example.com/card14",
+      15: "https://example.com/card15",
+      16: "https://example.com/card16",
+      17: "https://example.com/card17",
+      18: "https://example.com/card18",
+      19: "https://example.com/card19",
+      20: "https://example.com/card20",
+      21: "https://example.com/card21",
+      22: "https://example.com/card22",
+      23: "https://example.com/card23",
+      24: "https://example.com/card24",
+      25: "https://example.com/card25",
+      26: "https://example.com/card26",
+      27: "https://example.com/card27",
+      28: "https://example.com/card28",
+      29: "https://example.com/card29",
+      30: "https://example.com/card30",
+      31: "https://example.com/card31",
+      32: "https://example.com/card32"
+    };
 
-      const cardTop    = document.getElementById("cardTop");
-      const cardMid    = document.getElementById("cardMid");
-      const cardBottom = document.getElementById("cardBottom");
-      const cardArea   = document.getElementById("cardArea");
+    const startScreen   = document.getElementById("startScreen");
+    const readingScreen = document.getElementById("readingScreen");
+    const startButton   = document.getElementById("startButton");
 
-      const predictionEl = document.getElementById("prediction");
-      const restartEl    = document.getElementById("restart");
-      const authorBottom = document.getElementById("authorBottom");
-      const hintEl       = document.getElementById("hint");
+    const cardWrapper = document.getElementById("cardWrapper");
+    const cardTop     = document.getElementById("cardTop");
+    const cardMid     = document.getElementById("cardMid");
+    const cardBottom  = document.getElementById("cardBottom");
+    const cardArea    = document.getElementById("cardArea");
 
-      let topEl = cardTop;
-      let midEl = cardMid;
-      let bottomEl = cardBottom;
+    const predictionEl  = document.getElementById("prediction");
+    const restartEl     = document.getElementById("restart");
+    const restartButton = document.getElementById("restartButton");
+    const hintEl        = document.getElementById("hint");
 
-      let deckIndex = 1;
-      let isShuffling = false;
-      let shuffleTimeoutId = null;
-      let hasChosen = false;
+    let topEl = cardTop;
+    let midEl = cardMid;
+    let bottomEl = cardBottom;
 
-      function setCardNumber(cardElement, num) {
-        cardElement.dataset.num = num;
-        const label = cardElement.querySelector(".card-label");
-        if (label) label.textContent = num;
-      }
+    let deckIndex = 1;
+    let hasChosen = false;
+    let isFanMode = false;
 
-      function nextNum() {
-        const n = deckIndex;
-        deckIndex++;
-        if (deckIndex > totalCards) deckIndex = 1;
-        return n;
-      }
+    function setCardNumber(cardElement, num) {
+      cardElement.dataset.num = num;
+      const label = cardElement.querySelector(".card-label");
+      if (label) label.textContent = num;
+    }
 
-      function resetCardState(cardElement, positionClass) {
-        cardElement.className = "card " + positionClass;
-        cardElement.classList.remove(
-          "flipped",
-          "card-zoom",
-          "card-landing",
-          "card-shadow-flip"
-        );
-      }
+    function nextNum() {
+      const n = deckIndex;
+      deckIndex++;
+      if (deckIndex > totalCards) deckIndex = 1;
+      return n;
+    }
 
-      function initStack() {
-        deckIndex = 1 + Math.floor(Math.random() * totalCards);
+    function resetCardState(cardElement, positionClass) {
+      cardElement.className = "card " + positionClass;
+      cardElement.style.cursor = "default";
+      cardElement.onclick = null;
+    }
 
-        setCardNumber(cardTop, nextNum());
-        setCardNumber(cardMid, nextNum());
-        setCardNumber(cardBottom, nextNum());
+    function clearCardAllClasses(el) {
+      el.className = "card";
+      el.style.cursor = "default";
+      el.onclick = null;
+    }
 
-        resetCardState(cardTop, "card-pos-top");
-        resetCardState(cardMid, "card-pos-middle");
-        resetCardState(cardBottom, "card-pos-bottom");
+    function initStack() {
+      // возвращаем стопку в центр
+      cardWrapper.classList.remove("fan-shift");
 
-        topEl = cardTop;
-        midEl = cardMid;
-        bottomEl = cardBottom;
+      deckIndex = 1 + Math.floor(Math.random() * totalCards);
 
-        topEl.style.opacity = "1";
-        midEl.style.opacity = "1";
-        bottomEl.style.opacity = "0.95";
-      }
+      setCardNumber(cardTop, nextNum());
+      setCardNumber(cardMid, nextNum());
+      setCardNumber(cardBottom, nextNum());
 
-      function clearCardAllClasses(el) {
-        el.className = "card";
-      }
+      resetCardState(cardTop, "card-pos-top");
+      resetCardState(cardMid, "card-pos-middle");
+      resetCardState(cardBottom, "card-pos-bottom");
 
-      function startShuffling() {
-        isShuffling = true;
-        hasChosen = false;
+      topEl = cardTop;
+      midEl = cardMid;
+      bottomEl = cardBottom;
 
-        hintEl.style.opacity = "1";
+      topEl.style.opacity = "1";
+      midEl.style.opacity = "1";
+      bottomEl.style.opacity = "0.95";
+    }
 
-        const stepDelay    = 260;
-        const moveDuration = 240;
+    function startShuffling() {
+      const stepDelay    = 260;
+      const moveDuration = 240;
+      let remainingSteps = 2;
 
-        function shuffleStep() {
-          if (!isShuffling) return;
+      hintEl.style.opacity = "0";
 
-          topEl.classList.add("card-out");
-
-          setTimeout(() => {
-            if (!isShuffling) {
-              topEl.classList.remove("card-out");
-              return;
-            }
-
-            const oldTop = topEl;
-
-            clearCardAllClasses(oldTop);
-            clearCardAllClasses(midEl);
-            clearCardAllClasses(bottomEl);
-
-            topEl    = midEl;
-            midEl    = bottomEl;
-            bottomEl = oldTop;
-
-            topEl.style.transition = "";
-            midEl.style.transition = "";
-
-            topEl.classList.add("card-pos-top");
-            midEl.classList.add("card-pos-middle");
-
-            bottomEl.style.transition = "none";
-            bottomEl.classList.add("card-pos-bottom");
-
-            setCardNumber(bottomEl, nextNum());
-
-            topEl.style.opacity = "1";
-            midEl.style.opacity = "1";
-            bottomEl.style.opacity = "0.95";
-
-            void bottomEl.offsetWidth;
-            bottomEl.style.transition = "";
-
-            shuffleTimeoutId = setTimeout(shuffleStep, stepDelay);
-          }, moveDuration);
+      function shuffleStep() {
+        if (remainingSteps <= 0) {
+          showFan();
+          return;
         }
 
-        shuffleStep();
-      }
-
-      function revealCurrentTop() {
-        if (hasChosen) return;
-        hasChosen = true;
-        isShuffling = false;
-
-        if (shuffleTimeoutId) {
-          clearTimeout(shuffleTimeoutId);
-          shuffleTimeoutId = null;
-        }
-
-        hintEl.style.opacity = "0";
-
-        midEl.style.opacity = "0";
-        bottomEl.style.opacity = "0";
-
-        const cardNum = parseInt(topEl.dataset.num, 10) || 1;
+        topEl.classList.add("card-out");
 
         setTimeout(() => {
-          topEl.classList.remove("card-pos-top");
-          topEl.classList.add("card-final", "card-zoom");
-        }, 40);
+          const oldTop = topEl;
 
-        setTimeout(() => {
-          topEl.classList.add("flipped", "card-shadow-flip");
-        }, 320);
+          clearCardAllClasses(oldTop);
+          clearCardAllClasses(midEl);
+          clearCardAllClasses(bottomEl);
 
-        setTimeout(() => {
-          topEl.classList.add("card-landing");
-          topEl.classList.remove("card-zoom");
-        }, 900);
+          topEl    = midEl;
+          midEl    = bottomEl;
+          bottomEl = oldTop;
 
-        setTimeout(() => {
-          predictionEl.textContent =
-            predictions[cardNum] || "Эта карта пока молчит.";
-          predictionEl.style.opacity = "1";
+          topEl.style.transition = "";
+          midEl.style.transition = "";
 
-          authorBottom.style.display = "flex";
-          if (window.requestAnimationFrame) {
-            requestAnimationFrame(() => {
-              authorBottom.style.opacity = "1";
-            });
+          topEl.classList.add("card-pos-top");
+          midEl.classList.add("card-pos-middle");
+
+          bottomEl.style.transition = "none";
+          bottomEl.classList.add("card-pos-bottom");
+
+          setCardNumber(bottomEl, nextNum());
+
+          topEl.style.opacity = "1";
+          midEl.style.opacity = "1";
+          bottomEl.style.opacity = "0.95";
+
+          void bottomEl.offsetWidth;
+          bottomEl.style.transition = "";
+
+          remainingSteps--;
+          if (remainingSteps > 0) {
+            setTimeout(shuffleStep, stepDelay);
           } else {
-            authorBottom.style.opacity = "1";
+            setTimeout(showFan, stepDelay);
           }
-
-          setTimeout(() => {
-            restartEl.style.display = "flex";
-            if (window.requestAnimationFrame) {
-              requestAnimationFrame(() => {
-                restartEl.style.opacity = "1";
-              });
-            } else {
-              restartEl.style.opacity = "1";
-            }
-          }, 1000);
-        }, 950);
+        }, moveDuration);
       }
 
-      startButton.addEventListener("click", () => {
-        startScreen.classList.remove("active");
-        readingScreen.classList.add("active");
+      shuffleStep();
+    }
 
-        predictionEl.textContent = "";
-        predictionEl.style.opacity = "0";
-        restartEl.style.display = "none";
-        restartEl.style.opacity = "0";
-        authorBottom.style.display = "none";
-        authorBottom.style.opacity = "0";
-        hintEl.style.opacity = "0";
+    function showFan() {
+      isFanMode = true;
+      hasChosen = false;
 
-        initStack();
-        startShuffling();
+      // сдвигаем весь веер вправо на 50px
+      cardWrapper.classList.add("fan-shift");
+
+      const used = new Set();
+      const nums = [];
+      while (nums.length < 3) {
+        const n = 1 + Math.floor(Math.random() * totalCards);
+        if (!used.has(n)) {
+          used.add(n);
+          nums.push(n);
+        }
+      }
+
+      setCardNumber(cardTop, nums[0]);
+      setCardNumber(cardMid, nums[1]);
+      setCardNumber(cardBottom, nums[2]);
+
+      [cardTop, cardMid, cardBottom].forEach(c => {
+        clearCardAllClasses(c);
+        c.style.opacity = "1";
       });
 
-      restartEl.addEventListener("click", () => {
-        isShuffling = false;
-        if (shuffleTimeoutId) {
-          clearTimeout(shuffleTimeoutId);
-          shuffleTimeoutId = null;
+      // нижняя — самая тёмная, средняя — средняя, верхняя — без затемнения
+      cardTop.classList.add("card-fan", "card-fan-1", "card-fan-shadow-bottom");
+      cardMid.classList.add("card-fan", "card-fan-2", "card-fan-shadow-middle");
+      cardBottom.classList.add("card-fan", "card-fan-3", "card-fan-shadow-top");
+
+      hintEl.textContent = "Выбери карту";
+      hintEl.style.opacity = "0";
+      setTimeout(() => {
+        hintEl.style.opacity = "1";
+      }, 150);
+    }
+
+    function revealCard(cardEl) {
+      if (!isFanMode || hasChosen) return;
+      isFanMode = false;
+      hasChosen = true;
+
+      // возвращаем wrapper на место, фан больше не нужен
+      cardWrapper.classList.remove("fan-shift");
+
+      hintEl.style.opacity = "0";
+
+      const cards = [cardTop, cardMid, cardBottom];
+      cards.forEach(c => {
+        if (c !== cardEl) {
+          c.style.transition = "opacity 0.3s ease";
+          c.style.opacity = "0";
+        }
+      });
+
+      const cardNum = parseInt(cardEl.dataset.num, 10) || 1;
+
+      cardEl.classList.remove(
+        "card-fan",
+        "card-fan-1",
+        "card-fan-2",
+        "card-fan-3",
+        "card-fan-shadow-bottom",
+        "card-fan-shadow-middle",
+        "card-fan-shadow-top"
+      );
+      cardEl.classList.add("card-final", "card-zoom");
+
+      setTimeout(() => {
+        cardEl.classList.add("flipped", "card-shadow-flip");
+      }, 320);
+
+      setTimeout(() => {
+        cardEl.classList.add("card-landing");
+        cardEl.classList.remove("card-zoom");
+      }, 900);
+
+      setTimeout(() => {
+        predictionEl.textContent =
+          predictions[cardNum] || "Эта карта пока молчит.";
+        predictionEl.style.opacity = "1";
+
+        const url = cardLinks[cardNum];
+        if (url) {
+          cardEl.style.cursor = "pointer";
+          cardEl.onclick = () => {
+            window.open(url, "_blank");
+          };
+        } else {
+          cardEl.style.cursor = "default";
+          cardEl.onclick = null;
         }
 
-        readingScreen.classList.remove("active");
-        startScreen.classList.add("active");
+        // капля назад появляется сразу после текста, без задержки
+        restartEl.style.display = "flex";
+        if (window.requestAnimationFrame) {
+          requestAnimationFrame(() => {
+            restartEl.style.opacity = "1";
+          });
+        } else {
+          restartEl.style.opacity = "1";
+        }
+      }, 950);
+    }
 
-        predictionEl.textContent = "";
-        predictionEl.style.opacity = "0";
-        restartEl.style.display = "none";
-        restartEl.style.opacity = "0";
-        authorBottom.style.display = "none";
-        authorBottom.style.opacity = "0";
-        hintEl.style.opacity = "0";
-      });
+    startButton.addEventListener("click", () => {
+      startScreen.classList.remove("active");
+      readingScreen.classList.add("active");
 
-      cardArea.addEventListener("click", () => {
-        if (!isShuffling) return;
-        revealCurrentTop();
-      });
+      predictionEl.textContent = "";
+      predictionEl.style.opacity = "0";
+      restartEl.style.display = "none";
+      restartEl.style.opacity = "0";
+      hintEl.style.opacity = "0";
+
+      initStack();
+      startShuffling();
+    });
+
+    restartButton.addEventListener("click", () => {
+      isFanMode = false;
+      hasChosen = false;
+
+      readingScreen.classList.remove("active");
+      startScreen.classList.add("active");
+
+      predictionEl.textContent = "";
+      predictionEl.style.opacity = "0";
+      restartEl.style.display = "none";
+      restartEl.style.opacity = "0";
+      hintEl.style.opacity = "0";
+    });
+
+    cardArea.addEventListener("click", (e) => {
+      const cardEl = e.target.closest(".card");
+      if (!cardEl) return;
+      revealCard(cardEl);
     });
   </script>
 </body>
