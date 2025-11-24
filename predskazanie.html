@@ -34,7 +34,7 @@
     .screen { display: none; }
     .screen.active { display: block; }
 
-    /* главный экран — кнопка в центре */
+    /* главный экран — центр */
     #startScreen {
       position: fixed;
       inset: 0;
@@ -45,6 +45,61 @@
       z-index: 10;
     }
     #startScreen.active { display: flex; }
+
+    .start-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 16px;
+    }
+
+    .hero-frame {
+      max-height: 400px;
+      max-width: 320px;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hero-frame img {
+      display: block;
+      max-height: 400px;
+      max-width: 100%;
+      height: auto;
+      width: auto;
+    }
+
+    .author-line {
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: flex-end; /* ссылка справа */
+    }
+
+    .author-link {
+      font-size: 0.8rem;   /* уменьшенный шрифт */
+      color: #777;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .author-link:hover {
+      color: #555;
+    }
+
+    /* нижняя строка с автором под картой */
+    .author-line-bottom {
+      width: 100%;
+      max-width: 320px;
+      margin: 0 auto 0;      /* было 4px сверху — убрали */
+      display: none;
+      justify-content: flex-end;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
 
     /* экран с колодой — центр */
     #readingScreen {
@@ -70,7 +125,7 @@
       height: 420px;
     }
 
-    /* общая тень от "стола" под колодой */
+    /* общая "тень стола" */
     .card-wrapper::before {
       content: "";
       position: absolute;
@@ -103,11 +158,11 @@
       transition: transform 0.24s ease-in-out, opacity 0.24s ease-in-out, box-shadow 0.28s ease;
       overflow: hidden;
       will-change: transform, opacity, box-shadow;
-      background: transparent; /* без плашки под картой */
-      box-shadow: none;        /* основная "тень" будет псевдоэлементом */
+      background: transparent;
+      box-shadow: none;
     }
 
-    /* тень самой карты — чёрный размытый прямоугольник 15% */
+    /* тень карты — чёрный размытый прозрачный прямоугольник */
     .card::before {
       content: "";
       position: absolute;
@@ -124,19 +179,19 @@
       transition: transform 0.2s ease-out, opacity 0.2s ease-out;
     }
 
-    /* тень при увеличенной карте — шире / чуть выше */
+    /* тень при увеличенной карте */
     .card-final.card-zoom::before {
       transform: translateX(-50%) scaleX(1.35) scaleY(1.1);
       opacity: 1;
     }
 
-    /* тень при "приземлении" — компактнее и плотнее */
+    /* тень при приземлении — компактнее и плотнее */
     .card-landing::before {
       transform: translateX(-50%) scaleX(0.95) scaleY(0.95);
       opacity: 1;
     }
 
-    /* анимация тени во время переворота: сужается до 0 и снова расширяется */
+    /* анимация тени при перевороте */
     @keyframes shadow-flip {
       0%   { transform: translateX(-50%) scaleX(1.35) scaleY(1.1); }
       50%  { transform: translateX(-50%) scaleX(0.05) scaleY(0.6); }
@@ -164,14 +219,12 @@
       backface-visibility: hidden;
     }
 
-    /* рубашка — bgcards2.png */
     .card-back {
       background-image: url("https://maieuticaio.github.io/folder/experiments/bgcards2.png");
       background-size: cover;
       background-position: center;
     }
 
-    /* лицевая сторона (серый плейсхолдер с цифрой) */
     .card-front {
       background: #e0e0e0;
       display: flex;
@@ -184,7 +237,6 @@
 
     .card-label { pointer-events: none; }
 
-    /* до переворота фронт прячем */
     .card:not(.flipped) .card-front {
       visibility: hidden;
     }
@@ -202,7 +254,6 @@
       background: transparent;
     }
 
-    /* три карты в стопке + затемнение 15%/20% */
     .card-pos-top {
       transform: translate(calc(-50% - 5px), calc(-50% - 5px));
       z-index: 3;
@@ -229,25 +280,21 @@
       background: rgba(0, 0, 0, 0.20);
     }
 
-    /* уходящая карта */
     .card-out {
       transform: translate(calc(-50% - 8px), calc(-50% - 8px));
       opacity: 0;
     }
 
-    /* финальная карта — чуть выше текста (база без зума) */
     .card-final {
       transform: translate(calc(-50% - 5px), calc(-50% - 30px));
       z-index: 3;
       opacity: 1;
     }
 
-    /* увеличенная финальная карта — зум ВСЕЙ карты */
     .card-final.card-zoom {
       transform: translate(calc(-50% - 5px), calc(-50% - 30px)) scale(1.2);
     }
 
-    /* более резкое, короткое приземление */
     .card-landing {
       transition: transform 0.16s ease-out, opacity 0.2s ease-in-out, box-shadow 0.16s ease-out;
     }
@@ -257,8 +304,9 @@
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      margin-top: -4px;
+      margin-top: 0;              /* было -4px, теперь 0 */
       width: 100%;
+      max-width: 320px;
       text-align: center;
     }
 
@@ -268,6 +316,7 @@
       line-height: 1.5;
       color: #222;
       opacity: 0;
+      margin-top: 8px; /* отступ после имени автора */
       transition: opacity 0.3s ease;
     }
 
@@ -288,7 +337,15 @@
 <body>
   <!-- главный экран -->
   <div id="startScreen" class="screen active">
-    <button id="startButton" class="btn-main">Получить предсказание</button>
+    <div class="start-content">
+      <div class="hero-frame">
+        <img src="https://maieuticaio.github.io/folder/experiments/main1.gif" alt="main animation">
+      </div>
+      <div class="author-line">
+        <a href="#" class="author-link" onclick="return false;">имя автора</a>
+      </div>
+      <button id="startButton" class="btn-main">Получить предсказание</button>
+    </div>
   </div>
 
   <!-- экран с колодой -->
@@ -322,6 +379,11 @@
           </div>
         </div>
         <div class="below">
+          <!-- сначала имя автора под картой -->
+          <div id="authorBottom" class="author-line-bottom">
+            <a href="#" class="author-link" onclick="return false;">имя автора</a>
+          </div>
+          <!-- потом отступ (margin-top у prediction) и текст -->
           <div id="prediction"></div>
           <div id="restart" class="restart">Начать заново</div>
         </div>
@@ -378,6 +440,7 @@
 
       const predictionEl = document.getElementById("prediction");
       const restartEl = document.getElementById("restart");
+      const authorBottom = document.getElementById("authorBottom");
 
       let topEl = cardTop;
       let midEl = cardMid;
@@ -436,6 +499,8 @@
         predictionEl.style.opacity = "0";
         restartEl.style.display = "none";
         restartEl.style.opacity = "0";
+        authorBottom.style.display = "none";
+        authorBottom.style.opacity = "0";
 
         initStack();
         startReading();
@@ -449,6 +514,8 @@
         predictionEl.style.opacity = "0";
         restartEl.style.display = "none";
         restartEl.style.opacity = "0";
+        authorBottom.style.display = "none";
+        authorBottom.style.opacity = "0";
       });
 
       function clearCardAllClasses(el) {
@@ -484,7 +551,7 @@
             midEl = bottomEl;
             bottomEl = oldTop;
 
-            // верхняя и средняя с обычными transition
+            // верхняя и средняя с обычными переходами
             topEl.style.transition = "";
             midEl.style.transition = "";
 
@@ -512,31 +579,39 @@
               midEl.style.opacity = "0";
               bottomEl.style.opacity = "0";
 
-              // выбранная карта: подлет, зум всей карты, тень расширяется/смягчается
+              // выбранная карта подлетает и увеличивается
               setTimeout(() => {
                 topEl.classList.remove("card-pos-top");
                 topEl.classList.add("card-final", "card-zoom");
               }, 40);
 
-              // переворот в увеличенном состоянии + анимация тени (сужение до 0 и обратно)
+              // переворот + анимация тени (сужается и расширяется)
               setTimeout(() => {
                 topEl.classList.add("flipped", "card-shadow-flip");
               }, 320);
 
-              // приземление: резкий короткий переход, убираем zoom,
-              // включаем компактную плотную тень (card-landing)
+              // приземление: убираем zoom, тень становится компактнее
               setTimeout(() => {
                 topEl.classList.add("card-landing");
                 topEl.classList.remove("card-zoom");
               }, 900);
 
-              // затем появляется текст
+              // текст и нижняя подпись
               setTimeout(() => {
                 predictionEl.textContent =
                   predictions[targetNum] || "Эта карта пока молчит.";
                 predictionEl.style.opacity = "1";
 
-                // и кнопка "начать заново"
+                authorBottom.style.display = "flex";
+                if (window.requestAnimationFrame) {
+                  requestAnimationFrame(() => {
+                    authorBottom.style.opacity = "1";
+                  });
+                } else {
+                  authorBottom.style.opacity = "1";
+                }
+
+                // кнопка "начать заново"
                 setTimeout(() => {
                   restartEl.style.display = "block";
                   if (window.requestAnimationFrame) {
