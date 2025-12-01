@@ -8,6 +8,10 @@
   <style>
     * { box-sizing: border-box; }
 
+    :root {
+      --card-radius: 24px; /* единый радиус для карт и гифок */
+    }
+
     body {
       margin: 0;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -58,6 +62,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: var(--card-radius);     /* скругляем как карту */
     }
 
     .hero-frame img {
@@ -66,6 +71,7 @@
       max-width: 100%;
       height: auto;
       width: auto;
+      border-radius: var(--card-radius);     /* можно и без этого, но не мешает */
     }
 
     .author-line {
@@ -122,7 +128,7 @@
     .card {
       width: 240px;
       height: 360px;
-      border-radius: 24px;
+      border-radius: var(--card-radius);
       position: absolute;
       left: 50%;
       top: 50%;
@@ -183,7 +189,7 @@
     .card-face {
       position: absolute;
       inset: 0;
-      border-radius: 24px;
+      border-radius: var(--card-radius);
       backface-visibility: hidden;
     }
 
@@ -307,7 +313,7 @@
       top: 100%;
       left: 50%;
       transform: translateX(-50%);
-      margin-top: -30px; /* поднимаем блок на ~20px вверх к карте */
+      margin-top: -30px;
       width: 100%;
       max-width: 320px;
       text-align: center;
@@ -318,7 +324,7 @@
       line-height: 1.5;
       color: #222;
       opacity: 0;
-      margin-top: 50px; /* небольшой зазор между подсказкой и текстом */
+      margin-top: 50px;
       transition: opacity 0.3s ease;
     }
 
@@ -328,7 +334,7 @@
       line-height: 1.5;
       color: #222;
       opacity: 0;
-      margin-top: -40px; /* небольшой зазор между подсказкой и текстом */
+      margin-top: -40px;
       transition: opacity 0.3s ease;
     }
 
@@ -382,6 +388,7 @@
   <div id="startScreen" class="screen active">
     <div class="start-content">
       <div class="hero-frame">
+        <!-- начальное значение, дальше будет переписываться JS -->
         <img src="https://maieuticaio.github.io/folder/experiments/main1.gif" alt="main animation">
       </div>
       <div class="author-line">
@@ -530,6 +537,28 @@
     const hintEl        = document.getElementById("hint");
 
     const cards = [cardTop, cardMid, cardBottom];
+
+    // === АНИМАЦИИ НА ГЛАВНОЙ ===
+    const heroImg = document.querySelector(".hero-frame img");
+    const animationBaseUrl = "https://maieuticaio.github.io/folder/experiments/main";
+    const totalAnimations = 3; // main1.gif, main2.gif, main3.gif
+    let currentAnimationIndex = 1;
+
+    function updateHeroAnimation() {
+      heroImg.src = animationBaseUrl + currentAnimationIndex + ".gif";
+    }
+
+    function goToNextAnimation() {
+      currentAnimationIndex++;
+      if (currentAnimationIndex > totalAnimations) {
+        currentAnimationIndex = 1;
+      }
+      updateHeroAnimation();
+    }
+
+    // синхронизируем на старте
+    updateHeroAnimation();
+    // === КОНЕЦ БЛОКА С АНИМАЦИЯМИ ===
 
     let topEl = cardTop;
     let midEl = cardMid;
@@ -752,6 +781,9 @@
 
     restartButton.addEventListener("click", () => {
       mode = "idle";
+
+      // переключаем анимацию на главной
+      goToNextAnimation();
 
       readingScreen.classList.remove("active");
       startScreen.classList.add("active");
