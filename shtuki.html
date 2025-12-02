@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Сломанные слезы — puppet 1</title>
+  <style>
+    :root{
+      --page-xpad: 50px;
+      --gap-vert: 84px;
+      --nav-fs: 1.125rem;
+    }
+
+    *{ box-sizing: border-box; }
+    html, body{ height: 100%; }
+
+    body{
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Noto Sans', Arial, 'Apple Color Emoji','Segoe UI Emoji';
+      color: #000;
+      background: #fff;
+      line-height: 1.4;
+    }
+
+    main{
+      min-height: 100vh;
+      padding: 0 var(--page-xpad) 80px;
+    }
+
+    .page-title{
+      margin: 56px 0 0; /* один контролируемый отступ сверху */
+      font-size: clamp(2rem, 4vw, 3.1rem);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      line-height: 1.05;
+    }
+
+    .feed{
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--gap-vert); /* одинаково: title→блок и блок→блок */
+    }
+
+    .block{
+      width: 100%;
+      max-width: 1200px;
+    }
+
+    .block__title{
+      margin: 0 0 20px;
+      font-weight: 600;
+      text-align: left;
+      font-size: calc(var(--nav-fs) * 1.05);
+      line-height: 1.2;
+      letter-spacing: 0.005em;
+    }
+
+    .block__desc{
+      max-width: 60ch;
+      margin-top: 10px;
+      font-size: 0.95rem;
+      text-align: left;
+    }
+
+    .gallery{
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+
+      margin-left: calc(-1 * var(--page-xpad));
+      margin-right: calc(-1 * var(--page-xpad));
+      padding-left: var(--page-xpad);
+      padding-right: var(--page-xpad);
+    }
+    .gallery::-webkit-scrollbar{ display: none; width: 0; height: 0; }
+
+    .media{
+      height: 200px;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+    }
+    .media img{
+      height: 100%;
+      width: auto;
+      display: block;
+    }
+
+    /* Контакты */
+    .contacts{
+      font-size: 0.95rem;
+      max-width: 80ch;
+    }
+    .contacts a{
+      color: inherit;
+      text-decoration: none;
+      border-bottom: 1px solid #000;
+    }
+    .contacts a:hover{ opacity: 0.75; }
+
+    /* Viewer (только десктоп; на мобилке выключен в JS) */
+    .viewer{
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      display: none;
+      z-index: 100;
+      padding: 0 100px;
+      align-items: center;
+      justify-content: center;
+    }
+    .viewer.open{ display: flex; }
+
+    .viewer__scroller{
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .viewer__scroller::-webkit-scrollbar{ width: 0; height: 0; display: none; }
+
+    .viewer__frame{
+      position: relative;
+      display: inline-block;
+      max-width: 100%;
+      max-height: 100%;
+    }
+
+    .viewer__img{
+      display: block;
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      object-position: center;
+    }
+
+    .viewer__btn{
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border: none;
+      border-radius: 50%;
+      background: #000;
+      color: #fff;
+      font-size: 22px;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      z-index: 110;
+      user-select: none;
+    }
+    .viewer__prev{ left: 28px; }
+    .viewer__next{ right: 28px; }
+
+    .viewer__close{
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      border: none;
+      background: transparent;
+      color: #000;
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      z-index: 120;
+      padding: 6px 8px;
+    }
+
+    @media (max-width: 640px){
+      :root{ --page-xpad: 10px; }
+      .media{ cursor: default; }
+      .page-title{ margin-top: 26px; }
+      .viewer{ padding: 0 14px; }
+      .viewer__prev{ left: 10px; }
+      .viewer__next{ right: 10px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <div class="feed">
+      <h1 class="page-title">Сломанные слезы</h1>
+
+      <!-- Блоки -->
+      <article class="block">
+        <h2 class="block__title">puppet 1</h2>
+        <div class="gallery" data-gallery>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha1.jpeg" alt="puppet 1 — dasha1" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha2.jpeg" alt="puppet 1 — dasha2" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha3.jpeg" alt="puppet 1 — dasha3" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha4.jpeg" alt="puppet 1 — dasha4" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha5.jpeg" alt="puppet 1 — dasha5" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha6.jpeg" alt="puppet 1 — dasha6" loading="lazy"></div>
+        </div>
+        <div class="block__desc">SOLD</div>
+      </article>
+
+      <article class="block">
+        <h2 class="block__title">puppet 1</h2>
+        <div class="gallery" data-gallery>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha1.jpeg" alt="puppet 1 — dasha1" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha2.jpeg" alt="puppet 1 — dasha2" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha3.jpeg" alt="puppet 1 — dasha3" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha4.jpeg" alt="puppet 1 — dasha4" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha5.jpeg" alt="puppet 1 — dasha5" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha6.jpeg" alt="puppet 1 — dasha6" loading="lazy"></div>
+        </div>
+        <div class="block__desc">SOLD</div>
+      </article>
+
+      <article class="block">
+        <h2 class="block__title">puppet 1</h2>
+        <div class="gallery" data-gallery>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha1.jpeg" alt="puppet 1 — dasha1" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha2.jpeg" alt="puppet 1 — dasha2" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha3.jpeg" alt="puppet 1 — dasha3" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha4.jpeg" alt="puppet 1 — dasha4" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha5.jpeg" alt="puppet 1 — dasha5" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha6.jpeg" alt="puppet 1 — dasha6" loading="lazy"></div>
+        </div>
+        <div class="block__desc">SOLD</div>
+      </article>
+
+      <article class="block">
+        <h2 class="block__title">puppet 1</h2>
+        <div class="gallery" data-gallery>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha1.jpeg" alt="puppet 1 — dasha1" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha2.jpeg" alt="puppet 1 — dasha2" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha3.jpeg" alt="puppet 1 — dasha3" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha4.jpeg" alt="puppet 1 — dasha4" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha5.jpeg" alt="puppet 1 — dasha5" loading="lazy"></div>
+          <div class="media"><img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha6.jpeg" alt="puppet 1 — dasha6" loading="lazy"></div>
+        </div>
+        <div class="block__desc">SOLD</div>
+      </article>
+
+      <!-- Контакты -->
+      <article class="block">
+        <h2 class="block__title">информация с контактами</h2>
+        <div class="contacts">
+          <div>ТГК <a href="https://t.me/broken_tears" target="_blank" rel="noopener">@broken_tears</a></div>
+          <div>e-mail: <a href="mailto:alexandra.khalbaeva@gmail.com">alexandra.khalbaeva@gmail.com</a></div>
+          <div>site: <a href="https://maieuticaio.github.io/#home" target="_blank" rel="noopener">https://maieuticaio.github.io/#home</a></div>
+        </div>
+      </article>
+    </div>
+  </main>
+
+  <div class="viewer" id="viewer" aria-hidden="true">
+    <button class="viewer__btn viewer__prev" id="viewerPrev" aria-label="Предыдущий">‹</button>
+    <div class="viewer__scroller" id="viewerScroll">
+      <div class="viewer__frame" id="viewerFrame">
+        <img class="viewer__img" id="viewerImg" alt="">
+        <button class="viewer__close" id="viewerClose" aria-label="Закрыть">×</button>
+      </div>
+    </div>
+    <button class="viewer__btn viewer__next" id="viewerNext" aria-label="Следующий">›</button>
+  </div>
+
+  <script>
+    const $ = (s, r = document) => r.querySelector(s);
+    const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
+
+    function initViewer(){
+      const viewer = $('#viewer');
+      const viewerImg = $('#viewerImg');
+      const viewerPrev = $('#viewerPrev');
+      const viewerNext = $('#viewerNext');
+      const viewerClose = $('#viewerClose');
+      const viewerScroll = $('#viewerScroll');
+      const viewerFrame = $('#viewerFrame');
+
+      let vGallery = null;
+      let vIndex = -1;
+
+      function showItem(gallery, index){
+        vGallery = gallery;
+        vIndex = index;
+        const items = Array.from(gallery.querySelectorAll('.media'));
+        if(!items.length) return;
+
+        vIndex = Math.max(0, Math.min(vIndex, items.length - 1));
+        const item = items[vIndex];
+        const img = item.querySelector('img');
+        const src = img ? (img.currentSrc || img.src) : '';
+        if(!src) return;
+
+        viewerImg.src = src;
+
+        viewer.classList.add('open');
+        viewer.setAttribute('aria-hidden','false');
+        document.body.style.overflow = 'hidden';
+        viewerScroll.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+      }
+
+      function closeViewer(){
+        viewer.classList.remove('open');
+        viewer.setAttribute('aria-hidden','true');
+        document.body.style.overflow = '';
+        viewerImg.removeAttribute('src');
+        vGallery = null;
+        vIndex = -1;
+      }
+
+      function navViewer(dir){
+        if(!vGallery) return;
+        const items = Array.from(vGallery.querySelectorAll('.media'));
+        vIndex = (vIndex + dir + items.length) % items.length;
+        showItem(vGallery, vIndex);
+      }
+
+      viewerPrev.addEventListener('click', () => navViewer(-1));
+      viewerNext.addEventListener('click', () => navViewer(1));
+      viewerClose.addEventListener('click', closeViewer);
+
+      viewer.addEventListener('click', (e) => {
+        if(e.target === viewer) closeViewer();
+      });
+
+      viewerFrame.addEventListener('click', (e) => {
+        if(!viewer.classList.contains('open')) return;
+        if(e.target === viewerClose || (viewerClose && e.target.closest('#viewerClose'))) return;
+        const r = viewerFrame.getBoundingClientRect();
+        const x = e.clientX - r.left;
+        if(x < r.width / 2) navViewer(-1);
+        else navViewer(1);
+      });
+
+      document.addEventListener('click', (e) => {
+        const media = e.target.closest('.media');
+        if(!media) return;
+        if(isMobile()) return;
+        const gal = media.closest('[data-gallery]');
+        if(!gal) return;
+
+        const items = Array.from(gal.querySelectorAll('.media'));
+        const idx = items.indexOf(media);
+        if(idx === -1) return;
+
+        showItem(gal, idx);
+      });
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initViewer();
+    });
+  </script>
+</body>
+</html>
