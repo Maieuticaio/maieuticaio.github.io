@@ -8,6 +8,10 @@
   <style>
     * { box-sizing: border-box; }
 
+    html {
+      overflow-y: scroll; /* всегда есть место под скролл, не дёргает страницу */
+    }
+
     :root {
       --card-radius: 24px; /* единый радиус для карт и гифок */
     }
@@ -51,7 +55,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 16px;
+      gap: 0;           /* отступы задаём через margin */
       padding: 16px;
     }
 
@@ -62,7 +66,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: var(--card-radius);     /* скругляем как карту */
+      border-radius: var(--card-radius);
     }
 
     .hero-frame img {
@@ -71,7 +75,7 @@
       max-width: 100%;
       height: auto;
       width: auto;
-      border-radius: var(--card-radius);     /* можно и без этого, но не мешает */
+      border-radius: var(--card-radius);
     }
 
     .author-line {
@@ -80,6 +84,28 @@
       margin: 0 auto;
       display: flex;
       justify-content: flex-end;
+    }
+
+    /* отступ от ссылки до анимации */
+    .start-content .author-line {
+      margin-bottom: 16px;
+    }
+
+    /* отступ от анимации до кнопки в 3 раза больше (48px) */
+    .start-content .hero-frame {
+      margin-bottom: 48px;
+    }
+
+    .author-line-reading {
+      max-width: 320px; /* под ширину блока с картой */
+    }
+
+    /* автор карты по умолчанию невидим, но место занимает */
+    #authorLineReadingWrapper {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
     }
 
     .author-link {
@@ -95,6 +121,13 @@
       align-items: center;
       justify-content: center;
       width: 100%;
+    }
+
+    .reading-stack {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px; /* тот же базовый шаг */
     }
 
     .card-wrapper {
@@ -241,8 +274,9 @@
       opacity: 0.95;
     }
 
-    .card-pos-middle::after { background: rgba(0, 0, 0, 0.15); }
-    .card-pos-bottom::after { background: rgba(0, 0, 0, 0.20); }
+    /* серые тени для дальних рубашек */
+    .card-pos-middle::after { background: rgba(255,255,255,0.1); }
+    .card-pos-bottom::after { background: rgba(255,255,255,0.2); }
 
     .card-out {
       transform: translate(calc(-50% - 8px), calc(-50% - 8px));
@@ -304,8 +338,9 @@
       }
     }
 
-    .card-fan-shadow-bottom::after { background: rgba(0,0,0,0.22); }
-    .card-fan-shadow-middle::after { background: rgba(0,0,0,0.13); }
+    /* серые тени и в веере */
+    .card-fan-shadow-bottom::after { background: rgba(200,200,200,0.2); }
+    .card-fan-shadow-middle::after { background: rgba(220,220,220,0.1); }
     .card-fan-shadow-top::after    { background: transparent; }
 
     .below {
@@ -334,14 +369,15 @@
       line-height: 1.5;
       color: #222;
       opacity: 0;
-      margin-top: -40px;
+      margin-top: -80px;
       transition: opacity 0.3s ease;
     }
 
     .restart {
       margin-top: 18px;
-      display: none;
-      opacity: 0;
+      display: flex;            /* всегда в потоке, но… */
+      opacity: 0;               /* …невидим и… */
+      pointer-events: none;     /* …не кликается */
       transition: opacity 0.3s ease;
       justify-content: center;
     }
@@ -387,12 +423,12 @@
 <body>
   <div id="startScreen" class="screen active">
     <div class="start-content">
-      <div class="hero-frame">
-        <!-- начальное значение, дальше будет переписываться JS -->
-        <img src="https://maieuticaio.github.io/folder/experiments/main1.gif" alt="main animation">
-      </div>
+      <!-- ссылка автора анимации -->
       <div class="author-line">
-        <a href="#" class="author-link" onclick="return false;">имя автора</a>
+        <a href="#" class="author-link" onclick="return false;">Galka Gadalka</a>
+      </div>
+      <div class="hero-frame">
+        <img src="https://maieuticaio.github.io/folder/experiments/main1.gif" alt="main animation">
       </div>
       <button id="startButton" class="btn-main">Получить предсказание</button>
     </div>
@@ -400,51 +436,58 @@
 
   <div id="readingScreen" class="screen">
     <div class="reading-center">
-      <div class="card-wrapper">
-        <div class="card-area" id="cardArea">
-          <div class="card card-pos-top" id="cardTop">
-            <div class="card-inner">
-              <div class="card-face card-back"></div>
-              <div class="card-face card-front">
-                <span class="card-label">?</span>
-              </div>
-            </div>
-          </div>
-          <div class="card card-pos-middle" id="cardMid">
-            <div class="card-inner">
-              <div class="card-face card-back"></div>
-              <div class="card-face card-front">
-                <span class="card-label">?</span>
-              </div>
-            </div>
-          </div>
-          <div class="card card-pos-bottom" id="cardBottom">
-            <div class="card-inner">
-              <div class="card-face card-back"></div>
-              <div class="card-face card-front">
-                <span class="card-label">?</span>
-              </div>
-            </div>
-          </div>
+      <div class="reading-stack">
+        <!-- ссылка автора карты (всегда в потоке, но сначала невидима) -->
+        <div class="author-line author-line-reading" id="authorLineReadingWrapper">
+          <a id="authorLinkReading" href="#" class="author-link" target="_blank" rel="noopener">имя автора карты</a>
         </div>
 
-        <div class="below">
-          <div id="hint" class="hint">Вытяни карту</div>
-          <div id="prediction"></div>
-          <div id="restart" class="restart">
-            <button id="restartButton" class="restart-drop" type="button" aria-label="Начать заново">
-              <svg class="restart-svg" viewBox="0 0 40 64" aria-hidden="true">
-                <path d="M20 0
-                         C 30 16, 38 28, 38 40
-                         C 38 54, 30 64, 20 64
-                         C 10 64, 2 54, 2 40
-                         C 2 28, 10 16, 20 0 Z" />
-              </svg>
-              <span class="restart-arrow">&lt;</span>
-            </button>
+        <div class="card-wrapper">
+          <div class="card-area" id="cardArea">
+            <div class="card card-pos-top" id="cardTop">
+              <div class="card-inner">
+                <div class="card-face card-back"></div>
+                <div class="card-face card-front">
+                  <span class="card-label">?</span>
+                </div>
+              </div>
+            </div>
+            <div class="card card-pos-middle" id="cardMid">
+              <div class="card-inner">
+                <div class="card-face card-back"></div>
+                <div class="card-face card-front">
+                  <span class="card-label">?</span>
+                </div>
+              </div>
+            </div>
+            <div class="card card-pos-bottom" id="cardBottom">
+              <div class="card-inner">
+                <div class="card-face card-back"></div>
+                <div class="card-face card-front">
+                  <span class="card-label">?</span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
+          <div class="below">
+            <div id="hint" class="hint">Вытяни карту</div>
+            <div id="prediction"></div>
+            <div id="restart" class="restart">
+              <button id="restartButton" class="restart-drop" type="button" aria-label="Начать заново">
+                <svg class="restart-svg" viewBox="0 0 40 64" aria-hidden="true">
+                  <path d="M20 0
+                           C 30 16, 38 28, 38 40
+                           C 38 54, 30 64, 20 64
+                           C 10 64, 2 54, 2 40
+                           C 2 28, 10 16, 20 0 Z" />
+                </svg>
+                <span class="restart-arrow">&lt;</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   </div>
@@ -453,17 +496,17 @@
     const totalCards = 32;
 
     const predictions = {
-      1: "Твое предсказание.",
-      2: "Твое предсказание.",
-      3: "Твое предсказание.",
-      4: "Твое предсказание.",
-      5: "Твое предсказание.",
-      6: "Твое предсказание.",
-      7: "Твое предсказание.",
-      8: "Твое предсказание.",
-      9: "Твое предсказание.",
-      10: "Твое предсказание.",
-      11: "Твое предсказание.",
+      1: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
+      2: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
+      3: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
+      4: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
+      5: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
+      6: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
+      7: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
+      8: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
+      9: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
+      10: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
+      11: "Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.Твое предсказание.",
       12: "Твое предсказание.",
       13: "Твое предсказание.",
       14: "Твое предсказание.",
@@ -487,6 +530,7 @@
       32: "Твое предсказание."
     };
 
+    // URL каждой карты
     const cardLinks = {
       1: "https://example.com/card1",
       2: "https://example.com/card2",
@@ -522,6 +566,42 @@
       32: "https://example.com/card32"
     };
 
+    // Имена авторов для каждой карты
+    const cardAuthors = {
+      1: "Автор Kарты 1",
+      2: "Автор карты 2",
+      3: "Автор карты 3",
+      4: "Автор карты 4",
+      5: "Автор карты 5",
+      6: "Автор карты 6",
+      7: "Автор карты 7",
+      8: "Автор карты 8",
+      9: "Автор карты 9",
+      10: "Автор карты 10",
+      11: "Автор карты 11",
+      12: "Автор карты 12",
+      13: "Автор карты 13",
+      14: "Автор карты 14",
+      15: "Автор карты 15",
+      16: "Автор карты 16",
+      17: "Автор карты 17",
+      18: "Автор карты 18",
+      19: "Автор карты 19",
+      20: "Автор карты 20",
+      21: "Автор карты 21",
+      22: "Автор карты 22",
+      23: "Автор карты 23",
+      24: "Автор карты 24",
+      25: "Автор карты 25",
+      26: "Автор карты 26",
+      27: "Автор карты 27",
+      28: "Автор карты 28",
+      29: "Автор карты 29",
+      30: "Автор карты 30",
+      31: "Автор карты 31",
+      32: "Автор карты 32"
+    };
+
     const startScreen   = document.getElementById("startScreen");
     const readingScreen = document.getElementById("readingScreen");
     const startButton   = document.getElementById("startButton");
@@ -535,6 +615,9 @@
     const restartEl     = document.getElementById("restart");
     const restartButton = document.getElementById("restartButton");
     const hintEl        = document.getElementById("hint");
+
+    const authorLinkReading = document.getElementById("authorLinkReading");
+    const authorLineReadingWrapper = document.getElementById("authorLineReadingWrapper");
 
     const cards = [cardTop, cardMid, cardBottom];
 
@@ -556,7 +639,6 @@
       updateHeroAnimation();
     }
 
-    // синхронизируем на старте
     updateHeroAnimation();
     // === КОНЕЦ БЛОКА С АНИМАЦИЯМИ ===
 
@@ -592,6 +674,21 @@
       el.onclick = null;
     }
 
+    function resetAuthorLine() {
+      if (!authorLineReadingWrapper || !authorLinkReading) return;
+      authorLineReadingWrapper.style.opacity = "0";
+      authorLineReadingWrapper.style.visibility = "hidden";
+      authorLineReadingWrapper.style.pointerEvents = "none";
+      authorLinkReading.textContent = "имя автора карты";
+      authorLinkReading.href = "#";
+      authorLinkReading.style.pointerEvents = "none";
+    }
+
+    function resetRestart() {
+      restartEl.style.opacity = "0";
+      restartEl.style.pointerEvents = "none";
+    }
+
     function initStack() {
       deckIndex = 1 + Math.floor(Math.random() * totalCards);
 
@@ -610,6 +707,9 @@
       topEl.style.opacity = "1";
       midEl.style.opacity = "1";
       bottomEl.style.opacity = "0.95";
+
+      resetAuthorLine();
+      resetRestart();
     }
 
     function startShuffling() {
@@ -742,25 +842,34 @@
           predictions[cardNum] || "Эта карта пока молчит.";
         predictionEl.style.opacity = "1";
 
-        const url = cardLinks[cardNum];
-        if (url) {
-          cardEl.style.cursor = "pointer";
-          cardEl.onclick = () => {
-            window.open(url, "_blank");
-          };
-        } else {
-          cardEl.style.cursor = "default";
-          cardEl.onclick = null;
+        // карта после выдачи предсказания никуда не ведёт
+        cardEl.style.cursor = "default";
+        cardEl.onclick = null;
+
+        // ссылка автора
+        if (authorLineReadingWrapper && authorLinkReading) {
+          const url = cardLinks[cardNum];
+          const name = cardAuthors[cardNum] || "имя автора карты";
+
+          authorLineReadingWrapper.style.opacity = "1";
+          authorLineReadingWrapper.style.visibility = "visible";
+          authorLineReadingWrapper.style.pointerEvents = "auto";
+
+          authorLinkReading.textContent = name;
+
+          if (url) {
+            authorLinkReading.href = url;
+            authorLinkReading.style.pointerEvents = "auto";
+          } else {
+            authorLinkReading.href = "#";
+            authorLinkReading.style.pointerEvents = "none";
+          }
         }
 
-        restartEl.style.display = "flex";
-        if (window.requestAnimationFrame) {
-          requestAnimationFrame(() => {
-            restartEl.style.opacity = "1";
-          });
-        } else {
-          restartEl.style.opacity = "1";
-        }
+        // кнопка рестарта
+        restartEl.style.opacity = "1";
+        restartEl.style.pointerEvents = "auto";
+
       }, 950);
     }
 
@@ -770,8 +879,6 @@
 
       predictionEl.textContent = "";
       predictionEl.style.opacity = "0";
-      restartEl.style.display = "none";
-      restartEl.style.opacity = "0";
       hintEl.style.opacity = "0";
 
       mode = "idle";
@@ -790,10 +897,11 @@
 
       predictionEl.textContent = "";
       predictionEl.style.opacity = "0";
-      restartEl.style.display = "none";
-      restartEl.style.opacity = "0";
       hintEl.textContent = "Вытяни карту";
       hintEl.style.opacity = "0";
+
+      resetAuthorLine();
+      resetRestart();
     });
 
     cardArea.addEventListener("click", (e) => {
