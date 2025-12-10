@@ -339,8 +339,8 @@
     }
 
     /* серые тени и в веере */
-    .card-fan-shadow-bottom::after { background: rgba(200,200,200,0.2); }
-    .card-fan-shadow-middle::after { background: rgba(220,220,220,0.1); }
+    .card-fan-shadow-bottom::after { background: rgba(66,51,113,0.3); }
+    .card-fan-shadow-middle::after { background: rgba(66,51,113,0.15); }
     .card-fan-shadow-top::after    { background: transparent; }
 
     .below {
@@ -375,9 +375,9 @@
 
     .restart {
       margin-top: 18px;
-      display: flex;            /* всегда в потоке, но… */
-      opacity: 0;               /* …невидим и… */
-      pointer-events: none;     /* …не кликается */
+      display: flex;
+      opacity: 0;
+      pointer-events: none;
       transition: opacity 0.3s ease;
       justify-content: center;
     }
@@ -425,7 +425,12 @@
     <div class="start-content">
       <!-- ссылка автора анимации -->
       <div class="author-line">
-        <a href="#" class="author-link" onclick="return false;">Galka Gadalka</a>
+        <!-- CHANGED: добавлен id и убран onclick -->
+        <a id="heroAuthorLink"
+           href="#"
+           class="author-link"
+           target="_blank"
+           rel="noopener">Galka Gadalka</a>
       </div>
       <div class="hero-frame">
         <img src="https://maieuticaio.github.io/folder/experiments/main1.gif" alt="main animation">
@@ -623,12 +628,40 @@
 
     // === АНИМАЦИИ НА ГЛАВНОЙ ===
     const heroImg = document.querySelector(".hero-frame img");
+    const heroAuthorLink = document.getElementById("heroAuthorLink"); // NEW
+
     const animationBaseUrl = "https://maieuticaio.github.io/folder/experiments/main";
     const totalAnimations = 3; // main1.gif, main2.gif, main3.gif
     let currentAnimationIndex = 1;
 
+    // NEW: авторы/ссылки для каждой гифки
+    const animationAuthors = {
+      1: { name: "Galka Gadalka", url: "https://example.com/anim1" },
+      2: { name: "Galka Gadalka — версия 2", url: "https://example.com/anim2" },
+      3: { name: "Galka Gadalka — версия 3", url: "https://example.com/anim3" }
+      // можешь поменять имена и ссылки как тебе нужно
+    };
+
     function updateHeroAnimation() {
       heroImg.src = animationBaseUrl + currentAnimationIndex + ".gif";
+
+      // NEW: обновляем ссылку автора под конкретную гифку
+      const meta = animationAuthors[currentAnimationIndex];
+      if (meta) {
+        heroAuthorLink.textContent = meta.name || "Автор анимации";
+        if (meta.url) {
+          heroAuthorLink.href = meta.url;
+          heroAuthorLink.style.pointerEvents = "auto";
+        } else {
+          heroAuthorLink.href = "#";
+          heroAuthorLink.style.pointerEvents = "none";
+        }
+      } else {
+        // дефолт, если вдруг нет записи
+        heroAuthorLink.textContent = "Автор анимации";
+        heroAuthorLink.href = "#";
+        heroAuthorLink.style.pointerEvents = "none";
+      }
     }
 
     function goToNextAnimation() {
