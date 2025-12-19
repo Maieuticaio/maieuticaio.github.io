@@ -9,8 +9,13 @@
     :root{
       --bg: #fff;
       --fg: #111;
+
       --gap: 15px;
-      --size: 250px;
+
+      --tile-top: 150px;   /* верхние 2 строки */
+      --tile-bot: 250px;   /* нижняя строка */
+
+      --tile-bg: #f2f2f2;
     }
 
     *{ box-sizing: border-box; }
@@ -25,7 +30,7 @@
     .wrap{
       max-width: 1100px;
       margin: 0 auto;
-      padding: 28px 18px 80px;
+      padding: 28px 18px 140px;
     }
 
     h1{
@@ -35,25 +40,24 @@
       letter-spacing: .02em;
     }
 
-    /* rows */
+    /* горизонтальные ряды */
     .row{
       display: flex;
       gap: var(--gap);
       overflow-x: auto;
-      padding-bottom: 10px; /* чтобы скроллбар не лип к карточкам */
+      padding-bottom: 10px;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
     }
     .row + .row{ margin-top: var(--gap); }
     .row.third{ margin-top: 30px; }
 
-    /* items */
+    /* плитки */
     .tile{
       flex: 0 0 auto;
       width: var(--size);
       height: var(--size);
-      border-radius: 0px; /* квадраты */
-      background: #f2f2f2;
+      background: var(--tile-bg);
       position: relative;
       cursor: pointer;
       user-select: none;
@@ -67,7 +71,7 @@
       inset:0;
       background:
         linear-gradient(135deg, rgba(0,0,0,.06), rgba(0,0,0,0) 60%),
-        #f2f2f2;
+        var(--tile-bg);
     }
 
     /* подпись */
@@ -85,7 +89,7 @@
       backdrop-filter: blur(6px);
     }
 
-    /* индикация селекта: небольшое затемнение */
+    /* индикация селекта: лёгкое затемнение */
     .tile::after{
       content:"";
       position:absolute;
@@ -97,12 +101,15 @@
     }
     .tile.is-selected::after{ opacity: 1; }
 
-    /* фокус клавиатурой */
     .tile:focus-visible{
       box-shadow: 0 0 0 3px rgba(0,0,0,.25);
     }
 
-    /* Капля-назад */
+    /* размеры по рядам */
+    .row.top   { --size: var(--tile-top); }
+    .row.third { --size: var(--tile-bot); }
+
+    /* капля-назад */
     .back-drop{
       position: fixed;
       right: 18px;
@@ -113,7 +120,7 @@
       background: transparent;
       padding: 0;
       cursor: pointer;
-      z-index: 9999; /* нависает над всем */
+      z-index: 9999;
       -webkit-tap-highlight-color: transparent;
     }
     .back-drop svg{
@@ -121,12 +128,6 @@
       height: 100%;
       display:block;
       filter: drop-shadow(0 10px 25px rgba(0,0,0,.18));
-    }
-    .back-drop:focus-visible{
-      outline: none;
-    }
-    .back-drop:focus-visible svg{
-      filter: drop-shadow(0 10px 25px rgba(0,0,0,.18)) drop-shadow(0 0 0 rgba(0,0,0,0));
     }
     .back-drop:hover svg{
       transform: translateY(-1px);
@@ -137,8 +138,64 @@
       transition: transform .06s ease;
     }
 
+    /* нижний блок заявки */
+    .order{
+      margin-top: 34px;
+      max-width: 900px;
+    }
+    .order-label{
+      font-size: 12px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,.55);
+      margin: 0 0 10px;
+    }
+    .order-box{
+      width: 100%;
+      min-height: 110px;
+      border: 1px solid rgba(0,0,0,.14);
+      padding: 14px 14px;
+      font-size: 15px;
+      line-height: 1.5;
+      outline: none;
+      background: #fff;
+      color: #111;
+      resize: vertical;
+    }
+
+    .actions{
+      margin-top: 12px;
+      display:flex;
+      gap: 12px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+
+    .btn{
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 650;
+      letter-spacing: .02em;
+      cursor: pointer;
+      background: #111;
+      color: #fff;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn:active{ transform: scale(.99); }
+
+    .note{
+      font-size: 12px;
+      color: rgba(0,0,0,.55);
+      margin: 0;
+    }
+
     @media (max-width: 560px){
-      :root{ --size: 220px; }
+      :root{ --tile-top: 180px; --tile-bot: 220px; }
       .back-drop{ right: 14px; bottom: 14px; width: 72px; height: 72px; }
       h1{ font-size: 18px; }
     }
@@ -147,7 +204,6 @@
 
 <body>
   <button class="back-drop" type="button" aria-label="Назад" title="Назад" id="backBtn">
-    <!-- “капля” + галочка влево (chevron) -->
     <svg viewBox="0 0 100 100" aria-hidden="true">
       <!-- капля -->
       <path
@@ -158,12 +214,12 @@
            C77 35, 50 6, 50 6Z"
         fill="#111"
       />
-      <!-- стрелка-галочка влево -->
+      <!-- маленькая “галочка-стрелка” влево: СДВИНУТА НИЖЕ И ЛЕВЕЕ -->
       <path
-        d="M58 38 L44 50 L58 62"
+        d="M52 47 L43 56 L52 65"
         fill="none"
         stroke="#fff"
-        stroke-width="7"
+        stroke-width="2.5"
         stroke-linecap="round"
         stroke-linejoin="round"
       />
@@ -171,10 +227,10 @@
   </button>
 
   <main class="wrap">
-    <h1>плакальщицы</h1>
+    <h1>Плакальщицы</h1>
 
     <!-- Row 1: h01..h05 -->
-    <section class="row" data-row="h1" aria-label="h row 1">
+    <section class="row top" aria-label="h row 1">
       <div class="tile" tabindex="0" data-name="h01"><div class="img"></div><div class="name">h01</div></div>
       <div class="tile" tabindex="0" data-name="h02"><div class="img"></div><div class="name">h02</div></div>
       <div class="tile" tabindex="0" data-name="h03"><div class="img"></div><div class="name">h03</div></div>
@@ -183,7 +239,7 @@
     </section>
 
     <!-- Row 2: h06..h10 -->
-    <section class="row" data-row="h2" aria-label="h row 2">
+    <section class="row top" aria-label="h row 2">
       <div class="tile" tabindex="0" data-name="h06"><div class="img"></div><div class="name">h06</div></div>
       <div class="tile" tabindex="0" data-name="h07"><div class="img"></div><div class="name">h07</div></div>
       <div class="tile" tabindex="0" data-name="h08"><div class="img"></div><div class="name">h08</div></div>
@@ -191,41 +247,92 @@
       <div class="tile" tabindex="0" data-name="h10"><div class="img"></div><div class="name">h10</div></div>
     </section>
 
-    <!-- Row 3 (margin-top 30): b01..b05 -->
-    <section class="row third" data-row="b" aria-label="b row">
+    <!-- Row 3: b01..b05 -->
+    <section class="row third" aria-label="b row">
       <div class="tile" tabindex="0" data-name="b01"><div class="img"></div><div class="name">b01</div></div>
       <div class="tile" tabindex="0" data-name="b02"><div class="img"></div><div class="name">b02</div></div>
       <div class="tile" tabindex="0" data-name="b03"><div class="img"></div><div class="name">b03</div></div>
       <div class="tile" tabindex="0" data-name="b04"><div class="img"></div><div class="name">b04</div></div>
       <div class="tile" tabindex="0" data-name="b05"><div class="img"></div><div class="name">b05</div></div>
     </section>
+
+    <!-- Поле сообщения -->
+    <section class="order" aria-label="Заявка">
+      <p class="order-label">сообщение</p>
+      <textarea id="message" class="order-box" readonly></textarea>
+
+      <div class="actions">
+        <a id="tgLink" class="btn" href="#" target="_blank" rel="noopener noreferrer">Заказать в телеграм</a>
+        <p class="note">.</p>
+      </div>
+    </section>
   </main>
 
   <script>
-    // Назад: если есть история — history.back(), иначе на index.html
+    // --- настройки ---
+    const TELEGRAM_TARGET = "alkhlb";
+
+    // --- навигация назад ---
     document.getElementById("backBtn").addEventListener("click", () => {
       if (history.length > 1) history.back();
       else window.location.href = "index.html";
     });
 
-    // Селект: по одной выбранной плитке в каждой строке
-    document.querySelectorAll(".row").forEach((row) => {
-      const tiles = Array.from(row.querySelectorAll(".tile"));
+    const rows = Array.from(document.querySelectorAll(".row"));
+    const messageEl = document.getElementById("message");
+    const tgLink = document.getElementById("tgLink");
 
-      function selectTile(tile){
-        tiles.forEach(t => t.classList.toggle("is-selected", t === tile));
+    function shortName(name){
+      // h01 -> h1, b05 -> b5
+      const m = name.match(/^([a-zA-Z]+)0*([0-9]+)$/);
+      if (!m) return name;
+      return (m[1].toLowerCase() + String(parseInt(m[2], 10)));
+    }
+
+    function buildMessage(){
+      const selected = Array.from(document.querySelectorAll(".tile.is-selected"))
+        .map(t => t.dataset.name);
+
+      const h = selected
+        .filter(n => n.toLowerCase().startsWith("h"))
+        .map(shortName);
+
+      const b = selected
+        .filter(n => n.toLowerCase().startsWith("b"))
+        .map(shortName);
+
+      const parts = [];
+      if (h.length) parts.push(`плакальщицу ${h.join(", ")}`);
+      if (b.length) parts.push(`торс ${b.join(", ")}`);
+
+      if (!parts.length) return "Привет! Хочу взять плакальщицу …, торс ….";
+      return `Привет! Хочу взять ${parts.join(", ")}.`;
+    }
+
+    function refreshMessageAndLink(){
+      const text = buildMessage();
+      messageEl.value = text;
+      tgLink.href = `https://t.me/${encodeURIComponent(TELEGRAM_TARGET)}?text=${encodeURIComponent(text)}`;
+    }
+
+    // ЛОГИКА И/И: каждый тайл — независимый toggle (выбор добавляет, отжимание убирает)
+    document.querySelectorAll(".tile").forEach(tile => {
+      function toggle(){
+        tile.classList.toggle("is-selected");
+        refreshMessageAndLink();
       }
 
-      tiles.forEach(tile => {
-        tile.addEventListener("click", () => selectTile(tile));
-        tile.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            selectTile(tile);
-          }
-        });
+      tile.addEventListener("click", toggle);
+      tile.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          toggle();
+        }
       });
     });
+
+    // начальное состояние
+    refreshMessageAndLink();
   </script>
 </body>
 </html>
