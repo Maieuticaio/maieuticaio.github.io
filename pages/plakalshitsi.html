@@ -10,7 +10,10 @@
       --bg: #fff;
       --fg: #111;
 
-      --gap: 10px;
+      /* раздельные отступы */
+      --gap-top: 10px;     /* между квадратами в двух верхних строках */
+      --gap-bot: 10px;     /* между квадратами в нижней строке */
+      --gap-rows: 10px;    /* между первой и второй строкой */
 
       --tile-top: 200px;   /* верхние 2 строки */
       --tile-bot: 250px;   /* нижняя строка */
@@ -43,14 +46,19 @@
     /* горизонтальные ряды */
     .row{
       display: flex;
-      gap: var(--gap);
       overflow-x: auto;
       padding-bottom: 10px;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
+      gap: var(--gap); /* по умолчанию, переопределяем классами ниже */
     }
-    .row + .row{ margin-top: var(--gap); }
+
+    .row + .row{ margin-top: var(--gap-rows); }
     .row.third{ margin-top: 30px; }
+
+    /* разные gap для верхних и нижней строки */
+    .row.top{ --gap: var(--gap-top); }
+    .row.bottom{ --gap: var(--gap-bot); }
 
     /* плитки */
     .tile{
@@ -106,8 +114,8 @@
     }
 
     /* размеры по рядам */
-    .row.top   { --size: var(--tile-top); }
-    .row.third { --size: var(--tile-bot); }
+    .row.top    { --size: var(--tile-top); }
+    .row.bottom { --size: var(--tile-bot); }
 
     /* капля-назад */
     .back-drop{
@@ -195,7 +203,10 @@
     }
 
     @media (max-width: 560px){
-      :root{ --tile-top: 180px; --tile-bot: 220px; }
+      :root{
+        --tile-top: 180px;
+        --tile-bot: 220px;
+      }
       .back-drop{ right: 14px; bottom: 14px; width: 72px; height: 72px; }
       h1{ font-size: 18px; }
     }
@@ -214,7 +225,7 @@
            C77 35, 50 6, 50 6Z"
         fill="#111"
       />
-      <!-- маленькая “галочка-стрелка” влево: СДВИНУТА НИЖЕ И ЛЕВЕЕ -->
+      <!-- маленькая “галочка-стрелка” влево: сдвинута ниже и левее -->
       <path
         d="M52 47 L43 56 L52 65"
         fill="none"
@@ -248,11 +259,12 @@
     </section>
 
     <!-- Row 3: b01..b05 -->
-    <section class="row third" aria-label="b row">
+    <section class="row third bottom" aria-label="b row">
       <div class="tile" tabindex="0" data-name="b01"><div class="img"></div><div class="name">b01</div></div>
       <div class="tile" tabindex="0" data-name="b02"><div class="img"></div><div class="name">b02</div></div>
       <div class="tile" tabindex="0" data-name="b03"><div class="img"></div><div class="name">b03</div></div>
       <div class="tile" tabindex="0" data-name="b04"><div class="img"></div><div class="name">b04</div></div>
+      <div class="tile" tabindex="0" data-name="b05"><div class="img"></div><div class="name">b05</div></div>
     </section>
 
     <!-- Поле сообщения -->
@@ -270,14 +282,13 @@
   <script>
     // --- настройки ---
     const TELEGRAM_TARGET = "alkhlb";
+    const HOME_URL = "https://maieuticaio.github.io/shtuki";
 
-    // --- навигация назад ---
+    // --- навигация назад: всегда на главную ---
     document.getElementById("backBtn").addEventListener("click", () => {
-      if (history.length > 1) history.back();
-      else window.location.href = "index.html";
+      window.location.href = HOME_URL;
     });
 
-    const rows = Array.from(document.querySelectorAll(".row"));
     const messageEl = document.getElementById("message");
     const tgLink = document.getElementById("tgLink");
 
