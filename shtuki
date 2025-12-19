@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wall</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:#fff;
+      color:#111;
+    }
+
+    /* чистая “стена” без подложек/текста */
+    .wall{
+      position: relative;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* один объект сверху по центру */
+    .item{
+      position: absolute;
+      left: 50%;
+      top: 110px;
+      transform: translateX(-50%);
+      width: 340px;              /* текущий размер коробочки по ширине */
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .item a{
+      display:block;
+      text-decoration:none;
+      color:inherit;
+      outline:none;
+    }
+
+    /* без серых подложек и скруглений */
+    .media{
+      display:block;
+      width:100%;
+      height:auto;
+      transform-origin: 50% 0px; /* автоскейлится JS */
+      will-change: transform;
+    }
+
+    .item:hover .media{
+      animation: swing .9s ease-in-out infinite alternate;
+    }
+
+    @keyframes swing{
+      from { transform: rotate(-2.8deg); }
+      to   { transform: rotate( 2.8deg); }
+    }
+
+    @media (max-width: 520px){
+      .item{ width: 78vw; top: 90px; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wall" aria-label="Wall">
+    <div class="item">
+      <a href="box1.html" aria-label="box1">
+        <img
+          class="media"
+          id="box1"
+          src="https://maieuticaio.github.io/folder/store/puppets/box1.png"
+          alt="box1"
+        />
+      </a>
+    </div>
+  </main>
+
+  <script>
+    // 170px — точка оси вращения НА ИСХОДНОМ изображении
+    const ORIGIN_Y_ON_SOURCE = 170;
+
+    const img = document.getElementById("box1");
+
+    function setScaledOrigin() {
+      // ждём, пока браузер узнает натуральный размер изображения
+      if (!img.naturalWidth) return;
+
+      // масштаб по ширине (пропорции сохраняются, поэтому достаточно)
+      const scale = img.clientWidth / img.naturalWidth;
+
+      // пересчитываем ось вращения пропорционально уменьшению/увеличению
+      const originY = ORIGIN_Y_ON_SOURCE * scale;
+
+      img.style.transformOrigin = `50% ${originY}px`;
+    }
+
+    if (img.complete) setScaledOrigin();
+    else img.addEventListener("load", setScaledOrigin);
+
+    window.addEventListener("resize", setScaledOrigin);
+  </script>
+</body>
+</html>
