@@ -241,7 +241,7 @@
   </button>
 
   <main class="wrap">
-    <h1>Плакальщицы coming soon</h1>
+    <h1>Плакальщицы</h1>
 
     <!-- Row 1: h01..h05 -->
     <section class="row top" aria-label="h row 1">
@@ -284,19 +284,19 @@
     <!-- Row 3: b01..b05 -->
     <section class="row third bottom" aria-label="b row">
       <div class="tile" tabindex="0" data-name="01" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
-        <div class="img"></div><div class="name">01</div>
+        <div class="img"></div><div class="name"></div>
       </div>
       <div class="tile" tabindex="0" data-name="02" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
-        <div class="img"></div><div class="name">02</div>
+        <div class="img"></div><div class="name"></div>
       </div>
       <div class="tile" tabindex="0" data-name="b03" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
-        <div class="img"></div><div class="name">03</div>
+        <div class="img"></div><div class="name"></div>
       </div>
       <div class="tile" tabindex="0" data-name="b04" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
-        <div class="img"></div><div class="name">04</div>
+        <div class="img"></div><div class="name"></div>
       </div>
       <div class="tile" tabindex="0" data-name="b05" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
-        <div class="img"></div><div class="name">05</div>
+        <div class="img"></div><div class="name"></div>
       </div>
     </section>
 
@@ -317,6 +317,10 @@
     const TELEGRAM_TARGET = "alkhlb";
     const HOME_URL = "https://maieuticaio.github.io/shtuki";
 
+    // цены
+    const PRICE_TOP = 1000;
+    const PRICE_BOTTOM = 3000;
+
     // --- навигация назад: всегда на главную ---
     document.getElementById("backBtn").addEventListener("click", () => {
       window.location.href = HOME_URL;
@@ -325,20 +329,35 @@
     const messageEl = document.getElementById("message");
     const tgLink = document.getElementById("tgLink");
 
-    // Проставляем картинки из data-img (если ты вставишь реальную ссылку)
+    // Проставляем картинки из data-img
     document.querySelectorAll(".tile").forEach(tile => {
       const url = tile.dataset.img;
-      if (url && !url.startsWith("PUT_IMAGE_URL_")) {
+      if (url) {
         const imgDiv = tile.querySelector(".img");
         imgDiv.style.backgroundImage = `url("${url}")`;
       }
     });
 
     function shortName(name){
-      // h01 -> h1, b05 -> b5
-      const m = name.match(/^([a-zA-Z]+)0*([0-9]+)$/);
+      // h01 -> h1, b05 -> b5, 02 -> 2
+      const m = name.match(/^([a-zA-Z]*?)0*([0-9]+)$/);
       if (!m) return name;
-      return (m[1].toLowerCase() + String(parseInt(m[2], 10)));
+      const prefix = (m[1] || "").toLowerCase();
+      return prefix + String(parseInt(m[2], 10));
+    }
+
+    function calcTotal(){
+      let total = 0;
+
+      document.querySelectorAll(".tile.is-selected").forEach(tile => {
+        const row = tile.closest(".row");
+        const isTop = row && row.classList.contains("top");
+        const isBottom = row && row.classList.contains("bottom");
+        if (isTop) total += PRICE_TOP;
+        else if (isBottom) total += PRICE_BOTTOM;
+      });
+
+      return total;
     }
 
     function buildMessage(){
@@ -346,19 +365,23 @@
         .map(t => t.dataset.name);
 
       const h = selected
-        .filter(n => n.toLowerCase().startsWith("h"))
+        .filter(n => String(n).toLowerCase().startsWith("h"))
         .map(shortName);
 
+      // нижний ряд у тебя местами без "b" (01/02), поэтому считаем всё не-h как торсы
       const b = selected
-        .filter(n => n.toLowerCase().startsWith("b"))
+        .filter(n => !String(n).toLowerCase().startsWith("h"))
         .map(shortName);
 
       const parts = [];
       if (h.length) parts.push(`плакальщицу ${h.join(", ")}`);
       if (b.length) parts.push(`торс ${b.join(", ")}`);
 
-      if (!parts.length) return "Привет! Хочу взять плакальщицу …, торс ….";
-      return `Привет! Хочу взять ${parts.join(", ")}.`;
+      const total = calcTotal();
+      const totalLine = `Заказ на сумму ${total}р.`;
+
+      if (!parts.length) return `Привет! Хочу взять плакальщицу …, торс ….\n${totalLine}`;
+      return `Привет! Хочу взять ${parts.join(", ")}.\n${totalLine}`;
     }
 
     function refreshMessageAndLink(){
