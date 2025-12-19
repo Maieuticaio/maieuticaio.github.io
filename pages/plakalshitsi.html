@@ -13,7 +13,7 @@
       /* раздельные отступы */
       --gap-top: 10px;     /* между квадратами в двух верхних строках */
       --gap-bot: 13px;     /* между квадратами в нижней строке */
-      --gap-rows: 0px;    /* между первой и второй строкой */
+      --gap-rows: 0px;     /* между первой и второй строкой */
 
       --tile-top: 200px;   /* верхние 2 строки */
       --tile-bot: 250px;   /* нижняя строка */
@@ -50,7 +50,7 @@
       padding-bottom: 10px;
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
-      gap: var(--gap); /* по умолчанию, переопределяем классами ниже */
+      gap: var(--gap);
     }
 
     .row + .row{ margin-top: var(--gap-rows); }
@@ -73,13 +73,16 @@
       outline: none;
     }
 
-    /* место под изображение */
+    /* картинка */
     .tile .img{
       position:absolute;
       inset:0;
       background:
         linear-gradient(135deg, rgba(0,0,0,.06), rgba(0,0,0,0) 60%),
         var(--tile-bg);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
     }
 
     /* подпись */
@@ -225,7 +228,7 @@
            C77 35, 50 6, 50 6Z"
         fill="#111"
       />
-      <!-- маленькая “галочка-стрелка” влево: сдвинута ниже и левее -->
+      <!-- маленькая “галочка-стрелка” влево -->
       <path
         d="M52 47 L43 56 L52 65"
         fill="none"
@@ -242,28 +245,59 @@
 
     <!-- Row 1: h01..h05 -->
     <section class="row top" aria-label="h row 1">
-      <div class="tile" tabindex="0" data-name="h01"><div class="img"></div><div class="name">h01</div></div>
-      <div class="tile" tabindex="0" data-name="h02"><div class="img"></div><div class="name">h02</div></div>
-      <div class="tile" tabindex="0" data-name="h03"><div class="img"></div><div class="name">h03</div></div>
-      <div class="tile" tabindex="0" data-name="h04"><div class="img"></div><div class="name">h04</div></div>
-      <div class="tile" tabindex="0" data-name="h05"><div class="img"></div><div class="name">h05</div></div>
+      <div class="tile" tabindex="0" data-name="h01" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+        <div class="img"></div><div class="name">грустьпечаль</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="h02" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+        <div class="img"></div><div class="name">пятнами пошла</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="h03" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+        <div class="img"></div><div class="name">клетка</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="h04" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+        <div class="img"></div><div class="name">пайетка</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="h05" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+        <div class="img"></div><div class="name">мурашки</div>
+      </div>
     </section>
 
     <!-- Row 2: h06..h10 -->
     <section class="row top" aria-label="h row 2">
-      <div class="tile" tabindex="0" data-name="h06"><div class="img"></div><div class="name">h06</div></div>
-      <div class="tile" tabindex="0" data-name="h07"><div class="img"></div><div class="name">h07</div></div>
-      <div class="tile" tabindex="0" data-name="h08"><div class="img"></div><div class="name">h08</div></div>
-      <div class="tile" tabindex="0" data-name="h09"><div class="img"></div><div class="name">h09</div></div>
-      <div class="tile" tabindex="0" data-name="h10"><div class="img"></div><div class="name">h10</div></div>
+      <div class="tile" tabindex="0" data-name="h06" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+        <div class="img"></div><div class="name">тосказеленая</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="h07" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+        <div class="img"></div><div class="name">глазасверкают</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="h08" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+        <div class="img"></div><div class="name">зарумянилась</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="h09" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+        <div class="img"></div><div class="name">кровькголове</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="h10" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+        <div class="img"></div><div class="name">соплислезы</div>
+      </div>
     </section>
 
     <!-- Row 3: b01..b05 -->
     <section class="row third bottom" aria-label="b row">
-      <div class="tile" tabindex="0" data-name="b01"><div class="img"></div><div class="name">b01</div></div>
-      <div class="tile" tabindex="0" data-name="b02"><div class="img"></div><div class="name">b02</div></div>
-      <div class="tile" tabindex="0" data-name="b03"><div class="img"></div><div class="name">b03</div></div>
-      <div class="tile" tabindex="0" data-name="b04"><div class="img"></div><div class="name">b04</div></div>
+      <div class="tile" tabindex="0" data-name="01" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
+        <div class="img"></div><div class="name">01</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="02" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
+        <div class="img"></div><div class="name">02</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="b03" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
+        <div class="img"></div><div class="name">03</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="b04" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
+        <div class="img"></div><div class="name">04</div>
+      </div>
+      <div class="tile" tabindex="0" data-name="b05" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
+        <div class="img"></div><div class="name">05</div>
+      </div>
     </section>
 
     <!-- Поле сообщения -->
@@ -290,6 +324,15 @@
 
     const messageEl = document.getElementById("message");
     const tgLink = document.getElementById("tgLink");
+
+    // Проставляем картинки из data-img (если ты вставишь реальную ссылку)
+    document.querySelectorAll(".tile").forEach(tile => {
+      const url = tile.dataset.img;
+      if (url && !url.startsWith("PUT_IMAGE_URL_")) {
+        const imgDiv = tile.querySelector(".img");
+        imgDiv.style.backgroundImage = `url("${url}")`;
+      }
+    });
 
     function shortName(name){
       // h01 -> h1, b05 -> b5
@@ -324,7 +367,7 @@
       tgLink.href = `https://t.me/${encodeURIComponent(TELEGRAM_TARGET)}?text=${encodeURIComponent(text)}`;
     }
 
-    // ЛОГИКА И/И: каждый тайл — независимый toggle (выбор добавляет, отжимание убирает)
+    // ЛОГИКА И/И: каждый тайл — независимый toggle
     document.querySelectorAll(".tile").forEach(tile => {
       function toggle(){
         tile.classList.toggle("is-selected");
