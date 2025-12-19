@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>box1</title>
+
+  <style>
+    :root{
+      --bg: #fff;
+      --fg: #111;
+      --gap: 15px;
+      --size: 250px;
+    }
+
+    *{ box-sizing: border-box; }
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--fg);
+    }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 18px 80px;
+    }
+
+    h1{
+      margin: 0 0 18px;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+
+    /* rows */
+    .row{
+      display: flex;
+      gap: var(--gap);
+      overflow-x: auto;
+      padding-bottom: 10px; /* чтобы скроллбар не лип к карточкам */
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .row + .row{ margin-top: var(--gap); }
+    .row.third{ margin-top: 30px; }
+
+    /* items */
+    .tile{
+      flex: 0 0 auto;
+      width: var(--size);
+      height: var(--size);
+      border-radius: 0px; /* квадраты */
+      background: #f2f2f2;
+      position: relative;
+      cursor: pointer;
+      user-select: none;
+      scroll-snap-align: start;
+      outline: none;
+    }
+
+    /* место под изображение */
+    .tile .img{
+      position:absolute;
+      inset:0;
+      background:
+        linear-gradient(135deg, rgba(0,0,0,.06), rgba(0,0,0,0) 60%),
+        #f2f2f2;
+    }
+
+    /* подпись */
+    .tile .name{
+      position:absolute;
+      left: 10px;
+      bottom: 10px;
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: lowercase;
+      color: rgba(0,0,0,.65);
+      background: rgba(255,255,255,.75);
+      padding: 6px 10px;
+      border-radius: 999px;
+      backdrop-filter: blur(6px);
+    }
+
+    /* индикация селекта: небольшое затемнение */
+    .tile::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: rgba(0,0,0,.14);
+      opacity: 0;
+      transition: opacity .12s ease;
+      pointer-events: none;
+    }
+    .tile.is-selected::after{ opacity: 1; }
+
+    /* фокус клавиатурой */
+    .tile:focus-visible{
+      box-shadow: 0 0 0 3px rgba(0,0,0,.25);
+    }
+
+    /* Капля-назад */
+    .back-drop{
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      width: 78px;
+      height: 78px;
+      border: none;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      z-index: 9999; /* нависает над всем */
+      -webkit-tap-highlight-color: transparent;
+    }
+    .back-drop svg{
+      width: 100%;
+      height: 100%;
+      display:block;
+      filter: drop-shadow(0 10px 25px rgba(0,0,0,.18));
+    }
+    .back-drop:focus-visible{
+      outline: none;
+    }
+    .back-drop:focus-visible svg{
+      filter: drop-shadow(0 10px 25px rgba(0,0,0,.18)) drop-shadow(0 0 0 rgba(0,0,0,0));
+    }
+    .back-drop:hover svg{
+      transform: translateY(-1px);
+      transition: transform .12s ease;
+    }
+    .back-drop:active svg{
+      transform: translateY(0px) scale(.98);
+      transition: transform .06s ease;
+    }
+
+    @media (max-width: 560px){
+      :root{ --size: 220px; }
+      .back-drop{ right: 14px; bottom: 14px; width: 72px; height: 72px; }
+      h1{ font-size: 18px; }
+    }
+  </style>
+</head>
+
+<body>
+  <button class="back-drop" type="button" aria-label="Назад" title="Назад" id="backBtn">
+    <!-- “капля” + галочка влево (chevron) -->
+    <svg viewBox="0 0 100 100" aria-hidden="true">
+      <!-- капля -->
+      <path
+        d="M50 6
+           C50 6, 23 35, 23 56
+           C23 74, 35 90, 50 90
+           C65 90, 77 74, 77 56
+           C77 35, 50 6, 50 6Z"
+        fill="#111"
+      />
+      <!-- стрелка-галочка влево -->
+      <path
+        d="M58 38 L44 50 L58 62"
+        fill="none"
+        stroke="#fff"
+        stroke-width="7"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+    </svg>
+  </button>
+
+  <main class="wrap">
+    <h1>плакальщицы</h1>
+
+    <!-- Row 1: h01..h05 -->
+    <section class="row" data-row="h1" aria-label="h row 1">
+      <div class="tile" tabindex="0" data-name="h01"><div class="img"></div><div class="name">h01</div></div>
+      <div class="tile" tabindex="0" data-name="h02"><div class="img"></div><div class="name">h02</div></div>
+      <div class="tile" tabindex="0" data-name="h03"><div class="img"></div><div class="name">h03</div></div>
+      <div class="tile" tabindex="0" data-name="h04"><div class="img"></div><div class="name">h04</div></div>
+      <div class="tile" tabindex="0" data-name="h05"><div class="img"></div><div class="name">h05</div></div>
+    </section>
+
+    <!-- Row 2: h06..h10 -->
+    <section class="row" data-row="h2" aria-label="h row 2">
+      <div class="tile" tabindex="0" data-name="h06"><div class="img"></div><div class="name">h06</div></div>
+      <div class="tile" tabindex="0" data-name="h07"><div class="img"></div><div class="name">h07</div></div>
+      <div class="tile" tabindex="0" data-name="h08"><div class="img"></div><div class="name">h08</div></div>
+      <div class="tile" tabindex="0" data-name="h09"><div class="img"></div><div class="name">h09</div></div>
+      <div class="tile" tabindex="0" data-name="h10"><div class="img"></div><div class="name">h10</div></div>
+    </section>
+
+    <!-- Row 3 (margin-top 30): b01..b05 -->
+    <section class="row third" data-row="b" aria-label="b row">
+      <div class="tile" tabindex="0" data-name="b01"><div class="img"></div><div class="name">b01</div></div>
+      <div class="tile" tabindex="0" data-name="b02"><div class="img"></div><div class="name">b02</div></div>
+      <div class="tile" tabindex="0" data-name="b03"><div class="img"></div><div class="name">b03</div></div>
+      <div class="tile" tabindex="0" data-name="b04"><div class="img"></div><div class="name">b04</div></div>
+      <div class="tile" tabindex="0" data-name="b05"><div class="img"></div><div class="name">b05</div></div>
+    </section>
+  </main>
+
+  <script>
+    // Назад: если есть история — history.back(), иначе на index.html
+    document.getElementById("backBtn").addEventListener("click", () => {
+      if (history.length > 1) history.back();
+      else window.location.href = "index.html";
+    });
+
+    // Селект: по одной выбранной плитке в каждой строке
+    document.querySelectorAll(".row").forEach((row) => {
+      const tiles = Array.from(row.querySelectorAll(".tile"));
+
+      function selectTile(tile){
+        tiles.forEach(t => t.classList.toggle("is-selected", t === tile));
+      }
+
+      tiles.forEach(tile => {
+        tile.addEventListener("click", () => selectTile(tile));
+        tile.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            selectTile(tile);
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>
