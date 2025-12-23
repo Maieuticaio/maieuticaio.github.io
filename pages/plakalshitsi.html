@@ -7,7 +7,7 @@
 
   <style>
     :root{
-      --bg: #fff;
+      --bg: #f2f2f2;
       --fg: #111;
 
       /* раздельные отступы */
@@ -85,20 +85,28 @@
       background-repeat: no-repeat;
     }
 
-    /* подпись */
-    .tile .name{
-      position:absolute;
-      left: 10px;
-      bottom: 10px;
-      font-size: 12px;
-      letter-spacing: .08em;
-      text-transform: lowercase;
-      color: rgba(0,0,0,.65);
-      background: rgba(255,255,255,.75);
-      padding: 6px 10px;
-      border-radius: 999px;
-      backdrop-filter: blur(6px);
-    }
+   /* подпись — по центру внизу */
+.tile .name{
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+
+  font-size: 12px;
+  letter-spacing: .08em;
+  text-transform: lowercase;
+  color: rgba(0,0,0,.65);
+  background: rgba(255,255,255,.75);
+  padding: 6px 10px;
+  border-radius: 999px;
+  backdrop-filter: blur(6px);
+
+  max-width: calc(100% - 20px);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
     /* индикация селекта: лёгкое затемнение */
     .tile::after{
@@ -242,52 +250,52 @@
   </button>
 
   <main class="wrap">
-    <h1>Плакальщицы coming soon</h1>
+    <h1>Плакальщицы</h1>
 
     <!-- Row 1: h01..h05 -->
     <section class="row top" aria-label="h row 1">
-      <div class="tile" tabindex="0" data-name="h01" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
-        <div class="img"></div><div class="name">грустьпечаль</div>
+      <div class="tile" tabindex="0" data-name="h01" data-img="https://maieuticaio.github.io/folder/store/puppets/h1.png">
+        <div class="img"></div><div class="name">грусть печаль</div>
       </div>
-      <div class="tile" tabindex="0" data-name="h02" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
-        <div class="img"></div><div class="name">пятнами пошла</div>
+      <div class="tile" tabindex="0" data-name="h02" data-img="https://maieuticaio.github.io/folder/store/puppets/h2.png">
+        <div class="img"></div><div class="name">щеки горят</div>
       </div>
-      <div class="tile" tabindex="0" data-name="h03" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
-        <div class="img"></div><div class="name">клетка</div>
+      <div class="tile" tabindex="0" data-name="h03" data-img="https://maieuticaio.github.io/folder/store/puppets/h3.png">
+        <div class="img"></div><div class="name">злюсь</div>
       </div>
-      <div class="tile" tabindex="0" data-name="h04" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
-        <div class="img"></div><div class="name">пайетка</div>
+      <div class="tile" tabindex="0" data-name="h04" data-img="https://maieuticaio.github.io/folder/store/puppets/h4.png">
+        <div class="img"></div><div class="name">кровь к голове</div>
       </div>
-      <div class="tile" tabindex="0" data-name="h05" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
+      <div class="tile" tabindex="0" data-name="h05" data-img="https://maieuticaio.github.io/folder/store/puppets/h5.png">
         <div class="img"></div><div class="name">мурашки</div>
       </div>
     </section>
 
     <!-- Row 2: h06..h10 -->
     <section class="row top" aria-label="h row 2">
-      <div class="tile" tabindex="0" data-name="h06" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
-        <div class="img"></div><div class="name">тосказеленая</div>
+      <div class="tile" tabindex="0" data-name="h06" data-img="https://maieuticaio.github.io/folder/store/puppets/h6.png">
+        <div class="img"></div><div class="name">тоска зеленая</div>
       </div>
-      <div class="tile" tabindex="0" data-name="h07" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
-        <div class="img"></div><div class="name">глазасверкают</div>
+      <div class="tile" tabindex="0" data-name="h07" data-img="https://maieuticaio.github.io/folder/store/puppets/h7.png">
+        <div class="img"></div><div class="name">пятнами пошла</div>
       </div>
-      <div class="tile" tabindex="0" data-name="h08" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
-        <div class="img"></div><div class="name">зарумянилась</div>
+      <div class="tile" tabindex="0" data-name="h08" data-img="https://maieuticaio.github.io/folder/store/puppets/h8.png">
+        <div class="img"></div><div class="name">грусть печаль</div>
       </div>
-      <div class="tile" tabindex="0" data-name="h09" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
-        <div class="img"></div><div class="name">кровькголове</div>
+      <div class="tile" tabindex="0" data-name="h09" data-img="https://maieuticaio.github.io/folder/store/puppets/h9.png">
+        <div class="img"></div><div class="name">глаза сверкают</div>
       </div>
-      <div class="tile" tabindex="0" data-name="h10" data-img="https://maieuticaio.github.io/folder/store/puppets/h0.png">
-        <div class="img"></div><div class="name">соплислезы</div>
+      <div class="tile" tabindex="0" data-name="h10" data-img="https://maieuticaio.github.io/folder/store/puppets/h10.png">
+        <div class="img"></div><div class="name">как за решеткой</div>
       </div>
     </section>
 
     <!-- Row 3: b01..b05 -->
     <section class="row third bottom" aria-label="b row">
-      <div class="tile" tabindex="0" data-name="01" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
+      <div class="tile" tabindex="0" data-name="01" data-img="https://maieuticaio.github.io/folder/store/puppets/b1.png">
         <div class="img"></div><div class="name"></div>
       </div>
-      <div class="tile" tabindex="0" data-name="02" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
+      <div class="tile" tabindex="0" data-name="02" data-img="https://maieuticaio.github.io/folder/store/puppets/b2.png">
         <div class="img"></div><div class="name"></div>
       </div>
       <div class="tile" tabindex="0" data-name="b03" data-img="https://maieuticaio.github.io/folder/store/puppets/b0.png">
