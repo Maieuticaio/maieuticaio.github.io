@@ -218,7 +218,38 @@
       pointer-events: auto;
     }
     
-    
+{
+  height: 200px;          /* ← стандартный размер media */
+  flex: 0 0 auto;
+  position: relative;
+  cursor: pointer;
+}
+
+.media.video.video-link a {
+  display: block;
+  height: 100%;
+}
+
+.media.video.video-link img {
+  height: 100%;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+/* иконка play */
+.media.video.video-link::after {
+  content: '▶';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: #fff;
+  background: none;
+  pointer-events: none;
+}
     
     .media iframe {
       width: 100%;
@@ -632,29 +663,30 @@
       </div>
     </article>
 
-    <article class="block">
-      <h2 class="block__title">География</h2>
+<article class="block">
+  <h2 class="block__title">География</h2>
 
-      <div class="gallery taller2" data-gallery>
-        <div class="media video video-embed">
-          <iframe
-            src="https://www.youtube.com/embed/BF9R6ZQqAv8"
-            title="География — демонстрация"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-            allowfullscreen
-            referrerpolicy="strict-origin-when-cross-origin">
-          </iframe>
-        </div>
-      </div>
+  <div class="gallery" data-gallery>
+    <a
+      class="media video video-link"
+      href="https://www.youtube.com/watch?v=BF9R6ZQqAv8"
+      target="_blank"
+      rel="noopener"
+    >
+      <img
+        src="https://maieuticaio.github.io/folder/ichi/promogeo.png"
+        alt="География — демонстрация"
+        loading="lazy"
+      >
+    </a>
+  </div>
 
-      <div class="block__desc">
-        <p>
-          Создание стиля иллюстраций и анимаций для предмета «География», участие в
-          разработке концепций уроков и визуального повествования, работа с методистами
-          и дизайнерами над учебными интерактивами, средняя и старшая школа Учи.ру.
-        </p>
-      </div>
-    </article>
+  <div class="block__desc">
+    Создание стиля иллюстраций и анимаций для предмета «География», участие в разработке
+    концепций уроков и визуального повествования, работа с методистами и дизайнерами
+    над учебными интерактивами, средняя и старшая школа Учи.ру.
+  </div>
+</article>
 
   </div>
 </section>
