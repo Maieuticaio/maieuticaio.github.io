@@ -218,7 +218,6 @@ body {
 <!-- ARTIST -->
 <div class="artist-page" id="artistPage">
 
-  <div class="back" id="back">← назад</div>
   
 
   <section class="hero">
@@ -244,7 +243,7 @@ body {
              C 10 64, 2 54, 2 40
              C 2 28, 10 16, 20 0 Z" />
   </svg>
-  <span class="drop-arrow">↑</span>
+  <span class="drop-arrow"><</span>
 </button>
 </div>
 
@@ -388,6 +387,7 @@ window.addEventListener('load', () => {
       interview.innerHTML = a.interview;
 
       artistPage.classList.add('active');
+      showBackDrop(true);
 
       clearInterval(timer);
       timer = setInterval(() => next(a), 3000);
@@ -405,19 +405,16 @@ window.addEventListener('load', () => {
     heroImage.src = a.images[slide];
     artistQuote.textContent = a.quotes[slide];
   }
+function showBackDrop(show) {
+  toTop.style.display = show ? 'flex' : 'none';
+}
 
-document.getElementById('back').onclick = () => {
+toTop.onclick = () => {
   artistPage.classList.remove('active');
   clearInterval(timer);
   artistPage.scrollTo(0, 0);
+  showBackDrop(false);
 };
-
-  toTop.onclick = () =>
-    artistPage.scrollTo({ top: 0, behavior: 'smooth' });
-
-  artistPage.addEventListener('scroll', () => {
-    toTop.style.display = artistPage.scrollTop > 200 ? 'flex' : 'none';
-  });
 </script>
 
 </body>
