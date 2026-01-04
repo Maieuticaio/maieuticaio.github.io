@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Галерея художников</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #fff;
+      color: #111;
+      overflow: hidden;
+    }
+
+    /* ================= MAIN (КАРУСЕЛЬ) ================= */
+    .page {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      transition: opacity 0.4s ease;
+    }
+
+    .page.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .gallery {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      gap: 80px;
+      padding: 0 20vw;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+    }
+
+    .gallery::-webkit-scrollbar { display: none; }
+
+    .artist-card {
+      flex: 0 0 320px;
+      text-align: center;
+      scroll-snap-align: center;
+      cursor: pointer;
+      opacity: 0.6;
+      transform: scale(0.92);
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+
+    .artist-card.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .artist-card img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 14px;
+    }
+
+    .name {
+      margin-top: 14px;
+      font-size: 1rem;
+    }
+
+    .quote {
+      margin-top: 6px;
+      font-style: italic;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    /* ================= ARTIST PAGE ================= */
+    .artist-page {
+      position: fixed;
+      inset: 0;
+      overflow-y: auto;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .artist-page.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    .image-frame {
+      width: 360px;
+      max-width: 90vw;
+      aspect-ratio: 1 / 1;
+      cursor: pointer;
+    }
+
+    .image-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 16px;
+    }
+
+    .hero .name {
+      font-size: 1.2rem;
+      margin-top: 14px;
+    }
+
+    .hero .quote {
+      margin-top: 10px;
+      min-height: 3em;
+    }
+
+    audio {
+      margin-top: 20px;
+      width: 260px;
+    }
+
+    .interview {
+      max-width: 720px;
+      padding: 80px 20px 160px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .interview p {
+      margin-bottom: 1.4em;
+    }
+
+    /* ================= CONTROLS ================= */
+    .back {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      font-size: 0.9rem;
+      color: #666;
+      cursor: pointer;
+      z-index: 20;
+    }
+
+    .to-top {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: none;
+      background: #111;
+      color: #fff;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 20;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ================= MAIN ================= -->
+<div class="page" id="mainPage">
+  <div class="gallery" id="gallery">
+
+    <div class="artist-card" data-artist="0">
+      <img src="https://picsum.photos/600?1">
+      <div class="name">Юлия Живичина</div>
+      <div class="quote">«Работа — это способ быть честной»</div>
+    </div>
+
+    <div class="artist-card" data-artist="1">
+      <img src="https://picsum.photos/600?2">
+      <div class="name">Анна Иванова</div>
+      <div class="quote">«Искусство не обязано быть удобным»</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= ARTIST ================= -->
+<div class="artist-page" id="artistPage">
+
+  <div class="back" id="back">← назад</div>
+
+  <section class="hero">
+    <div class="image-frame" id="imageFrame">
+      <img id="heroImage">
+    </div>
+
+    <div class="name" id="artistName"></div>
+    <div class="quote" id="artistQuote"></div>
+
+    <audio controls>
+      <source src="audio.mp3" type="audio/mpeg">
+    </audio>
+  </section>
+
+  <section class="interview" id="interview"></section>
+
+  <button class="to-top" id="toTop">↑</button>
+</div>
+
+<script>
+  /* ===== DATA ===== */
+  const artists = [
+    {
+      name: "Юлия Живичина",
+      images: [
+        "https://picsum.photos/600?1",
+        "https://picsum.photos/600?11",
+        "https://picsum.photos/600?12"
+      ],
+      quotes: [
+        "«Работа — это способ быть честной»",
+        "«Я не объясняю, я присутствую»",
+        "«Важно не украшать»"
+      ],
+      interview: `
+        <p>Я никогда не думала о себе как о художнике в классическом смысле.</p>
+        <p>Работа всегда начинается с внутреннего напряжения.</p>
+        <p>Современное искусство для меня — форма присутствия.</p>
+      `
+    },
+    {
+      name: "Анна Иванова",
+      images: [
+        "https://picsum.photos/600?2",
+        "https://picsum.photos/600?21",
+        "https://picsum.photos/600?22"
+      ],
+      quotes: [
+        "«Искусство не обязано быть удобным»",
+        "«Я работаю с уязвимостью»",
+        "«Тишина — часть формы»"
+      ],
+      interview: `
+        <p>Меня интересует пограничное состояние.</p>
+        <p>Материал — это свидетель.</p>
+        <p>Я не ищу одобрения.</p>
+      `
+    }
+  ];
+
+  /* ===== MAIN SNAP ===== */
+  const cards = document.querySelectorAll('.artist-card');
+  const gallery = document.getElementById('gallery');
+
+  function updateActive() {
+    const center = window.innerWidth / 2;
+    cards.forEach(c => {
+      const r = c.getBoundingClientRect();
+      c.classList.toggle('active', Math.abs(center - (r.left + r.width/2)) < r.width/2);
+    });
+  }
+
+  gallery.addEventListener('scroll', updateActive);
+  window.addEventListener('load', updateActive);
+
+  /* ===== TRANSITION ===== */
+  const mainPage = document.getElementById('mainPage');
+  const artistPage = document.getElementById('artistPage');
+
+  const heroImage = document.getElementById('heroImage');
+  const artistName = document.getElementById('artistName');
+  const artistQuote = document.getElementById('artistQuote');
+  const interview = document.getElementById('interview');
+  const imageFrame = document.getElementById('imageFrame');
+
+  let slide = 0;
+  let timer;
+
+  cards.forEach(card => {
+    card.onclick = () => openArtist(+card.dataset.artist);
+  });
+
+  function openArtist(id) {
+    const a = artists[id];
+    slide = 0;
+
+    heroImage.src = a.images[0];
+    artistName.textContent = a.name;
+    artistQuote.textContent = a.quotes[0];
+    interview.innerHTML = a.interview;
+
+    mainPage.classList.add('hidden');
+    artistPage.classList.add('active');
+
+    clearInterval(timer);
+    timer = setInterval(() => nextSlide(a), 3000);
+
+    imageFrame.onclick = () => {
+      clearInterval(timer);
+      nextSlide(a);
+      timer = setInterval(() => nextSlide(a), 3000);
+    };
+  }
+
+  function nextSlide(a) {
+    slide = (slide + 1) % a.images.length;
+    heroImage.src = a.images[slide];
+    artistQuote.textContent = a.quotes[slide];
+  }
+
+  document.getElementById('back').onclick = () => {
+    artistPage.classList.remove('active');
+    mainPage.classList.remove('hidden');
+    clearInterval(timer);
+    window.scrollTo(0,0);
+  };
+
+document.getElementById('toTop').onclick = () => {
+  document.getElementById('artistPage')
+    .scrollTo({ top: 0, behavior: 'smooth' });
+};
+</script>
+
+</body>
+</html>
