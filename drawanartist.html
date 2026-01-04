@@ -7,14 +7,14 @@
 
   <style>
     * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #fff;
-      color: #111;
-      overflow: hidden;
-    }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #fff;
+  color: #111;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
 
     /* ================= MAIN ================= */
     .page {
@@ -34,13 +34,18 @@
   display: flex;
   align-items: center;
   gap: 80px;
-  padding: 0;                 /* ← УБРАНО */
+  padding: 0;
+  padding-inline: calc(50vw - 160px);
   overflow-x: auto;
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
+
 }
+
 
 .spacer {
   flex: 0 0 calc(50vw - 160px);
+    scroll-snap-align: none;
   /* 160px = половина ширины карточки (320 / 2) */
 }
 
@@ -194,7 +199,6 @@
 
 <!-- MAIN -->
 <div class="gallery" id="gallery">
-  <div class="spacer"></div>
 
   <div class="artist-card" data-artist="0">
     <img src="https://picsum.photos/600?1">
@@ -215,6 +219,7 @@
 <div class="artist-page" id="artistPage">
 
   <div class="back" id="back">← назад</div>
+  
 
   <section class="hero">
     <div class="image-frame" id="imageFrame">
@@ -292,52 +297,67 @@
         <p>Искусство — форма присутствия.</p>
       `
     }
+
+  
+  ,
+{
+  name: "Следующий художник",
+  images: [
+    "https://picsum.photos/600?2",
+    "https://picsum.photos/600?21",
+    "https://picsum.photos/600?22"
+  ],
+  quotes: [
+    "«Искусство не обязано быть удобным»",
+    "«Форма важнее объяснений»",
+    "«Работа начинается с тишины»"
+  ],
+  interview: `
+    <p><strong>Это рыба.</strong> Здесь будет текст второго художника. Страница полностью рабочая, структура идентична странице Юлии.</p>
+
+    <p>Этот текст нужен только для проверки навигации, верстки, ритма и поведения страницы.</p>
+
+    <p>Сюда позже можно вставить настоящее интервью без каких-либо правок в коде.</p>
+
+    <p>Важно: абзацы, отступы и выравнивание работают так же, как на первой странице.</p>
+  `
+}
+
   ];
 
 const cards = document.querySelectorAll('.artist-card');
 const gallery = document.getElementById('gallery');
+gallery.addEventListener('wheel', e => {
+  if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+  gallery.scrollLeft += e.deltaY;
+});
 
 function updateActive() {
-  const centerX = window.innerWidth / 2;
+  const galleryRect = gallery.getBoundingClientRect();
+  const centerX = galleryRect.left + galleryRect.width / 2;
 
   let bestCard = null;
   let bestDistance = Infinity;
 
-cards.forEach(card => {
-  card.onclick = () => {
-    const a = artists[+card.dataset.artist];
-    slide = 0;
+  cards.forEach(card => {
+    const rect = card.getBoundingClientRect();
+    const cardCenter = rect.left + rect.width / 2;
+    const distance = Math.abs(cardCenter - centerX);
 
-    heroImage.src = a.images[0];
-    artistName.textContent = a.name;
-    artistQuote.textContent = a.quotes[0];
-    interview.innerHTML = a.interview;
-
-    artistPage.classList.add('active');
-
-    clearInterval(timer);
-    timer = setInterval(() => next(a), 3000);
-  };
-});
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestCard = card;
+    }
+  });
 
   cards.forEach(card => {
     card.classList.toggle('active', card === bestCard);
   });
-
-
-
-  // если вдруг ни одной слева (крайний случай) — берём самую левую
-  if (!bestCard && cards.length) {
-    bestCard = cards[0];
-  }
-
-  cards.forEach(card =>
-    card.classList.toggle('active', card === bestCard)
-  );
 }
 
-  gallery.addEventListener('scroll', updateActive);
-  window.addEventListener('load', updateActive);
+gallery.addEventListener('scroll', updateActive);
+window.addEventListener('resize', updateActive);
+window.addEventListener('load', updateActive);
 
 window.addEventListener('load', () => {
   const firstCard = cards[0];
