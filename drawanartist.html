@@ -16,7 +16,7 @@
       overflow: hidden;
     }
 
-    /* ================= MAIN (КАРУСЕЛЬ) ================= */
+    /* ================= MAIN ================= */
     .page {
       position: fixed;
       inset: 0;
@@ -29,16 +29,20 @@
       pointer-events: none;
     }
 
-    .gallery {
-      height: 100vh;
-      display: flex;
-      align-items: center;
-      gap: 80px;
-      padding: 0 20vw;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      scroll-behavior: smooth;
-    }
+.gallery {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  gap: 80px;
+  padding: 0;                 /* ← УБРАНО */
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.spacer {
+  flex: 0 0 calc(50vw - 160px);
+  /* 160px = половина ширины карточки (320 / 2) */
+}
 
     .gallery::-webkit-scrollbar { display: none; }
 
@@ -49,7 +53,7 @@
       cursor: pointer;
       opacity: 0.6;
       transform: scale(0.92);
-      transition: transform 0.3s ease, opacity 0.3s ease;
+      transition: 0.3s;
     }
 
     .artist-card.active {
@@ -64,19 +68,10 @@
       border-radius: 14px;
     }
 
-    .name {
-      margin-top: 14px;
-      font-size: 1rem;
-    }
+    .name { margin-top: 14px; }
+    .quote { font-style: italic; font-size: 0.9rem; color: #666; }
 
-    .quote {
-      margin-top: 6px;
-      font-style: italic;
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    /* ================= ARTIST PAGE ================= */
+    /* ================= ARTIST ================= */
     .artist-page {
       position: fixed;
       inset: 0;
@@ -93,7 +88,6 @@
     }
 
     .hero {
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -116,82 +110,108 @@
       border-radius: 16px;
     }
 
-    .hero .name {
-      font-size: 1.2rem;
-      margin-top: 14px;
-    }
+    audio { margin-top: 20px; width: 260px; }
 
-    .hero .quote {
-      margin-top: 10px;
-      min-height: 3em;
-    }
+.interview {
+  max-width: 640px;              /* лучше для justify */
+  padding: 40px 20px 160px;
+  margin: 0 auto;
 
-    audio {
-      margin-top: 20px;
-      width: 260px;
-    }
+  font-size: 1rem;
+  line-height: 1.7;
 
-    .interview {
-      max-width: 720px;
-      padding: 80px 20px 160px;
-      margin: 0 auto;
-      line-height: 1.6;
-    }
+  text-align: justify;           /* выравнивание по обеим сторонам */
+  hyphens: auto;                 /* переносы слов */
+}
 
-    .interview p {
-      margin-bottom: 1.4em;
-    }
+.interview p {
+  text-indent: 1.5em;          /* отступ первой строки */
+  margin-bottom: 1.2em;        /* ВОЗВРАЩАЕМ пространство */
+}
 
-    /* ================= CONTROLS ================= */
+/* первый абзац — без отступа */
+.interview p:first-child {
+  text-indent: 0;
+}
+
     .back {
       position: fixed;
       top: 20px;
       left: 20px;
-      font-size: 0.9rem;
-      color: #666;
       cursor: pointer;
+      color: #666;
       z-index: 20;
     }
 
-    .to-top {
-      position: fixed;
-      right: 24px;
-      bottom: 24px;
-      width: 52px;
-      height: 52px;
-      border-radius: 50%;
-      border: none;
-      background: #111;
-      color: #fff;
-      cursor: pointer;
-      font-size: 18px;
-      z-index: 20;
-    }
+    /* ================= КАПЛЯ ================= */
+/* ================= КАПЛЯ (SVG, как в Предсказании) ================= */
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+
+  width: 36px;
+  height: 64px;
+
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+
+  display: none; /* появляется по скроллу */
+  align-items: center;
+  justify-content: center;
+
+  z-index: 20;
+  transition: transform 0.12s ease, opacity 0.2s ease;
+}
+
+.to-top:hover  { transform: translateY(-1px); }
+.to-top:active { transform: translateY(1px) scale(0.97); }
+
+.drop-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: #111; /* цвет капли */
+  pointer-events: none;
+}
+
+.drop-arrow {
+  position: relative;
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  transform: translateY(3px); /* как в оригинале */
+  pointer-events: none;
+  z-index: 1;
+}
   </style>
 </head>
 
 <body>
 
-<!-- ================= MAIN ================= -->
-<div class="page" id="mainPage">
-  <div class="gallery" id="gallery">
+<!-- MAIN -->
+<div class="gallery" id="gallery">
+  <div class="spacer"></div>
 
-    <div class="artist-card" data-artist="0">
-      <img src="https://picsum.photos/600?1">
-      <div class="name">Юлия Живичина</div>
-      <div class="quote">«Работа — это способ быть честной»</div>
-    </div>
-
-    <div class="artist-card" data-artist="1">
-      <img src="https://picsum.photos/600?2">
-      <div class="name">Анна Иванова</div>
-      <div class="quote">«Искусство не обязано быть удобным»</div>
-    </div>
-
+  <div class="artist-card" data-artist="0">
+    <img src="https://picsum.photos/600?1">
+    <div class="name">Юлия Живичина</div>
+    <div class="quote">«Работа — это способ быть честной»</div>
   </div>
+
+  <div class="artist-card" data-artist="1">
+    <img src="https://picsum.photos/600?2">
+    <div class="name">Следующий художник</div>
+    <div class="quote">«Искусство не обязано быть удобным»</div>
+  </div>
+
+  <div class="spacer"></div>
 </div>
 
-<!-- ================= ARTIST ================= -->
+<!-- ARTIST -->
 <div class="artist-page" id="artistPage">
 
   <div class="back" id="back">← назад</div>
@@ -205,17 +225,25 @@
     <div class="quote" id="artistQuote"></div>
 
     <audio controls>
-      <source src="audio.mp3" type="audio/mpeg">
+      <source src="https://maieuticaio.github.io/folder/drawanartist/calmingrain.mp3" type="audio/mpeg">
     </audio>
   </section>
 
   <section class="interview" id="interview"></section>
 
-  <button class="to-top" id="toTop">↑</button>
+<button class="to-top" id="toTop" aria-label="Наверх">
+  <svg class="drop-svg" viewBox="0 0 40 64" aria-hidden="true">
+    <path d="M20 0
+             C 30 16, 38 28, 38 40
+             C 38 54, 30 64, 20 64
+             C 10 64, 2 54, 2 40
+             C 2 28, 10 16, 20 0 Z" />
+  </svg>
+  <span class="drop-arrow">↑</span>
+</button>
 </div>
 
 <script>
-  /* ===== DATA ===== */
   const artists = [
     {
       name: "Юлия Живичина",
@@ -230,65 +258,54 @@
         "«Важно не украшать»"
       ],
       interview: `
-        <p>Я никогда не думала о себе как о художнике в классическом смысле.</p>
-        <p>Работа всегда начинается с внутреннего напряжения.</p>
-        <p>Современное искусство для меня — форма присутствия.</p>
-      `
-    },
-    {
-      name: "Анна Иванова",
-      images: [
-        "https://picsum.photos/600?2",
-        "https://picsum.photos/600?21",
-        "https://picsum.photos/600?22"
-      ],
-      quotes: [
-        "«Искусство не обязано быть удобным»",
-        "«Я работаю с уязвимостью»",
-        "«Тишина — часть формы»"
-      ],
-      interview: `
-        <p>Меня интересует пограничное состояние.</p>
-        <p>Материал — это свидетель.</p>
-        <p>Я не ищу одобрения.</p>
+        <p><strong>Искусство</strong> начинается там, где заканчивается уверенность. Оно не подтверждает, а расшатывает; не объясняет, а оставляет след. Художник не обязан знать, что он делает, — он обязан быть в процессе, который невозможно до конца контролировать.
+
+<strong>Искусство</strong> — это не украшение жизни, а способ выдержать её. Оно не делает мир лучше, но делает его выносимым. Иногда — наоборот: делает невыносимым, но честным. В этом и заключается его этика.
+
+Художественное высказывание не обязано быть понятным. Понятность — это функция инструкции, не искусства. Там, где всё ясно, работа заканчивается слишком рано. Хорошее искусство продолжает работать после того, как зритель ушёл.
+
+Искусство не равно красоте. Красота — лишь один из возможных эффектов, побочный продукт столкновения формы и напряжения. Гораздо важнее точность. Нет ничего опаснее красивого, но неточного жеста.
+
+Современное искусство часто обвиняют в холоде. На самом деле оно просто отказалось утешать. Оно не обещает выхода, не гарантирует катарсиса. Оно фиксирует состояние — как свидетель, а не как терапевт.
+
+Художник не должен быть удобным. Удобство — это социальный контракт, искусство же работает на разрыв. Там, где все согласны, искусство превращается в дизайн.
+
+Искусство — это форма присутствия. Даже когда оно говорит о прошлом или воображаемом, оно всегда происходит «здесь и сейчас». Работа существует ровно настолько, насколько в неё можно войти телом, вниманием, временем.
+  <p>
+Материал в искусстве никогда не нейтрален. Бумага, звук, глина, пиксель — всё имеет память и сопротивление. Художник не владеет материалом, он с ним договаривается. Иногда — проигрывает.
+
+Искусство не обязано быть новым. Оно обязано быть необходимым. Повтор может быть радикальнее новизны, если он происходит из другого внутреннего положения.
+
+Работа не обязана нравиться. Более того, желание понравиться часто разрушает работу изнутри. Искусство, рассчитанное на одобрение, быстро теряет напряжение.</p>
+
+<p>Искусство — это не профессия, а способ мышления. Его невозможно «выключить» за пределами мастерской. Оно проявляется в том, как человек смотрит, выбирает, отказывается.
+
+Художник не транслирует истину. Он создаёт условия, в которых истина может проявиться — или не проявиться вовсе. Риск является частью формы.
+
+Искусство не обязано быть автономным. Оно может быть уязвимым, зависимым, незавершённым. Иногда именно в этом его сила.
+
+Зритель — не потребитель. Он соучастник. Без его внимания работа не завершается. Искусство всегда происходит между.
+
+Искусство — это способ не исчезнуть. Не раствориться в шуме, не принять готовые формы. Это жест сопротивления энтропии, даже если он тихий.
+
+И наконец: искусство не даёт ответов. Оно задаёт форму вопросу. И этого достаточно.</p>
+        <p>Искусство — форма присутствия.</p>
       `
     }
   ];
 
-  /* ===== MAIN SNAP ===== */
-  const cards = document.querySelectorAll('.artist-card');
-  const gallery = document.getElementById('gallery');
+const cards = document.querySelectorAll('.artist-card');
+const gallery = document.getElementById('gallery');
 
-  function updateActive() {
-    const center = window.innerWidth / 2;
-    cards.forEach(c => {
-      const r = c.getBoundingClientRect();
-      c.classList.toggle('active', Math.abs(center - (r.left + r.width/2)) < r.width/2);
-    });
-  }
+function updateActive() {
+  const centerX = window.innerWidth / 2;
 
-  gallery.addEventListener('scroll', updateActive);
-  window.addEventListener('load', updateActive);
+  let bestCard = null;
+  let bestDistance = Infinity;
 
-  /* ===== TRANSITION ===== */
-  const mainPage = document.getElementById('mainPage');
-  const artistPage = document.getElementById('artistPage');
-
-  const heroImage = document.getElementById('heroImage');
-  const artistName = document.getElementById('artistName');
-  const artistQuote = document.getElementById('artistQuote');
-  const interview = document.getElementById('interview');
-  const imageFrame = document.getElementById('imageFrame');
-
-  let slide = 0;
-  let timer;
-
-  cards.forEach(card => {
-    card.onclick = () => openArtist(+card.dataset.artist);
-  });
-
-  function openArtist(id) {
-    const a = artists[id];
+cards.forEach(card => {
+  card.onclick = () => {
+    const a = artists[+card.dataset.artist];
     slide = 0;
 
     heroImage.src = a.images[0];
@@ -296,36 +313,91 @@
     artistQuote.textContent = a.quotes[0];
     interview.innerHTML = a.interview;
 
-    mainPage.classList.add('hidden');
     artistPage.classList.add('active');
 
     clearInterval(timer);
-    timer = setInterval(() => nextSlide(a), 3000);
+    timer = setInterval(() => next(a), 3000);
+  };
+});
 
-    imageFrame.onclick = () => {
-      clearInterval(timer);
-      nextSlide(a);
-      timer = setInterval(() => nextSlide(a), 3000);
-    };
+  cards.forEach(card => {
+    card.classList.toggle('active', card === bestCard);
+  });
+
+
+
+  // если вдруг ни одной слева (крайний случай) — берём самую левую
+  if (!bestCard && cards.length) {
+    bestCard = cards[0];
   }
 
-  function nextSlide(a) {
+  cards.forEach(card =>
+    card.classList.toggle('active', card === bestCard)
+  );
+}
+
+  gallery.addEventListener('scroll', updateActive);
+  window.addEventListener('load', updateActive);
+
+window.addEventListener('load', () => {
+  const firstCard = cards[0];
+  if (!firstCard) return;
+
+  const galleryRect = gallery.getBoundingClientRect();
+  const cardRect = firstCard.getBoundingClientRect();
+
+  const offset =
+    cardRect.left
+    - galleryRect.left
+    - (galleryRect.width / 2)
+    + (cardRect.width / 2);
+
+
+  updateActive();
+});
+
+  let slide = 0, timer;
+
+  cards.forEach(card => {
+    card.onclick = () => {
+      const a = artists[+card.dataset.artist];
+      slide = 0;
+      heroImage.src = a.images[0];
+      artistName.textContent = a.name;
+      artistQuote.textContent = a.quotes[0];
+      interview.innerHTML = a.interview;
+
+      artistPage.classList.add('active');
+
+      clearInterval(timer);
+      timer = setInterval(() => next(a), 3000);
+
+      imageFrame.onclick = () => {
+        clearInterval(timer);
+        next(a);
+        timer = setInterval(() => next(a), 3000);
+      };
+    };
+  });
+
+  function next(a) {
     slide = (slide + 1) % a.images.length;
     heroImage.src = a.images[slide];
     artistQuote.textContent = a.quotes[slide];
   }
 
-  document.getElementById('back').onclick = () => {
-    artistPage.classList.remove('active');
-    mainPage.classList.remove('hidden');
-    clearInterval(timer);
-    window.scrollTo(0,0);
-  };
-
-document.getElementById('toTop').onclick = () => {
-  document.getElementById('artistPage')
-    .scrollTo({ top: 0, behavior: 'smooth' });
+document.getElementById('back').onclick = () => {
+  artistPage.classList.remove('active');
+  clearInterval(timer);
+  artistPage.scrollTo(0, 0);
 };
+
+  toTop.onclick = () =>
+    artistPage.scrollTo({ top: 0, behavior: 'smooth' });
+
+  artistPage.addEventListener('scroll', () => {
+    toTop.style.display = artistPage.scrollTop > 200 ? 'flex' : 'none';
+  });
 </script>
 
 </body>
