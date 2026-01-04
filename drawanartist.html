@@ -73,8 +73,8 @@ body {
       border-radius: 14px;
     }
 
-    .name { margin-top: 14px; }
-    .quote { font-style: italic; font-size: 0.9rem; color: #666; }
+    .name { margin-top: 30px; }
+    .quote { margin-top: 14px;  font-style: italic; font-size: 0.9rem; color: #666; }
 
     /* ================= ARTIST ================= */
     .artist-page {
@@ -100,6 +100,19 @@ body {
       padding: 80px 40px 20px;
       text-align: center;
     }
+    
+    .hero .name {
+  margin-bottom: 24px;   /* имя → картинка */
+  font-weight: 500;
+}
+
+.image-frame {
+  margin: 16px 0;        /* картинка → цитата */
+}
+
+.hero .quote {
+  margin-top: 24px;     /* картинка → цитата */
+}
 
     .image-frame {
       width: 360px;
@@ -115,7 +128,7 @@ body {
       border-radius: 16px;
     }
 
-    audio { margin-top: 20px; width: 260px; }
+    audio { margin-top: 80px; width: 260px; }
 
 .interview {
   max-width: 640px;              /* лучше для justify */
@@ -220,18 +233,17 @@ body {
 
   
 
-  <section class="hero">
-    <div class="image-frame" id="imageFrame">
-      <img id="heroImage">
-    </div>
+<section class="hero">
+  <div class="name" id="artistName"></div>
 
-    <div class="name" id="artistName"></div>
-    <div class="quote" id="artistQuote"></div>
+  <div class="image-frame" id="imageFrame">
+    <img id="heroImage">
+  </div>
 
-    <audio controls>
-      <source src="https://maieuticaio.github.io/folder/drawanartist/calmingrain.mp3" type="audio/mpeg">
-    </audio>
-  </section>
+  <div class="quote" id="artistQuote"></div>
+
+  <audio controls>…</audio>
+</section>
 
   <section class="interview" id="interview"></section>
 
