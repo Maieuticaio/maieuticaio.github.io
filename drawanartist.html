@@ -114,19 +114,18 @@ body {
   margin-top: 24px;     /* картинка → цитата */
 }
 
-    .image-frame {
-      width: 360px;
-      max-width: 90vw;
-      aspect-ratio: 1 / 1;
-      cursor: pointer;
-    }
+.image-frame {
+  width: auto;
+  max-width: 90vw;
+  height: 360px;
+}
 
-    .image-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 16px;
-    }
+.image-frame img {
+  width: auto;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 16px;
+}
 
     audio { margin-top: 80px; width: 260px; }
 
@@ -214,15 +213,16 @@ body {
 <div class="gallery" id="gallery">
 
   <div class="artist-card" data-artist="0">
-    <img src="https://picsum.photos/600?1">
+    <img src="https://maieuticaio.github.io/folder/drawanartist
+/yulia2.JPG">
     <div class="name">Юлия Живичина</div>
-    <div class="quote">«Работа — это способ быть честной»</div>
+    <div class="quote">«Это не лебедь, не пафосная, красивая, «царская» птица, гусь может и ущипнуть.»</div>
   </div>
 
   <div class="artist-card" data-artist="1">
-    <img src="https://picsum.photos/600?2">
+    <img src=" ">
     <div class="name">Следующий художник</div>
-    <div class="quote">«Искусство не обязано быть удобным»</div>
+    <div class="quote">«Ваша цитата»</div>
   </div>
 
   <div class="spacer"></div>
@@ -266,14 +266,18 @@ body {
     {
       name: "Юлия Живичина",
       images: [
-        "https://picsum.photos/600?1",
-        "https://picsum.photos/600?11",
-        "https://picsum.photos/600?12"
+        "https://maieuticaio.github.io/folder/drawanartist/yulia1.JPG",
+        "https://maieuticaio.github.io/folder/drawanartist/yulia4.jpeg",
+        "https://maieuticaio.github.io/folder/drawanartist/yulia5.jpeg",
+        "https://maieuticaio.github.io/folder/drawanartist/yulia3.JPG",
+        "https://maieuticaio.github.io/folder/drawanartist/yulia6.jpeg",
       ],
       quotes: [
-        "«Работа — это способ быть честной»",
-        "«Я не объясняю, я присутствую»",
-        "«Важно не украшать»"
+        "«выберите цитату»",
+        "«выберите цитату»",
+        "«выберите цитату»",
+        "«выберите цитату»",
+        "«выберите цитату»"
       ],
       interview: `
 <p><em>Как ты решила стать современным художником? Мы вместе учились на курсе иллюстрации, а ты выбрала путь современного художника. Когда мы заканчивали курс, было понятно, что тебе интересна современная живопись и диплом твой был на холстах, но то, что ты выберешь этот тернистый путь, было совершенно неясно. В какой момент ты ощутила внутреннюю уверенность в том, что ты хочешь высказываться? Как преодолевала синдром самозванца? Был он вообще или нет?</p></em>
