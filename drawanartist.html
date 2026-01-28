@@ -111,9 +111,10 @@ body {
 }
 
 .hero .quote {
-  margin-top: 24px;     /* картинка → цитата */
+  max-width: 700px;
+  margin: 24px auto 0;
+  text-align: center;
 }
-
 .image-frame {
   width: auto;
   max-width: 90vw;
@@ -243,7 +244,7 @@ body {
   <div class="quote" id="artistQuote"></div>
 
   <audio controls>  
-    <source src="https://maieuticaio.github.io/folder/drawanartist/calmingrain.mp3" type="audio/mpeg">
+    <source src="https://maieuticaio.github.io/folder/drawanartist/ambient_yulia.mp3" type="audio/mpeg">
 </audio>
 </section>
 
@@ -267,17 +268,17 @@ body {
       name: "Юлия Живичина",
       images: [
         "https://maieuticaio.github.io/folder/drawanartist/yulia1.JPG",
-        "https://maieuticaio.github.io/folder/drawanartist/yulia4.jpeg",
+        "https://maieuticaio.github.io/folder/drawanartist/yulia6.jpeg",
         "https://maieuticaio.github.io/folder/drawanartist/yulia5.jpeg",
         "https://maieuticaio.github.io/folder/drawanartist/yulia3.JPG",
-        "https://maieuticaio.github.io/folder/drawanartist/yulia6.jpeg",
+        "https://maieuticaio.github.io/folder/drawanartist/yulia4.jpeg",
       ],
       quotes: [
-        "«в твоих работах есть то, чему нельзя научить»",
-        "«Меня интересует человек с психологической позиции, потому что всё в итоге уходит в человекопознание, любая политика.»",
+        "«...ни разу себя не чувствовала настолько взрослой, серьёзной и ответственной женщиной.»",
+        "«…чеховские персонажи конца XIX века всё-таки как-то хотели понять людей, ничего не понимали, но их посыл был искренним — для меня это важно.»",
         "«Настоящее творчество рождается именно в каком-то очень правильном состоянии.»",
-        "«Я о котиках на всей планете подумать не могу — я кормлю четверых у дома.»",
-        "«Последние дворяне, которые сидят и рассуждают о людях, о которых ничего не знают на самом деле.»"
+        "«Я о котиках на всей планете подумать не могу.»",
+        "«Может быть, мы в последнее время стали излишне психологизированными.»"
       ],
       interview: `
 <p><em>Как ты решила стать современным художником? Мы вместе учились на курсе иллюстрации, а ты выбрала путь современного художника. Когда мы заканчивали курс, было понятно, что тебе интересна современная живопись и диплом твой был на холстах, но то, что ты выберешь этот тернистый путь, было совершенно неясно. В какой момент ты ощутила внутреннюю уверенность в том, что ты хочешь высказываться? Как преодолевала синдром самозванца? Был он вообще или нет?</p></em>
@@ -449,13 +450,13 @@ window.addEventListener('load', () => {
       showBackDrop(true);
 
       clearInterval(timer);
-      timer = setInterval(() => next(a), 6000);
+timer = setInterval(() => next(a), 6000);
 
-      imageFrame.onclick = () => {
-        clearInterval(timer);
-        next(a);
-        timer = setInterval(() => next(a), 3000);
-      };
+imageFrame.onclick = () => {
+  clearInterval(timer);
+  next(a);
+  timer = setInterval(() => next(a), 6000);
+};
     };
   });
 
