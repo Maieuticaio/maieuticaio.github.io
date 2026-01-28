@@ -221,7 +221,7 @@ body {
   </div>
 
   <div class="artist-card" data-artist="1">
-    <img src=" ">
+    <img src="https://maieuticaio.github.io/folder/drawanartist/placeholder.png">
     <div class="name">Следующий художник</div>
     <div class="quote">«Ваша цитата»</div>
   </div>
@@ -243,8 +243,8 @@ body {
 
   <div class="quote" id="artistQuote"></div>
 
-  <audio controls>  
-    <source src="https://maieuticaio.github.io/folder/drawanartist/ambient_yulia.mp3" type="audio/mpeg">
+<audio controls id="artistAudio">  
+  <source id="artistAudioSource" src="" type="audio/mpeg">
 </audio>
 </section>
 
@@ -266,6 +266,7 @@ body {
   const artists = [
     {
       name: "Юлия Живичина",
+      audio: "https://maieuticaio.github.io/folder/drawanartist/ambient_yulia.mp3",
       images: [
         "https://maieuticaio.github.io/folder/drawanartist/yulia1.JPG",
         "https://maieuticaio.github.io/folder/drawanartist/yulia6.jpeg",
@@ -274,7 +275,7 @@ body {
         "https://maieuticaio.github.io/folder/drawanartist/yulia4.jpeg",
       ],
       quotes: [
-        "«...ни разу себя не чувствовала настолько взрослой, серьёзной и ответственной женщиной.»",
+        "«...человеку может просто что-то откликнуться — без объяснений, без интерпретаций, даже без осознания собственных причин.»",
         "«…чеховские персонажи конца XIX века всё-таки как-то хотели понять людей, ничего не понимали, но их посыл был искренним — для меня это важно.»",
         "«Настоящее творчество рождается именно в каком-то очень правильном состоянии.»",
         "«Я о котиках на всей планете подумать не могу.»",
@@ -354,6 +355,15 @@ body {
 <p>Мне кажется, что единственное, что у меня иногда бывает, — я ловлю это пресловутое вдохновение. Когда ты погружаешься в поток, тебе вообще ничего не надо. И очень хотелось бы, чтобы таких состояний было больше, потому что настоящее творчество рождается именно в каком-то очень правильном состоянии. Но его как будто бы очень сложно постоянно в себе культивировать. Потому что большую часть времени ты живёшь «в уме» — в рынке, в коммерции, в галереях, в коллекционерах, это совсем другое состояние. Иногда ты настолько ни о чём не думаешь, находишься в какой-то правильной благости — правильной именно потому, что она просто тебя куда-то ведёт, без усилия.</p>
 <p><em>Ты различала как-то эти состояния и то, какие работы из них рождаются?</p></em>
 <p>Я пыталась это понять, но это совершенно бесполезно. Я даже пыталась потом повторить какие-то работы — и это всегда получается очень смешно. Я не могу никогда ничего повторить. Поэтому каждая работа всегда уникальна во всех смыслах.</p>
+<br>
+<p>
+Портреты художника -
+<a href="https://t.me/treise_glass" target="_blank" rel="noopener">treise</a>,
+<a href="https://t.me/broken_tears" target="_blank" rel="noopener">A.Kh</a>
+</p>
+<p>Паблик Юлии - 
+<a href="https://t.me/yulochkaaa" target="_blank" rel="noopener">yulochkaaa</a>
+</p>
       `
     }
 
@@ -361,24 +371,15 @@ body {
   ,
 {
   name: "Следующий художник",
+  audio: "https://maieuticaio.github.io/folder/drawanartist/calmingrain.mp3",
   images: [
-    "https://picsum.photos/600?2",
-    "https://picsum.photos/600?21",
-    "https://picsum.photos/600?22"
+    "https://maieuticaio.github.io/folder/drawanartist/placeholder.png"
   ],
   quotes: [
-    "«Искусство не обязано быть удобным»",
-    "«Форма важнее объяснений»",
-    "«Работа начинается с тишины»"
+    "«Скажите что-нибудь.»",
   ],
   interview: `
-    <p><strong>Это рыба.</strong> Здесь будет текст второго художника. Страница полностью рабочая, структура идентична странице Юлии.</p>
-
-    <p>Этот текст нужен только для проверки навигации, верстки, ритма и поведения страницы.</p>
-
-    <p>Сюда позже можно вставить настоящее интервью без каких-либо правок в коде.</p>
-
-    <p>Важно: абзацы, отступы и выравнивание работают так же, как на первой странице.</p>
+    <p>Присоединяйтесь на  <a href="https://t.me/c/risuemhudozhnika/1." target="_blank" rel="noopener">risuemhudozhnika</a>.</p>
   `
 }
 
@@ -442,9 +443,12 @@ window.addEventListener('load', () => {
       const a = artists[+card.dataset.artist];
       slide = 0;
       heroImage.src = a.images[0];
-      artistName.textContent = a.name;
-      artistQuote.textContent = a.quotes[0];
-      interview.innerHTML = a.interview;
+artistName.textContent = a.name;
+artistQuote.textContent = a.quotes[0];
+interview.innerHTML = a.interview;
+
+artistAudioSource.src = a.audio;
+artistAudio.load();
 
       artistPage.classList.add('active');
       showBackDrop(true);
