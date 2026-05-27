@@ -59,9 +59,9 @@
     .shop-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--cell-min)), 1fr));
-      gap: 0;
+      gap: 1px;
       position: relative;
-      background: transparent;
+      background: var(--line);
     }
 
     .shop-cell {
@@ -71,8 +71,6 @@
       place-items: center;
       overflow: visible;
       background: var(--bg);
-      border-right: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
     }
 
     .cell-number {
