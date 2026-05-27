@@ -4,9 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Broken Tears</title>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet">
-  
+
   <style>
     :root {
       --bg: #f0f0f0;
@@ -64,7 +62,7 @@
       gap: 0;
       position: relative;
       background: transparent;
-      border: 2px solid var(--line); /* внешний контур */
+      border: 2px solid var(--line);
     }
 
     .shop-cell {
@@ -74,13 +72,10 @@
       place-items: center;
       overflow: visible;
       background: var(--bg);
-
-      /* внутренние линии: только справа и снизу, поэтому они не удваиваются */
       border-right: 1px solid var(--line);
       border-bottom: 1px solid var(--line);
     }
 
-    /* Номер лежит на пересечении угла. Линии визуально почти упираются в цифру. */
     .cell-number {
       position: absolute;
       top: -0.72em;
@@ -132,6 +127,7 @@
       line-height: 1;
       text-transform: uppercase;
       letter-spacing: 0.08em;
+      text-align: center;
     }
 
     .product-status.sold { color: var(--muted); }
@@ -234,160 +230,131 @@
         <p class="shop-note"></p>
       </header>
 
-      <section class="shop-grid" aria-label="Shop products">
-        <article class="shop-cell">
-          <span class="cell-number">01</span>
-          <a class="product-link" href="#product-01" aria-label="Open product 01">
-            <figure class="product-media">
-              <img src="https://maieuticaio.github.io/folder/brokentears/obj/01shugar.png" alt="Ceramic piece 01" />
-            </figure>
-            <span class="product-status">Сахарница 2</span>
-          </a>
-        </article>
-
-        <article class="shop-cell">
-          <span class="cell-number">02</span>
-          <a class="product-link" href="#product-02" aria-label="Open product 02">
-            <figure class="product-media">
-              <img src="https://maieuticaio.github.io/folder/brokentears/obj/02peppersalt.png" alt="Ceramic piece 02" />
-            </figure>
-            <span class="product-status">перечница и солонка</span>
-          </a>
-        </article>
-
-        <article class="shop-cell">
-          <span class="cell-number">03</span>
-          <a class="product-link" href="#product-03" aria-label="Open product 03">
-            <figure class="product-media">
-              <img src="https://maieuticaio.github.io/folder/brokentears/obj/03sause.png" alt="Ceramic piece 03" />
-            </figure>
-            <span class="product-status">Соусник</span>
-          </a>
-        </article>
-
-        <article class="shop-cell">
-          <span class="cell-number">04</span>
-          <a class="product-link" href="#product-04" aria-label="Open product 04">
-            <figure class="product-media">
-              <img src="https://maieuticaio.github.io/folder/brokentears/obj/01podsvechnik.png" alt="Ceramic piece 04" />
-            </figure>
-            <span class="product-status">подсвечник</span>
-          </a>
-        </article>
-        
-                <article class="shop-cell">
-          <span class="cell-number">05</span>
-          <a class="product-link" href="#product-05" aria-label="Open product 05">
-            <figure class="product-media">
-              <img src="https://maieuticaio.github.io/folder/brokentears/obj/01skvorechnik.png" alt="Ceramic piece 05" />
-            </figure>
-            <span class="product-status">скворечник</span>
-          </a>
-        </article>
-        
-                <article class="shop-cell">
-          <span class="cell-number">06</span>
-          <a class="product-link" href="#product-06" aria-label="Open product 06">
-            <figure class="product-media">
-              <img src="https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif" alt="Ceramic piece 06" />
-            </figure>
-            <span class="product-status">скворечник</span>
-          </a>
-        </article>
-      </section>
+      <section class="shop-grid" aria-label="Shop products" data-products></section>
     </section>
 
-    <section id="product-01" class="product-page">
-      <a class="back-link" href="#">← назад</a>
-      <div class="product-detail-layout">
-        <div class="gallery">
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 01 view 1" />
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 01 view 2" />
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 01 view 3" />
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 01 view 4" />
-        </div>
-        <aside class="product-info">
-          <h1>OBJ 01</h1>
-          <p>Сахарница поселится у Нади.</p>
-          <div class="buy-line"><span>керамика</span><span>--</span></div>
-        </aside>
-      </div>
-    </section>
-
-    <section id="product-02" class="product-page">
-      <a class="back-link" href="#">← назад</a>
-      <div class="product-detail-layout">
-        <div class="gallery">
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 02 view 1" />
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 02 view 2" />
-        </div>
-        <aside class="product-info">
-          <h1>OBJ 02</h1>
-          <p>Соль и перец.</p>
-          <div class="buy-line"><span>керамика</span><span>--</span></div>
-        </aside>
-      </div>
-    </section>
-
-    <section id="product-03" class="product-page">
-      <a class="back-link" href="#">← назад</a>
-      <div class="product-detail-layout">
-        <div class="gallery">
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 03 view 1" />
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 03 view 2" />
-        </div>
-        <aside class="product-info">
-          <h1>OBJ 03</h1>
-          <p>Баночка для соевого соуса.</p>
-          <div class="buy-line"><span>керамика</span><span>--</span></div>
-        </aside>
-      </div>
-    </section>
-
-    <section id="product-04" class="product-page">
-      <a class="back-link" href="#">← назад</a>
-      <div class="product-detail-layout">
-        <div class="gallery">
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/02podsvechnikdoma.jpeg" alt="Product 04 view 1" />
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/02podsvechnikNastya.jpg" alt="Product 04 view 2" />
-        </div>
-        <aside class="product-info">
-          <h1>OBJ 04</h1>
-          <p>Подсвечник поселился у Насти.</p>
-          <div class="buy-line"><span>Ванкувер</span><span>--</span></div>
-        </aside>
-      </div>
-    </section>
-    
-    <section id="product-05" class="product-page">
-      <a class="back-link" href="#">← назад</a>
-      <div class="product-detail-layout">
-        <div class="gallery">
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 05 view 1" />
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 05 view 2" />
-        </div>
-        <aside class="product-info">
-          <h1>obj 05</h1>
-          <p> .</p>
-          <div class="buy-line"><span>керамика</span><span>--</span></div>
-        </aside>
-      </div>
-    </section>
-    
-    <section id="product-06" class="product-page">
-      <a class="back-link" href="#">← назад</a>
-      <div class="product-detail-layout">
-        <div class="gallery">
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 06 view 1" />
-          <img src="https://maieuticaio.github.io/folder/brokentears/obj/00.png" alt="Product 06 view 2" />
-        </div>
-        <aside class="product-info">
-          <h1>obj 06</h1>
-          <p> .</p>
-          <div class="buy-line"><span>керамика</span><span>--</span></div>
-        </aside>
-      </div>
-    </section>
+    <section data-product-pages></section>
   </main>
+
+  <script>
+    const PLACEHOLDER_IMAGE = "https://maieuticaio.github.io/folder/brokentears/obj/00.png";
+
+    // Чтобы добавить объект, скопируй один блок ниже, поменяй id, название, фото и текст.
+    const PRODUCTS = [
+      {
+        id: "01",
+        title: "Сахарница 2",
+        image: "https://maieuticaio.github.io/folder/brokentears/obj/01shugar.png",
+        detailTitle: "OBJ 01",
+        description: "Сахарница поселится у Нади.",
+        metaLeft: "керамика",
+        metaRight: "--",
+        gallery: [
+          PLACEHOLDER_IMAGE,
+          PLACEHOLDER_IMAGE,
+          PLACEHOLDER_IMAGE,
+          PLACEHOLDER_IMAGE
+        ]
+      },
+      {
+        id: "02",
+        title: "перечница и солонка",
+        image: "https://maieuticaio.github.io/folder/brokentears/obj/02peppersalt.png",
+        detailTitle: "OBJ 02",
+        description: "Соль и перец.",
+        metaLeft: "керамика",
+        metaRight: "--",
+        gallery: [
+          PLACEHOLDER_IMAGE,
+          PLACEHOLDER_IMAGE
+        ]
+      },
+      {
+        id: "03",
+        title: "Соусник",
+        image: "https://maieuticaio.github.io/folder/brokentears/obj/03sause.png",
+        detailTitle: "OBJ 03",
+        description: "Баночка для соевого соуса.",
+        metaLeft: "керамика",
+        metaRight: "--",
+        gallery: [
+          PLACEHOLDER_IMAGE,
+          PLACEHOLDER_IMAGE
+        ]
+      },
+      {
+        id: "04",
+        title: "подсвечник",
+        image: "https://maieuticaio.github.io/folder/brokentears/obj/01podsvechnik.png",
+        detailTitle: "OBJ 04",
+        description: "Подсвечник поселился у Насти.",
+        metaLeft: "Ванкувер",
+        metaRight: "--",
+        gallery: [
+          "https://maieuticaio.github.io/folder/brokentears/obj/02podsvechnikdoma.jpeg",
+          "https://maieuticaio.github.io/folder/brokentears/obj/02podsvechnikNastya.jpg"
+        ]
+      },
+      {
+        id: "05",
+        title: "скворечник",
+        image: "https://maieuticaio.github.io/folder/brokentears/obj/01skvorechnik.png",
+        detailTitle: "OBJ 05",
+        description: ".",
+        metaLeft: "керамика",
+        metaRight: "--",
+        gallery: [
+          PLACEHOLDER_IMAGE,
+          PLACEHOLDER_IMAGE
+        ]
+      },
+      {
+        id: "06",
+        title: "скворечник",
+        image: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
+        detailTitle: "OBJ 06",
+        description: ".",
+        metaLeft: "керамика",
+        metaRight: "--",
+        gallery: [
+          PLACEHOLDER_IMAGE,
+          PLACEHOLDER_IMAGE
+        ]
+      }
+    ];
+
+    const productGrid = document.querySelector("[data-products]");
+    const productPages = document.querySelector("[data-product-pages]");
+
+    const imageTag = (src, alt) => `<img src="${src}" alt="${alt}" loading="lazy" />`;
+
+    productGrid.innerHTML = PRODUCTS.map((product) => `
+      <article class="shop-cell">
+        <span class="cell-number">${product.id}</span>
+        <a class="product-link" href="#product-${product.id}" aria-label="Open product ${product.id}">
+          <figure class="product-media">
+            ${imageTag(product.image, `Ceramic piece ${product.id}`)}
+          </figure>
+          <span class="product-status">${product.title}</span>
+        </a>
+      </article>
+    `).join("");
+
+    productPages.innerHTML = PRODUCTS.map((product) => `
+      <section id="product-${product.id}" class="product-page">
+        <a class="back-link" href="#">&#8592; назад</a>
+        <div class="product-detail-layout">
+          <div class="gallery">
+            ${product.gallery.map((src, index) => imageTag(src, `Product ${product.id} view ${index + 1}`)).join("")}
+          </div>
+          <aside class="product-info">
+            <h1>${product.detailTitle}</h1>
+            <p>${product.description}</p>
+            <div class="buy-line"><span>${product.metaLeft}</span><span>${product.metaRight}</span></div>
+          </aside>
+        </div>
+      </section>
+    `).join("");
+  </script>
 </body>
 </html>
