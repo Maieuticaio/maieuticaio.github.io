@@ -59,9 +59,9 @@
     .shop-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--cell-min)), 1fr));
-      gap: 1px;
+      gap: 0;
       position: relative;
-      background: var(--line);
+      background: transparent;
     }
 
     .shop-cell {
@@ -71,6 +71,16 @@
       place-items: center;
       overflow: visible;
       background: var(--bg);
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .shop-cell.is-last-col {
+      border-right: 0;
+    }
+
+    .shop-cell.is-last-row {
+      border-bottom: 0;
     }
 
     .cell-number {
@@ -357,6 +367,38 @@
         </div>
       </section>
     `).join("");
+
+    const updateGridEdges = () => {
+      const cells = [...document.querySelectorAll(".shop-cell")];
+
+      cells.forEach((cell) => {
+        cell.classList.remove("is-last-col", "is-last-row");
+      });
+
+      const rows = cells.reduce((groupedRows, cell) => {
+        const top = Math.round(cell.offsetTop);
+        const row = groupedRows.find((items) => Math.round(items[0].offsetTop) === top);
+
+        if (row) {
+          row.push(cell);
+        } else {
+          groupedRows.push([cell]);
+        }
+
+        return groupedRows;
+      }, []);
+
+      rows.forEach((row) => {
+        row[row.length - 1]?.classList.add("is-last-col");
+      });
+
+      rows[rows.length - 1]?.forEach((cell) => {
+        cell.classList.add("is-last-row");
+      });
+    };
+
+    updateGridEdges();
+    window.addEventListener("resize", updateGridEdges);
   </script>
 </body>
 </html>
