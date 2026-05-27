@@ -83,6 +83,10 @@
       border-bottom: 0;
     }
 
+    .shop-cell.has-no-cell-below {
+      border-bottom: 0;
+    }
+
     .cell-number {
       position: absolute;
       top: 0.18em;
@@ -372,7 +376,7 @@
       const cells = [...document.querySelectorAll(".shop-cell")];
 
       cells.forEach((cell) => {
-        cell.classList.remove("is-last-col", "is-last-row");
+        cell.classList.remove("is-last-col", "is-last-row", "has-no-cell-below");
       });
 
       const rows = cells.reduce((groupedRows, cell) => {
@@ -394,6 +398,18 @@
 
       rows[rows.length - 1]?.forEach((cell) => {
         cell.classList.add("is-last-row");
+      });
+
+      cells.forEach((cell) => {
+        const left = Math.round(cell.offsetLeft);
+        const top = Math.round(cell.offsetTop);
+        const hasCellBelow = cells.some((otherCell) => {
+          return Math.round(otherCell.offsetLeft) === left && Math.round(otherCell.offsetTop) > top;
+        });
+
+        if (!hasCellBelow) {
+          cell.classList.add("has-no-cell-below");
+        }
       });
     };
 
