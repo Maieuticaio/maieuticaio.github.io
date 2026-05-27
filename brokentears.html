@@ -83,10 +83,6 @@
       border-bottom: 0;
     }
 
-    .shop-cell.has-no-cell-below {
-      border-bottom: 0;
-    }
-
     .cell-number {
       position: absolute;
       top: 0.18em;
@@ -147,6 +143,24 @@
     }
 
     .product-status.sold { color: var(--muted); }
+
+    .shop-cell.is-coming .product-link {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .coming-drop {
+      width: min(72%, 260px);
+      color: var(--ink);
+      transform: translateX(-8%);
+    }
+
+    .coming-drop svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      overflow: visible;
+    }
 
     .product-page {
       display: none;
@@ -327,7 +341,8 @@
       {
         id: "06",
         title: "скворечник",
-        image: "https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif",
+        image: "",
+        useDrop: true,
         detailTitle: "OBJ 06",
         description: ".",
         metaLeft: "керамика",
@@ -344,17 +359,65 @@
 
     const imageTag = (src, alt) => `<img src="${src}" alt="${alt}" loading="lazy" />`;
 
-    productGrid.innerHTML = PRODUCTS.map((product) => `
+    const productCell = (product) => `
       <article class="shop-cell">
         <span class="cell-number">${product.id}</span>
         <a class="product-link" href="#product-${product.id}" aria-label="Open product ${product.id}">
           <figure class="product-media">
-            ${imageTag(product.image, `Ceramic piece ${product.id}`)}
+            ${product.useDrop ? dropTag() : imageTag(product.image, `Ceramic piece ${product.id}`)}
           </figure>
           <span class="product-status">${product.title}</span>
         </a>
       </article>
-    `).join("");
+    `;
+
+    const comingCell = (id) => `
+      <article class="shop-cell is-coming">
+        <span class="cell-number">${id}</span>
+        <div class="product-link" aria-label="Future product ${id}">
+          <figure class="product-media">
+            <div class="coming-drop" aria-hidden="true">
+              <svg viewBox="0 0 96 132" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M48 6C48 6 16 47 16 82C16 107 30 126 48 126C66 126 80 107 80 82C80 47 48 6 48 6Z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </figure>
+          <span class="product-status">скоро</span>
+        </div>
+      </article>
+    `;
+
+    function dropTag() {
+      return `
+        <div class="coming-drop" aria-hidden="true">
+          <svg viewBox="0 0 96 132" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M48 6C48 6 16 47 16 82C16 107 30 126 48 126C66 126 80 107 80 82C80 47 48 6 48 6Z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      `;
+    }
+
+    const getColumnCount = () => {
+      const columns = getComputedStyle(productGrid).gridTemplateColumns;
+      return columns.split(" ").filter(Boolean).length || 1;
+    };
+
+    const renderProductGrid = () => {
+      productGrid.innerHTML = PRODUCTS.map(productCell).join("");
+
+      const columnCount = getColumnCount();
+      const emptyCellCount = (columnCount - (PRODUCTS.length % columnCount)) % columnCount;
+      const nextNumber = PRODUCTS.length + 1;
+
+      productGrid.insertAdjacentHTML(
+        "beforeend",
+        Array.from({ length: emptyCellCount }, (_, index) => {
+          return comingCell(String(nextNumber + index).padStart(2, "0"));
+        }).join("")
+      );
+
+      updateGridEdges();
+    };
 
     productPages.innerHTML = PRODUCTS.map((product) => `
       <section id="product-${product.id}" class="product-page">
@@ -376,7 +439,7 @@
       const cells = [...document.querySelectorAll(".shop-cell")];
 
       cells.forEach((cell) => {
-        cell.classList.remove("is-last-col", "is-last-row", "has-no-cell-below");
+        cell.classList.remove("is-last-col", "is-last-row");
       });
 
       const rows = cells.reduce((groupedRows, cell) => {
@@ -399,22 +462,10 @@
       rows[rows.length - 1]?.forEach((cell) => {
         cell.classList.add("is-last-row");
       });
-
-      cells.forEach((cell) => {
-        const left = Math.round(cell.offsetLeft);
-        const top = Math.round(cell.offsetTop);
-        const hasCellBelow = cells.some((otherCell) => {
-          return Math.round(otherCell.offsetLeft) === left && Math.round(otherCell.offsetTop) > top;
-        });
-
-        if (!hasCellBelow) {
-          cell.classList.add("has-no-cell-below");
-        }
-      });
     };
 
-    updateGridEdges();
-    window.addEventListener("resize", updateGridEdges);
+    renderProductGrid();
+    window.addEventListener("resize", renderProductGrid);
   </script>
 </body>
 </html>
