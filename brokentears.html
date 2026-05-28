@@ -204,13 +204,14 @@
 
     .product-info p {
       max-width: 560px;
+      margin-bottom: 10px;
       font-size: 17px;
       line-height: 1.45;
-      color: var(--muted);
+      color: var(--ink);
     }
 
     .buy-line {
-      margin-top: 28px;
+      margin-top: 18px;
       padding-top: 18px;
       border-top: 1px solid var(--line);
       display: flex;
@@ -270,10 +271,8 @@
         metaLeft: "сахарница",
         metaRight: "--",
         gallery: [
-          PLACEHOLDER_IMAGE,
-          PLACEHOLDER_IMAGE,
-          PLACEHOLDER_IMAGE,
-          PLACEHOLDER_IMAGE
+          "folder/brokentears/obj/01sugar-front.jpeg",
+          "folder/brokentears/obj/01sugar-hand.jpeg"
         ]
       },
       {
@@ -324,8 +323,7 @@
         metaLeft: "скворечник",
         metaRight: "--",
         gallery: [
-          PLACEHOLDER_IMAGE,
-          PLACEHOLDER_IMAGE
+          "folder/brokentears/obj/05skvorechnik-view.jpeg"
         ]
       },
       {
@@ -337,8 +335,8 @@
         metaLeft: "скворечник",
         metaRight: "--",
         gallery: [
-          PLACEHOLDER_IMAGE,
-          PLACEHOLDER_IMAGE
+          "folder/brokentears/obj/06skvorechnik-view.jpeg",
+          "folder/brokentears/obj/06skvorechnik-cords.jpeg"
         ]
       },
       {
@@ -383,8 +381,26 @@
           "folder/brokentears/obj/09sugar-front.jpeg",
           "folder/brokentears/obj/09sugar-hand.jpeg"
         ]
+      },
+      {
+        id: "10",
+        title: "шкатулка",
+        image: "folder/brokentears/obj/10box-cover.png",
+        detailTitle: "OBJ 10",
+        description: "экстрактивное государство",
+        metaLeft: "шкатулка",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/10box-angle.jpeg",
+          "folder/brokentears/obj/10box-view-1.jpeg",
+          "folder/brokentears/obj/10box-view-2.jpeg",
+          "folder/brokentears/obj/10box-view-3.jpeg"
+        ]
       }
     ];
+
+    const DISPLAY_ORDER = ["09", "10", "07", "08", "01", "04", "05", "06", "03", "02"];
+    const orderedProducts = DISPLAY_ORDER.map((id) => PRODUCTS.find((product) => product.id === id)).filter(Boolean);
 
     const productGrid = document.querySelector("[data-products]");
     const productPages = document.querySelector("[data-product-pages]");
@@ -435,11 +451,11 @@
     };
 
     const renderProductGrid = () => {
-      productGrid.innerHTML = PRODUCTS.map(productCell).join("");
+      productGrid.innerHTML = orderedProducts.map(productCell).join("");
 
       const columnCount = getColumnCount();
-      const emptyCellCount = (columnCount - (PRODUCTS.length % columnCount)) % columnCount;
-      const nextNumber = PRODUCTS.length + 1;
+      const emptyCellCount = (columnCount - (orderedProducts.length % columnCount)) % columnCount;
+      const nextNumber = orderedProducts.length + 1;
 
       productGrid.insertAdjacentHTML(
         "beforeend",
