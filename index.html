@@ -297,6 +297,11 @@
   text-align: left;
   font-size: 0.95rem;
 }
+  .block__desc a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+  }
 
     .about {
       display: flex;
@@ -680,6 +685,18 @@
     <section class="page" id="things">
       <div class="feed">
         
+        <article class="block">
+          <h2 class="block__title">Сломанные слезы</h2>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="folder/portfolio/broken-tears/box.jpeg" alt="Сломанные слезы — шкатулка" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/broken-tears/sugar-bowl.jpeg" alt="Сломанные слезы — сахарница" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/broken-tears/sauce-boat.jpeg" alt="Сломанные слезы — соусник" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/broken-tears/ring.jpeg" alt="Сломанные слезы — кольцо" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/broken-tears/bird-bowl.jpeg" alt="Сломанные слезы — объект с птицей" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Керамика ручной работы. <a href="brokentears.html">реестр объектов</a></div>
+        </article>
+
         <article class="block">
           <h2 class="block__title">Переходный объект</h2>
           <div class="gallery" data-gallery>
@@ -1188,6 +1205,7 @@
 
       let vGallery = null;
       let vIndex = -1;
+      let pinchStartDistance = null;
 
       function srcFromMediaEl(node){
         const img = node.querySelector('img');
@@ -1275,7 +1293,57 @@
         if(e.target === viewer) closeViewer();
       });
 
+      if(viewer){
+        viewer.addEventListener('wheel', e => {
+          if(!viewer.classList.contains('open')) return;
+          if(!(e.ctrlKey || e.metaKey)) return;
+          e.preventDefault();
+          if(e.deltaY < 0){
+            viewer.classList.add('zoomed');
+          } else {
+            viewer.classList.remove('zoomed');
+            if(viewerScroll){
+              viewerScroll.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+            }
+          }
+        }, { passive: false });
+      }
+
+      function resetViewerZoom(){
+        if(viewer) viewer.classList.remove('zoomed');
+        if(viewerScroll){
+          viewerScroll.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+        }
+      }
+
+      function touchDistance(touches){
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.hypot(dx, dy);
+      }
+
       if(viewerFrame){
+        viewerFrame.addEventListener('touchstart', e => {
+          if(e.touches.length === 2){
+            pinchStartDistance = touchDistance(e.touches);
+          }
+        }, { passive: true });
+
+        viewerFrame.addEventListener('touchmove', e => {
+          if(e.touches.length !== 2 || pinchStartDistance === null || !viewer) return;
+          e.preventDefault();
+          const ratio = touchDistance(e.touches) / pinchStartDistance;
+          if(ratio > 1.08){
+            viewer.classList.add('zoomed');
+          } else if(ratio < 0.92){
+            resetViewerZoom();
+          }
+        }, { passive: false });
+
+        viewerFrame.addEventListener('touchend', e => {
+          if(e.touches.length < 2) pinchStartDistance = null;
+        });
+
         viewerFrame.addEventListener('click', e => {
           if(!viewer.classList.contains('open')) return;
           if(e.target === viewerClose || (viewerClose && e.target.closest('#viewerClose'))) return;
@@ -1296,7 +1364,6 @@
       document.addEventListener('click', e => {
         const media = e.target.closest('.media');
         if(!media) return;
-        if(isMobile()) return;          // на мобилке не открываем вьюер
         if(media.querySelector('iframe')) return; // не трогаем YouTube
         const gal = media.closest('[data-gallery]');
         if(!gal) return;
