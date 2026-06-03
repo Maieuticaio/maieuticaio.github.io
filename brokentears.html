@@ -263,6 +263,31 @@
     // Чтобы добавить объект, скопируй один блок ниже, поменяй id, название, фото и текст.
     const PRODUCTS = [
       {
+        id: "11",
+        title: "сахарница",
+        image: "folder/brokentears/obj/11sugar-cover.png",
+        detailTitle: "OBJ 11",
+        description: ".",
+        metaLeft: "сахарница",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/11sugar-front.jpeg"
+        ]
+      },
+      {
+        id: "12",
+        title: "лейка",
+        image: "folder/brokentears/obj/12leika-cover.png",
+        coverStyle: "width: 112%; max-width: 112%; transform: translateY(12px);",
+        detailTitle: "OBJ 12",
+        description: ".",
+        metaLeft: "лейка",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/12leika-view.jpeg"
+        ]
+      },
+      {
         id: "01",
         title: "Сахарница",
         image: "folder/brokentears/obj/01shugar-cover.png",
@@ -399,20 +424,20 @@
       }
     ];
 
-    const DISPLAY_ORDER = ["09", "10", "07", "08", "01", "04", "05", "06", "03", "02"];
+    const DISPLAY_ORDER = ["09", "10", "07", "12", "11", "08", "01", "04", "05", "06", "03", "02"];
     const orderedProducts = DISPLAY_ORDER.map((id) => PRODUCTS.find((product) => product.id === id)).filter(Boolean);
 
     const productGrid = document.querySelector("[data-products]");
     const productPages = document.querySelector("[data-product-pages]");
 
-    const imageTag = (src, alt, loading = "lazy") => `<img src="${src}" alt="${alt}" loading="${loading}" />`;
+    const imageTag = (src, alt, loading = "lazy", style = "") => `<img src="${src}" alt="${alt}" loading="${loading}"${style ? ` style="${style}"` : ""} />`;
 
     const productCell = (product) => `
       <article class="shop-cell">
         <span class="cell-number">${product.id}</span>
         <a class="product-link" href="#product-${product.id}" aria-label="Open product ${product.id}">
           <figure class="product-media">
-            ${product.useDrop ? dropTag() : imageTag(product.image, `Ceramic piece ${product.id}`, "eager")}
+            ${product.useDrop ? dropTag() : imageTag(product.image, `Ceramic piece ${product.id}`, "eager", product.coverStyle || "")}
           </figure>
           <span class="product-status">${product.title}</span>
         </a>
