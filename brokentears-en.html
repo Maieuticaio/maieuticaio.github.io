@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Broken Tears</title>
+
+  <style>
+    :root {
+      --bg: #f0f0f0;
+      --ink: #aaaaaa;
+      --muted: #77706a;
+      --line: #aaaaaa;
+      --cell-min: 260px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .page {
+      min-height: 100vh;
+      padding: clamp(20px, 4vw, 56px);
+    }
+
+    .shop-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 24px;
+      margin-bottom: clamp(28px, 5vw, 72px);
+    }
+
+    .shop-title {
+      margin: 0;
+      font-size: clamp(34px, 8vw, 112px);
+      line-height: 0.9;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .shop-note {
+      max-width: 360px;
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.35;
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--cell-min)), 1fr));
+      gap: 1px;
+      position: relative;
+      background: var(--line);
+    }
+
+    .shop-cell {
+      position: relative;
+      min-height: clamp(340px, 46vw, 520px);
+      display: grid;
+      place-items: center;
+      overflow: visible;
+      background: var(--bg);
+    }
+
+    .cell-number {
+      position: absolute;
+      top: 0.18em;
+      left: 0.18em;
+      z-index: 2;
+      display: inline-block;
+      padding-right: 0.18em;
+      background: var(--bg);
+      font-size: clamp(34px, 5.2vw, 72px);
+      line-height: 0.9;
+      font-weight: 500;
+      letter-spacing: -0.08em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .product-link {
+      width: 100%;
+      height: 100%;
+      padding: clamp(36px, 5vw, 72px) clamp(24px, 4vw, 56px) clamp(30px, 4vw, 48px);
+      display: grid;
+      grid-template-rows: 1fr auto;
+      align-items: center;
+      justify-content: center;
+      gap: 22px;
+    }
+
+    .product-media {
+      width: min(72%, 320px);
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+      align-self: end;
+      transition: transform 220ms ease, filter 220ms ease;
+    }
+
+    .product-media img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .product-link:hover .product-media {
+      transform: translateY(-4px) scale(1.025);
+      filter: contrast(1.04);
+    }
+
+    .product-status {
+      font-size: clamp(14px, 1.8vw, 22px);
+      line-height: 1;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      text-align: center;
+      min-height: 2em;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    .product-status.sold { color: var(--muted); }
+
+    .shop-cell.is-coming .product-link {
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .coming-drop {
+      width: min(72%, 260px);
+      color: var(--ink);
+      transform: translateX(-8%);
+    }
+
+    .coming-drop svg {
+      width: 100%;
+      height: auto;
+      display: block;
+      overflow: visible;
+    }
+
+    .product-page {
+      display: none;
+    }
+
+    .product-page:target {
+      display: block;
+    }
+
+    body:has(.product-page:target) .shop-view {
+      display: none;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 32px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-bottom: 1px solid currentColor;
+    }
+
+    .product-detail-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: clamp(28px, 5vw, 72px);
+      align-items: start;
+    }
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .gallery img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border: 1px solid var(--line);
+      background: #eee7dd;
+    }
+
+    .product-info h1 {
+      margin: 0 0 16px;
+      font-size: clamp(38px, 7vw, 96px);
+      line-height: 0.9;
+      font-weight: 500;
+      text-transform: uppercase;
+    }
+
+    .product-info p {
+      max-width: 560px;
+      margin-bottom: 10px;
+      font-size: 17px;
+      line-height: 1.45;
+      color: var(--ink);
+    }
+
+    .buy-line {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    @media (max-width: 760px) {
+      .shop-header {
+        display: block;
+      }
+
+      .shop-note {
+        text-align: left;
+        margin-top: 18px;
+        margin-bottom: 70px;
+      }
+
+      .product-detail-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="shop-view">
+      <header class="shop-header">
+        <h1 class="shop-title">broken<br>tears</h1>
+        <p class="shop-note"></p>
+      </header>
+
+      <section class="shop-grid" aria-label="Shop products" data-products></section>
+    </section>
+
+    <section data-product-pages></section>
+  </main>
+
+  <script>
+    const PLACEHOLDER_IMAGE = "https://maieuticaio.github.io/folder/brokentears/obj/00.png";
+
+    // To add an object, copy one block below and change the id, title, photos, and text.
+    const PRODUCTS = [
+      {
+        id: "11",
+        title: "sugar bowl",
+        image: "folder/brokentears/obj/11sugar-cover.png",
+        detailTitle: "OBJ 11",
+        description: ".",
+        metaLeft: "sugar bowl",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/11sugar-front.jpeg"
+        ]
+      },
+      {
+        id: "12",
+        title: "watering can",
+        image: "folder/brokentears/obj/12leika-cover.png",
+        coverStyle: "width: 112%; max-width: 112%; transform: translateY(12px);",
+        detailTitle: "OBJ 12",
+        description: ".",
+        metaLeft: "watering can",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/12leika-view.jpeg"
+        ]
+      },
+      {
+        id: "01",
+        title: "Sugar bowl",
+        image: "folder/brokentears/obj/01shugar-cover.png",
+        detailTitle: "OBJ 01",
+        description: "The sugar bowl will live with Nadia.",
+        metaLeft: "sugar bowl",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/01sugar-front.jpeg",
+          "folder/brokentears/obj/01sugar-hand.jpeg"
+        ]
+      },
+      {
+        id: "02",
+        title: "pepper and salt shakers",
+        image: "https://maieuticaio.github.io/folder/brokentears/obj/02peppersalt.png",
+        detailTitle: "OBJ 02",
+        description: "Salt and pepper.",
+        metaLeft: "pepper and salt shakers",
+        metaRight: "--",
+        gallery: [
+          PLACEHOLDER_IMAGE,
+          PLACEHOLDER_IMAGE
+        ]
+      },
+      {
+        id: "03",
+        title: "Sauce boat",
+        image: "https://maieuticaio.github.io/folder/brokentears/obj/03sause.png",
+        detailTitle: "OBJ 03",
+        description: "A small vessel for soy sauce.",
+        metaLeft: "sauce boat",
+        metaRight: "--",
+        gallery: [
+          PLACEHOLDER_IMAGE,
+          PLACEHOLDER_IMAGE
+        ]
+      },
+      {
+        id: "04",
+        title: "candlestick",
+        image: "https://maieuticaio.github.io/folder/brokentears/obj/01podsvechnik.png",
+        detailTitle: "OBJ 04",
+        description: "The candlestick lives with Nastya.",
+        metaLeft: "candlestick",
+        metaRight: "--",
+        gallery: [
+          "https://maieuticaio.github.io/folder/brokentears/obj/02podsvechnikdoma.jpeg",
+          "https://maieuticaio.github.io/folder/brokentears/obj/02podsvechnikNastya.jpg"
+        ]
+      },
+      {
+        id: "05",
+        title: "birdhouse",
+        image: "https://maieuticaio.github.io/folder/brokentears/obj/01skvorechnik.png",
+        detailTitle: "OBJ 05",
+        description: ".",
+        metaLeft: "birdhouse",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/05skvorechnik-view.jpeg"
+        ]
+      },
+      {
+        id: "06",
+        title: "birdhouse",
+        image: "folder/brokentears/obj/06skvorechnik-cover.png",
+        detailTitle: "OBJ 06",
+        description: ".",
+        metaLeft: "birdhouse",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/06skvorechnik-view.jpeg",
+          "folder/brokentears/obj/06skvorechnik-cords.jpeg"
+        ]
+      },
+      {
+        id: "07",
+        title: "sauce boat",
+        image: "folder/brokentears/obj/07sauce2-cover.png",
+        detailTitle: "OBJ 07",
+        description: ".",
+        metaLeft: "sauce boat",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/07sauce2-original.jpeg",
+          "folder/brokentears/obj/07sauce2-open.jpeg",
+          "folder/brokentears/obj/07sauce2-hand.jpeg"
+        ]
+      },
+      {
+        id: "08",
+        title: "vase",
+        image: "folder/brokentears/obj/08vase1-cover.png",
+        detailTitle: "OBJ 08",
+        description: ".",
+        metaLeft: "vase",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/08vase1-grass.jpeg",
+          "folder/brokentears/obj/08vase1-message.jpeg",
+          "folder/brokentears/obj/08vase1-hand.jpeg"
+        ]
+      },
+      {
+        id: "09",
+        title: "sugar bowl",
+        image: "folder/brokentears/obj/09sugar-cover.png",
+        detailTitle: "OBJ 09",
+        description: ".",
+        metaLeft: "sugar bowl",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/09sugar-top.jpeg",
+          "folder/brokentears/obj/09sugar-side.jpeg",
+          "folder/brokentears/obj/09sugar-front.jpeg",
+          "folder/brokentears/obj/09sugar-hand.jpeg"
+        ]
+      },
+      {
+        id: "10",
+        title: "box",
+        image: "folder/brokentears/obj/10box-cover.png",
+        detailTitle: "OBJ 10",
+        description: "extractive state",
+        metaLeft: "box",
+        metaRight: "--",
+        gallery: [
+          "folder/brokentears/obj/10box-angle.jpeg",
+          "folder/brokentears/obj/10box-view-1.jpeg",
+          "folder/brokentears/obj/10box-view-2.jpeg",
+          "folder/brokentears/obj/10box-view-3.jpeg"
+        ]
+      }
+    ];
+
+    const DISPLAY_ORDER = ["09", "10", "07", "12", "11", "08", "01", "04", "05", "06", "03", "02"];
+    const orderedProducts = DISPLAY_ORDER.map((id) => PRODUCTS.find((product) => product.id === id)).filter(Boolean);
+
+    const productGrid = document.querySelector("[data-products]");
+    const productPages = document.querySelector("[data-product-pages]");
+
+    const imageTag = (src, alt, loading = "lazy", style = "") => `<img src="${src}" alt="${alt}" loading="${loading}"${style ? ` style="${style}"` : ""} />`;
+
+    const productCell = (product) => `
+      <article class="shop-cell">
+        <span class="cell-number">${product.id}</span>
+        <a class="product-link" href="#product-${product.id}" aria-label="Open product ${product.id}">
+          <figure class="product-media">
+            ${product.useDrop ? dropTag() : imageTag(product.image, `Ceramic piece ${product.id}`, "eager", product.coverStyle || "")}
+          </figure>
+          <span class="product-status">${product.title}</span>
+        </a>
+      </article>
+    `;
+
+    const comingCell = (id) => `
+      <article class="shop-cell is-coming">
+        <span class="cell-number">${id}</span>
+        <div class="product-link" aria-label="Future product ${id}">
+          <figure class="product-media">
+            <div class="coming-drop" aria-hidden="true">
+              <svg viewBox="0 0 96 132" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M48 6C48 6 16 47 16 82C16 107 30 126 48 126C66 126 80 107 80 82C80 47 48 6 48 6Z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </figure>
+          <span class="product-status" aria-hidden="true"></span>
+        </div>
+      </article>
+    `;
+
+    function dropTag() {
+      return `
+        <div class="coming-drop" aria-hidden="true">
+          <svg viewBox="0 0 96 132" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M48 6C48 6 16 47 16 82C16 107 30 126 48 126C66 126 80 107 80 82C80 47 48 6 48 6Z" stroke="currentColor" stroke-width="1" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      `;
+    }
+
+    const getColumnCount = () => {
+      const columns = getComputedStyle(productGrid).gridTemplateColumns;
+      return columns.split(" ").filter(Boolean).length || 1;
+    };
+
+    const renderProductGrid = () => {
+      productGrid.innerHTML = orderedProducts.map(productCell).join("");
+
+      const columnCount = getColumnCount();
+      const emptyCellCount = (columnCount - (orderedProducts.length % columnCount)) % columnCount;
+      const nextNumber = orderedProducts.length + 1;
+
+      productGrid.insertAdjacentHTML(
+        "beforeend",
+        Array.from({ length: emptyCellCount }, (_, index) => {
+          return comingCell(String(nextNumber + index).padStart(2, "0"));
+        }).join("")
+      );
+    };
+
+    productPages.innerHTML = PRODUCTS.map((product) => `
+      <section id="product-${product.id}" class="product-page">
+        <a class="back-link" href="#">&#8592; back</a>
+        <div class="product-detail-layout">
+          <div class="gallery">
+            ${product.gallery.map((src, index) => imageTag(src, `Product ${product.id} view ${index + 1}`, "eager")).join("")}
+          </div>
+          <aside class="product-info">
+            <h1>${product.detailTitle}</h1>
+            <p>${product.description}</p>
+            <div class="buy-line"><span>${product.metaLeft}</span><span>${product.metaRight}</span></div>
+          </aside>
+        </div>
+      </section>
+    `).join("");
+    renderProductGrid();
+    window.addEventListener("resize", renderProductGrid);
+  </script>
+</body>
+</html>

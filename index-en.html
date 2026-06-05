@@ -1,0 +1,1550 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portfolio</title>
+  <style>
+    :root {
+      --page-xpad: 50px;
+      --nav-item-h: 40px;
+      --gap-vert: 84px;
+      --border-w: 2px;
+      --nav-fs: 1.125rem;
+      --nav-gap: 8px;
+      --nav-fixed-w: 138px;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Noto Sans', Arial, 'Apple Color Emoji','Segoe UI Emoji';
+      color: #000;
+      background: #fff;
+      line-height: 1.4;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: var(--nav-gap);
+      left: 0;
+      right: auto;
+      z-index: 90;
+      display: flex;
+      flex-direction: column;
+      gap: var(--nav-gap);
+      font-size: var(--nav-fs);
+      line-height: 0;
+    }
+    .nav__item {
+      position: relative;
+      background: #000;
+      color: #fff;
+      height: 40px;
+      line-height: 40px;
+      border: none;
+      margin: 0;
+      padding: 0 15px;
+      width: var(--nav-fixed-w, 100px);
+      min-width: var(--nav-fixed-w, 100px);
+      max-width: var(--nav-fixed-w, 100px);
+      align-self: flex-start;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      overflow: hidden;
+      border-radius: 0;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .nav__item .label {
+      transition: opacity .18s ease;
+      text-transform: uppercase;
+    }
+    .nav__item.collapsed {
+      width: 10px;
+      max-width: 10px;
+      min-width: 0;
+      padding: 0;
+    }
+    .nav__item.collapsed .label { opacity: 0; }
+    .nav__item.active { outline-color: #111; }
+
+    main { min-height: 100vh; padding: 0 var(--page-xpad) 80px; }
+    body.is-home main { padding: 0; }
+
+    section.page {
+      display: none;
+      padding-top: 80px;
+    }
+    section.page.active { display: block; }
+
+    /* Home and rain */
+    #home {
+      padding-top: 0;
+      position: relative;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+    .shapes-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .drop {
+      position: absolute;
+      width: var(--s,36px);
+      height: calc(var(--s,36px)*1.6);
+      pointer-events:none;
+      will-change:transform,filter;
+    }
+    .drop::before {
+      content:"";
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:0;
+      width:var(--s,36px);
+      height:calc(var(--s,36px)*1.1);
+      background-repeat:no-repeat;
+      background-size:100% 100%;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>");
+    }
+
+    .home-back {
+      position: fixed;
+      right: 16px;
+      left: auto;
+      bottom: 16px;
+      z-index: 45;
+      width: 55px;
+      height: 82px;
+      background:#000;
+      color:#fff;
+      border:none;
+      border-radius:0;
+      cursor:pointer;
+      padding: 0;
+      display: flex;
+      align-items:center;
+      justify-content:center;
+      font: inherit;
+      outline: none;
+      -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>");
+      mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 140' preserveAspectRatio='none'><path d='M50 0 C65 30 84 70 84 95 C84 130 69 140 50 140 C31 140 16 130 16 95 C16 70 35 30 50 0 Z' fill='%23000'/></svg>");
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+      -webkit-mask-repeat:no-repeat;
+      mask-repeat:no-repeat;
+      -webkit-mask-position:center;
+      mask-position:center;
+    }
+    .home-back::before{
+      content: '>';
+      color:#fff;
+      display:inline-block;
+      line-height:1;
+      font-weight:700;
+      transform: translateY(6px);
+    }
+    body.is-home .home-back::before{ content: '≡' !important; }
+
+    .sound-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 95;
+      width: 32px;
+      height: 32px;
+      padding: 0;
+      border: none;
+      background: transparent;
+      color: #000;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+    }
+    .sound-toggle svg {
+      width: 24px;
+      height: 24px;
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .sound-toggle .sound-toggle__off { display: none; }
+    .sound-toggle.is-muted .sound-toggle__on { display: none; }
+    .sound-toggle.is-muted .sound-toggle__off { display: block; }
+
+    /* Content */
+    .feed {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: var(--gap-vert);
+    }
+    .block {
+      width: 100%;
+      max-width: 1200px;
+    }
+    .block__title {
+      font-family: inherit;
+      font-weight: 600;
+      margin: 0 0 20px;
+      text-align: left;
+      font-size: calc(var(--nav-fs) * 1.05);
+      line-height: 1.2;
+      letter-spacing: 0.005em;
+    }
+
+    .gallery {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      margin-left: calc(-1 * var(--page-xpad));
+      margin-right: calc(-1 * var(--page-xpad));
+      padding-left: var(--page-xpad);
+      padding-right: var(--page-xpad);
+    }
+    .gallery::-webkit-scrollbar { display: none; width: 0; height: 0; }
+
+    .media {
+      height: 200px;
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      color: inherit;
+      border: none;
+      border-radius: 0;
+      cursor: pointer;
+      position: relative;
+    }
+    .gallery.taller .media { height: 266.67px; }
+    .gallery.taller2 .media { height: 400px; }
+    .gallery.taller2 .media.video {
+      height: auto;
+      width: min(100%, 960px);
+      aspect-ratio: 16 / 9;
+    }
+
+    #pictures .media { background: transparent; }
+
+    .media img,
+    .media video,
+    .media svg {
+      height: 100%;
+      width: auto;
+      display: block;
+      pointer-events: auto;
+    }
+    
+{
+  height: 200px;          /* standard media size */
+  flex: 0 0 auto;
+  position: relative;
+  cursor: pointer;
+}
+
+.media.video.video-link a {
+  display: block;
+  height: 100%;
+}
+
+.media.video.video-link img {
+  height: 100%;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+
+/* play icon */
+.media.video.video-link::after {
+  content: '▶';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  color: #fff;
+  background: none;
+  pointer-events: none;
+}
+    
+    .media iframe {
+      width: 100%;
+      height: 100%;
+      display: block;
+      pointer-events: auto;
+    }
+
+    .gallery + .gallery { margin-top: 12px; }
+
+  .block__desc {
+  margin-top: 10px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+  .block__desc a {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 0.16em;
+  }
+
+    .about {
+      display: flex;
+      flex-direction: row;
+      gap: 24px;
+      align-items: flex-start;
+      justify-content: flex-start;
+    }
+    .about__image { flex: 0 0 33.333%; max-width: 33.333%; }
+    .about__image img {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+    }
+    .about__text {
+      flex: 1 1 auto;
+      min-width: 280px;
+      font-size: 0.95rem;
+    }
+    .about__text > :first-child { margin-top: 0; }
+
+    /* Sparkles */
+    .spark{
+      position:fixed;
+      width:10px;
+      height:10px;
+      background:#000;
+      pointer-events:none;
+      will-change:transform,opacity,filter;
+      z-index:60;
+      opacity:1;
+    }
+    .spark.circle{ border-radius:50%; }
+    .spark.semi{
+      border-radius:50% 50% 0 0 / 50% 50% 0 0;
+      overflow:hidden;
+    }
+
+    /* Viewer */
+    .viewer{
+      position:fixed;
+      inset:0;
+      background:#fff;
+      display:none;
+      z-index:100;
+      padding:32px 96px;
+      box-sizing:border-box;
+      align-items:center;
+      justify-content:center;
+    }
+    .viewer.open{display:flex;}
+    .viewer__scroller{
+      position:relative;
+      width:100%;
+      height:100%;
+      overflow:auto;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      scrollbar-width:none;
+      -ms-overflow-style:none;
+    }
+    .viewer__scroller::-webkit-scrollbar{width:0;height:0;display:none;}
+    .viewer__frame{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:100%;
+      height:100%;
+    }
+    .viewer__img,
+    .viewer__vid{
+      display:block;
+      width:auto;
+      height:auto;
+      max-width:calc(100vw - 192px);
+      max-height:calc(100vh - 64px);
+      object-fit:contain;
+      object-position:center;
+    }
+    .viewer__vid{ display:none; }
+    .viewer__img{ cursor:zoom-in; }
+
+    .viewer.zoomed .viewer__scroller{
+      align-items:center;
+      justify-content:center;
+    }
+    .viewer.zoomed.is-scrollable-y .viewer__scroller{
+      align-items:flex-start;
+    }
+    .viewer.zoomed.is-scrollable-x .viewer__scroller{
+      justify-content:flex-start;
+    }
+    .viewer.zoomed .viewer__frame{
+      align-items:center;
+      justify-content:center;
+      width:max-content;
+      height:max-content;
+      min-width:100%;
+      min-height:100%;
+    }
+    .viewer.zoomed.is-scrollable-y .viewer__frame{
+      align-items:flex-start;
+    }
+    .viewer.zoomed.is-scrollable-x .viewer__frame{
+      justify-content:flex-start;
+    }
+    .viewer.zoomed .viewer__img{
+      max-width:none;
+      max-height:none;
+      cursor:zoom-out;
+    }
+
+    .viewer__btn{
+      position:fixed;
+      top:50%;
+      transform:translateY(-50%);
+      width:44px;
+      height:44px;
+      border:none;
+      border-radius:50%;
+      background:#000;
+      color:#fff;
+      font-size:22px;
+      line-height:1;
+      display:grid;
+      place-items:center;
+      cursor:pointer;
+      z-index:110;
+    }
+    .viewer__prev{left:28px;}
+    .viewer__next{right:28px;}
+
+    .viewer__close{
+      position:fixed;
+      top:20px;
+      right:20px;
+      width:auto;
+      height:auto;
+      padding:6px 8px;
+      border:none;
+      border-radius:0;
+      background:transparent;
+      color:#000;
+      font-size:28px;
+      line-height:1;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      z-index:120;
+    }
+
+    /* Mobile navigation */
+    .mnav{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:200;
+      background:rgba(128,128,128,.5);
+    }
+    .mnav.open{display:flex;}
+    .mnav__inner{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      align-items:center;
+      justify-content:center;
+    }
+    .mnav__btn{
+      min-width:220px;
+      height:40px;
+      line-height:40px;
+      padding:0 16px;
+      background:#000;
+      color:#fff;
+      border:none;
+      border-radius:0;
+      font: inherit;
+      font-size:1rem;
+      text-align:center;
+      text-transform:uppercase;
+      letter-spacing:.02em;
+      appearance:none;
+      -webkit-appearance:none;
+    }
+    .mhead{display:none;}
+
+    @media (hover: hover) {
+      .nav__item.collapsed:hover {
+        width: auto;
+        max-width: none;
+        padding: 0 15px;
+      }
+      .nav__item.collapsed:hover .label { opacity: 1; }
+    }
+
+    @media (min-width: 641px){
+      body.is-home .nav { display:none; }
+      body:not(.is-home) .nav .nav__item:not(.active){ display:none; }
+      body:not(.is-home) .nav.expanded .nav__item{ display:flex; }
+      body.is-home .home-back::before{ content: '≡' !important; }
+      body:not(.is-home) .home-back::before{ content: '>' !important; }
+    }
+
+    @media (max-width: 640px){
+      :root { --page-xpad: 10px; }
+      .nav{
+        left:0;
+        right:auto;
+        top: var(--nav-gap);
+        display:flex;
+      }
+      body.is-home .nav{ display:none !important; }
+      body:not(.is-home) .nav .nav__item{ display:none; }
+      body:not(.is-home) .nav .nav__item.active{ display:flex; }
+      body:not(.is-home) .nav.expanded .nav__item{ display:flex; }
+      body:not(.is-home) section.page{ padding-top: 80px; }
+
+      #about .about{ flex-direction: column; align-items: stretch; }
+      #about .about__image{ flex: 0 0 auto; max-width: 100%; }
+      #about .about__image img{ width: 100%; height: auto; object-fit: contain; }
+      #about .about__text{ margin-top: 60px; }
+
+      .media { cursor: default; } /* viewer clicks are handled in JS */
+
+      .viewer{
+        padding:24px 18px;
+      }
+      .viewer__btn{ display:none; }
+      .viewer__img,
+      .viewer__vid{
+        max-width:calc(100vw - 36px);
+        max-height:calc(100vh - 48px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" id="nav">
+    <button class="nav__item" data-target="pictures"><span class="label">ILLUSTRATION</span></button>
+    <button class="nav__item" data-target="things"><span class="label">OBJECTS</span></button>
+    <button class="nav__item" data-target="edtech"><span class="label">ED-TECH</span></button>
+    <button class="nav__item" data-target="about"><span class="label">ABOUT</span></button>
+  </nav>
+
+  <button class="home-back" id="homeBack" aria-label=":>" title=":>"></button>
+  <button class="sound-toggle is-muted" id="rainSoundToggle" type="button" aria-label="Turn rain sound on" aria-pressed="false">
+    <svg class="sound-toggle__on" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 10v4h4l5 4V6l-5 4H4Z"></path>
+      <path d="M16 9c1 1 1 5 0 6"></path>
+      <path d="M19 7c2 3 2 7 0 10"></path>
+    </svg>
+    <svg class="sound-toggle__off" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 10v4h4l5 4V6l-5 4H4Z"></path>
+      <path d="M18 9l4 6"></path>
+      <path d="M22 9l-4 6"></path>
+    </svg>
+  </button>
+  <audio id="rainAudio" src="folder/sounds/rain.mp3" loop preload="auto"></audio>
+
+  <div class="mhead" id="mhead" aria-hidden="true">
+    <button class="nav__item" data-target="pictures"><span class="label">Illustration</span></button>
+    <button class="nav__item" data-target="things"><span class="label">Objects</span></button>
+    <button class="nav__item" data-target="edtech"><span class="label">Ed-tech</span></button>
+    <button class="nav__item" data-target="about"><span class="label">About</span></button>
+  </div>
+
+  <main>
+    <section class="page active" id="home">
+      <div class="shapes-layer" id="shapes"></div>
+    </section>
+
+    <section class="page" id="pictures">
+      <div class="feed">
+        <article class="block">
+          <h2 class="block__title">History of Money</h2>
+          <div class="gallery taller" data-gallery>
+            <div class="media"><img src="folder/portfolio/history-money/bhm2.png" alt="History of Money 2" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/history-money/bhm3.png" alt="History of Money 3" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/history-money/bhm4.png" alt="History of Money 4" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/history-money/bhm5.png" alt="History of Money 5" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/history-money/main3.gif" alt="History of Money — animation" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Participation in developing the creative concept, style development, illustration, and storyboarding.</div>
+        </article>
+
+        <article class="block">
+          <h2 class="block__title">Yandex GO Kazakhstan</h2>
+          <div class="gallery taller" data-gallery>
+            <div class="media"><img src="folder/portfolio/yandex-go-kazakhstan/last.png" alt="Yandex GO Kazakhstan" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Illustration and animation preparation for a Yandex Go for Business promo video.</div>
+        </article>
+
+        <article class="block">
+          <h2 class="block__title">Product Illustration</h2>
+          <div class="gallery taller" data-gallery>
+            <div class="media"><img src="folder/portfolio/product-illustration/prill1.png" alt="Product Illustration 1" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/product-illustration/prill2.png" alt="Product Illustration 2" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/product-illustration/prill3.png" alt="Product Illustration 3" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/product-illustration/prill4.png" alt="Product Illustration 4" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/product-illustration/prill5.png" alt="Product Illustration 5" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Development of a product illustration style for the teacher dashboard and middle school at Uchi.ru.</div>
+        </article>
+
+        <article class="block">
+          <h2 class="block__title">Anna Akhmatova</h2>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/Akhmatova/anna1.png" alt="Anna Akhmatova 1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/Akhmatova/anna2.png" alt="Anna Akhmatova 2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/Akhmatova/anna3.png" alt="Anna Akhmatova 3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/Akhmatova/flower-exp.gif" alt="GIF: flower, Anna Akhmatova series" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/Akhmatova/image1.png" alt="Animation 1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/Akhmatova/image2.png" alt="Animation 2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/Akhmatova/image3.png" alt="Animation 3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/Akhmatova/table.png" alt="Table" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Illustrations for a high-school lesson about Anna Akhmatova at Uchi.ru.</div>
+        </article>
+
+        <article class="block">
+          <h2 class="block__title">Andrei Platonov</h2>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train1.svg" alt="Platonov train 1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train2.svg" alt="Platonov train 2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train3.svg" alt="Platonov train 3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train4.svg" alt="Platonov train 4" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train5.svg" alt="Platonov train 5" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/train6.svg" alt="Platonov train 6" loading="lazy"></div>
+          </div>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/platonov1.svg" alt="Platonov 1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/platonov2.png" alt="Platonov 2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/platonov3.png" alt="Platonov 3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/platonov4.svg" alt="Platonov 4" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/platonov/platonov5.svg" alt="Platonov 5" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Illustrations for a high-school lesson on the book "The Fierce and Beautiful World" at Uchi.ru.</div>
+        </article>
+
+        <article class="block">
+          <h2 class="block__title">The Old Man and the Sea</h2>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/o1.svg" alt="The Old Man and the Sea — illustration o1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/o2.svg" alt="The Old Man and the Sea — illustration o2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/o3.svg" alt="The Old Man and the Sea — illustration o3" loading="lazy"></div>
+            <div class="media">
+              <img class="anim-seq" alt="The Old Man and the Sea — frames"
+                   data-interval="500"
+                   data-frames="https://maieuticaio.github.io/folder/ichi/hemingway/f1.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f2.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f3.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f4.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f5.svg,https://maieuticaio.github.io/folder/ichi/hemingway/f6.svg" />
+            </div>
+          </div>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/1.svg" alt="The Old Man and the Sea — illustration 1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/2.svg" alt="The Old Man and the Sea — illustration 2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/3.svg" alt="The Old Man and the Sea — illustration 3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/hemingway/4.svg" alt="The Old Man and the Sea — illustration 4" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Illustrations for a high-school lesson on Ernest Hemingway's "The Old Man and the Sea" at Uchi.ru.</div>
+        </article>
+
+        <article class="block">
+          <h2 class="block__title">Textbook</h2>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/1.svg" alt="Textbook 1" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/2.svg" alt="Textbook 2" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/3.svg" alt="Textbook 3" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/4.svg" alt="Textbook 4" loading="lazy"></div>
+          </div>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/5.png" alt="Textbook 5" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/6.png" alt="Textbook 6" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/12.svg" alt="Textbook 12" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/13.svg" alt="Textbook 13" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/11.svg" alt="Textbook 11" loading="lazy"></div>
+          </div>
+          <div class="gallery taller" data-gallery>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/0.svg" alt="Textbook 0" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/8.png" alt="Textbook 8" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/9.svg" alt="Textbook 9" loading="lazy"></div>
+            <div class="media"><img src="https://maieuticaio.github.io/folder/ichi/uchebnik/10.svg" alt="Textbook 10" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Illustrations for articles in Uchi.ru's digital literature textbook.</div>
+        </article>
+      </div>
+    </section>
+
+    <section class="page" id="things">
+      <div class="feed">
+        
+        <article class="block">
+          <h2 class="block__title">Broken Tears</h2>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="folder/portfolio/broken-tears/box.jpeg" alt="Broken Tears — box" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/broken-tears/sugar-bowl.jpeg" alt="Broken Tears — sugar bowl" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/broken-tears/sauce-boat.jpeg" alt="Broken Tears — sauce boat" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/broken-tears/ring.jpeg" alt="Broken Tears — ring" loading="lazy"></div>
+            <div class="media"><img src="folder/portfolio/broken-tears/bird-bowl.jpeg" alt="Broken Tears — bird object" loading="lazy"></div>
+          </div>
+          <div class="block__desc">Handmade ceramics. <a href="brokentears-en.html">object registry</a></div>
+        </article>
+
+        <article class="block">
+          <h2 class="block__title">Transitional Object</h2>
+          <div class="gallery" data-gallery>
+            <div class="media"><img src="folder/brokentears/plakalshitsa/transition-object.gif" alt="Transitional Object" loading="lazy"></div>
+            <div class="media"><img src="folder/brokentears/plakalshitsa/transition-object-stop-motion.gif" alt="Transitional Object — stop-motion" loading="lazy"></div>
+            <div class="media"><img src="folder/brokentears/plakalshitsa/pl02_01.jpeg" alt="Transitional Object 02" loading="lazy"></div>
+            <div class="media"><img src="folder/brokentears/plakalshitsa/transition-object-02.gif" alt="Transitional Object 02 — states" loading="lazy"></div>
+          </div>
+          <div class="block__desc">
+            <p>An immersive sculpture, a set of states and emotions designed for real-time mood tracking and maintaining an inner dialogue. Its purpose is to bring an experience outward into a physical object. Interaction with the sculpture slows perception down: it is not just a record of a state, but a tactile and spatial experience that makes it possible not to analyze things abstractly, but to see, touch, and relate them to bodily and visual experience. The sculpture acts as a mediator between different parts of the self, allowing a dialogue to begin while holding focus. It does not take over completely, but it also does not allow important displaced parts to be forgotten, becoming an anchor for them.</p>
+            <p>The task of transitional objects is to support a person in interacting with uncomfortable, displaced, or unexpressed states that often have no place in everyday life. They become a companion tool in the process of integration, giving different states form, place, and recognition, and helping restore inner wholeness.</p>
+            <p>In a sense, this is a mourning woman. Historically, a mourning woman was invited to express peak emotional states: feelings that the participants in a ritual could not always, or were not allowed to, express themselves. The sculptures continue this tradition, but translate it into the space of individual inner work.</p>
+          </div>
+        </article>
+
+<article class="block">
+  <h2 class="block__title">Transitional Object "Dasha"</h2>
+
+  <div class="gallery" data-gallery>
+    <!-- video removed -->
+    <div class="media">
+      <img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha1.jpeg" alt="bt2 dasha1" loading="lazy">
+    </div>
+    <div class="media">
+      <img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha2.jpeg" alt="bt2 dasha2" loading="lazy">
+    </div>
+    <div class="media">
+      <img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha3.jpeg" alt="bt2 dasha3" loading="lazy">
+    </div>
+    <div class="media">
+      <img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha4.jpeg" alt="bt2 dasha4" loading="lazy">
+    </div>
+    <div class="media">
+      <img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha5.jpeg" alt="bt2 dasha5" loading="lazy">
+    </div>
+    <div class="media">
+      <img src="https://maieuticaio.github.io/folder/brokentears/Dasha/dasha6.jpeg" alt="bt2 dasha6" loading="lazy">
+    </div>
+  </div>
+
+  <div class="block__desc">
+  The sculpture was made to order; the states were gathered and shaped through dialogue.
+  </div>
+</article>
+        
+      </div>
+    </section>
+    
+<section class="page" id="edtech">
+  <div class="feed">
+
+<article class="block">
+  <h2 class="block__title">Geography</h2>
+
+  <div class="gallery" data-gallery>
+    <a
+      class="media video video-link"
+      href="https://www.youtube.com/watch?v=BF9R6ZQqAv8"
+      target="_blank"
+      rel="noopener"
+    >
+      <img
+        src="https://maieuticaio.github.io/folder/ichi/promogeo.png"
+        alt="Geography — demo"
+        loading="lazy"
+      >
+    </a>
+  </div>
+
+  <div class="block__desc">
+    Creation of illustration and animation style for Geography, participation in developing
+    lesson concepts and visual storytelling, and collaboration with methodologists and designers
+    on educational interactives for middle and high school at Uchi.ru.
+  </div>
+</article>
+
+<article class="block">
+      <h2 class="block__title">Interactive Concepts</h2>
+
+      <div class="gallery" data-gallery>
+        <div class="media">
+          <img src="https://maieuticaio.github.io/folder/ichi/edtech/concept3.png"
+               alt="Interactive Concepts — 3" loading="lazy">
+        </div>
+        <div class="media">
+          <img src="https://maieuticaio.github.io/folder/ichi/edtech/concept4.png"
+               alt="Interactive Concepts — 4" loading="lazy">
+        </div>
+        <div class="media">
+          <img src="https://maieuticaio.github.io/folder/ichi/edtech/concept1.png"
+               alt="Interactive Concepts — 1" loading="lazy">
+        </div>
+        <div class="media">
+          <img src="https://maieuticaio.github.io/folder/ichi/edtech/concept2.png"
+               alt="Interactive Concepts — 2" loading="lazy">
+        </div>
+      </div>
+
+      <div class="block__desc">
+        <p>Visualization of interactive concepts as part of creative exploration at Uchi.ru.</p>
+      </div>
+    </article>
+
+  </div>
+</section>
+    
+    
+    <section class="page" id="about">
+      <div class="about">
+        <div class="about__image">
+          <img alt="Photo" src="https://maieuticaio.github.io/folder/avatar.JPEG">
+        </div>
+        <div class="about__text">
+          <p><strong>Alexandra</strong> is an artist and illustrator.</p>
+          <p><a href="https://t.me/alkhlb" target="_blank" rel="noopener">Telegram</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="mnav" id="mnav" aria-hidden="true">
+    <div class="mnav__inner">
+      <button class="mnav__btn" data-target="pictures">ILLUSTRATION</button>
+      <button class="mnav__btn" data-target="things">OBJECTS</button>
+      <button class="mnav__btn" data-target="edtech">ED-TECH</button>
+      <button class="mnav__btn" data-target="about">ABOUT</button>
+    </div>
+  </div>
+
+  <div class="viewer" id="viewer" aria-hidden="true">
+    <button class="viewer__btn viewer__prev" id="viewerPrev" aria-label="Previous">‹</button>
+    <div class="viewer__scroller" id="viewerScroll">
+      <div class="viewer__frame" id="viewerFrame">
+        <img class="viewer__img" id="viewerImg" alt="">
+        <video class="viewer__vid" id="viewerVid" controls playsinline></video>
+        <button class="viewer__close" id="viewerClose" aria-label="Close">×</button>
+      </div>
+    </div>
+    <button class="viewer__btn viewer__next" id="viewerNext" aria-label="Next">›</button>
+  </div>
+
+  <script>
+    const $ = (s, r = document) => r.querySelector(s);
+    const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+    const isMobile = () => window.matchMedia('(max-width: 640px)').matches;
+    let currentPage = 'home';
+
+    /* Rain */
+    function stopRain(){
+      const layer = $('#shapes');
+      if (window.__rainRAF) {
+        cancelAnimationFrame(window.__rainRAF);
+        window.__rainRAF = null;
+      }
+      if (layer) {
+        layer.innerHTML = '';
+        layer.removeAttribute('data-mode');
+      }
+    }
+
+    function spawnDrip(x, y, size, opacity){
+      const n = Math.max(6, Math.round(size/6));
+      const parts = [];
+      for(let i=0;i<n;i++){
+        const shapes = ['square','circle','semi'];
+        const shape = shapes[Math.floor(Math.random()*shapes.length)];
+        const el = document.createElement('div');
+        el.className = 'spark' + (shape==='square' ? '' : (shape==='circle' ? ' circle' : ' semi'));
+        const s = Math.max(2, Math.round(size * (0.08 + Math.random()*0.06)));
+        el.style.width = s+'px';
+        el.style.height = s+'px';
+        el.style.position='fixed';
+        el.style.left = (x - s/2) + 'px';
+        el.style.top = (y - s/2) + 'px';
+        el.style.opacity = String(opacity);
+        const blur = Math.max(1, Math.round((40 - size) * 0.1) + 1);
+        el.style.filter = 'blur(' + blur + 'px)';
+        el.style.zIndex='70';
+        document.body.appendChild(el);
+        const ang = (-Math.PI) + Math.random()*Math.PI;
+        let vx = Math.cos(ang) * (192 + Math.random()*256);
+        let vy = Math.sin(ang) * (288 + Math.random()*352);
+        const ax = 0;
+        const ay = 1200;
+        parts.push({ el, x: x - s/2, y: y - s/2, vx, vy, ax, ay, life: 0, max: 0.9 });
+      }
+      let last = performance.now();
+      function step(now){
+        const dt = (now - last)/1000;
+        last = now;
+        let alive = 0;
+        for(const p of parts){
+          p.vx += p.ax * dt;
+          p.vy += p.ay * dt;
+          p.x  += p.vx * dt;
+          p.y  += p.vy * dt;
+          p.life += dt;
+          const fade = Math.max(0, 1 - p.life/p.max);
+          p.el.style.left = p.x + 'px';
+          p.el.style.top  = p.y + 'px';
+          p.el.style.opacity = String(fade * opacity);
+          if(p.life < p.max) alive++; else p.el.remove();
+        }
+        if(alive) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    function startRain(force=false){
+      const layer = $('#shapes');
+      if(!layer) return;
+      if(layer.dataset.mode === 'rain' && layer.children.length && !force) return;
+      stopRain();
+      layer.innerHTML = '';
+      layer.dataset.mode = 'rain';
+      const drops = [];
+      const COUNT = 26;
+      const makeDrop = () => {
+        const el = document.createElement('div');
+        el.className = 'drop';
+        const s = Math.round(22 + Math.random()*18);
+        el.style.setProperty('--s', s+'px');
+        const blur = Math.max(1, Math.round((40 - s) * 0.1) + 1);
+        el.style.filter = 'blur(' + blur + 'px)';
+        const alpha = 0.3 + 0.7 * ((s - 22) / 18);
+        el.style.opacity = String(Math.max(0.3, Math.min(1, alpha)));
+        const W = layer.clientWidth || window.innerWidth;
+        const H = layer.clientHeight || window.innerHeight;
+        const x = Math.random() * Math.max(0, W - s);
+        const y = -Math.random()*H*0.6 - s;
+        const vy = (70 + Math.random()*70) * 1.3333;
+        layer.appendChild(el);
+        return { el, s, x, y, vy, hit: false };
+      };
+      for(let i=0;i<COUNT;i++) drops.push(makeDrop());
+      let last = performance.now();
+      function loop(now){
+        const dt = Math.min(0.05, (now - last)/1000);
+        last = now;
+        const W = layer.clientWidth || window.innerWidth;
+        const H = layer.clientHeight || window.innerHeight;
+        for(const d of drops){
+          d.y += d.vy * dt;
+          d.el.style.transform = `translate(${Math.round(d.x)}px, ${Math.round(d.y)}px)`;
+          const h = d.s * 1.1;
+          const t = Math.min(12, h * 0.25);
+          if(!d.hit && (d.y + h) >= (H - t)){
+            d.hit = true;
+            const op = parseFloat(d.el.style.opacity || '1');
+            spawnDrip(Math.round(d.x + d.s/2), H - t, d.s, Math.max(0.3, Math.min(1, op)));
+          }
+          if(d.y > H + d.s*1.3){
+            d.y = -d.s - Math.random()*H*0.6;
+            d.x = Math.random()*Math.max(0, W - d.s);
+            d.vy = (70 + Math.random()*70) * 1.3333;
+            d.hit = false;
+          }
+        }
+        window.__rainRAF = requestAnimationFrame(loop);
+      }
+      window.__rainRAF = requestAnimationFrame(loop);
+    }
+
+    function fireworkFromButton(){
+      const btn = $('#homeBack'); if(!btn) return;
+      const r = btn.getBoundingClientRect();
+      const o = { x: r.left + r.width/2, y: r.top + r.height/2 };
+      const N = 14;
+      const types = ['square','circle','semi'];
+      const fr = [];
+      for(let i=0;i<N;i++){
+        const t = types[Math.floor(Math.random()*types.length)];
+        const el = document.createElement('div');
+        el.className = 'spark' + (t==='square' ? '' : (t==='circle' ? ' circle' : ' semi'));
+        const s = Math.round(6 + Math.random()*8);
+        el.style.width = s+'px';
+        el.style.height = s+'px';
+        el.style.position='fixed';
+        el.style.zIndex='200';
+        document.body.appendChild(el);
+        const ang = Math.random()*Math.PI*2;
+        let vx = Math.cos(ang) * (220 + Math.random()*240);
+        let vy = Math.sin(ang) * (220 + Math.random()*240);
+        const ax = Math.cos(ang) * 900;
+        const ay = Math.sin(ang) * 900;
+        const x0 = o.x - s/2;
+        const y0 = o.y - s/2;
+        fr.push({ el, x: x0, y: y0, vx, vy, ax, ay, life: 0 });
+      }
+      let last = performance.now();
+      function tick(now){
+        const dt = (now - last)/1000;
+        last = now;
+        let alive = 0;
+        for(const f of fr){
+          f.vx += f.ax * dt;
+          f.vy += f.ay * dt;
+          f.x  += f.vx * dt;
+          f.y  += f.vy * dt;
+          f.life += dt;
+          const fade = Math.max(0, 1 - f.life/0.8);
+          f.el.style.left = f.x + 'px';
+          f.el.style.top  = f.y + 'px';
+          f.el.style.opacity = String(fade);
+          if(f.life < 0.8) alive++; else f.el.remove();
+        }
+        if(alive) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    /* Pages and navigation */
+    const NAV_ORDER = ['pictures', 'things', 'edtech', 'about'];
+
+    function updateNavOrder(id){
+      const ordered = NAV_ORDER.includes(id)
+        ? [id, ...NAV_ORDER.filter(item => item !== id)]
+        : NAV_ORDER;
+      $$('#nav .nav__item').forEach(btn => {
+        const index = ordered.indexOf(btn.dataset.target);
+        btn.style.order = index >= 0 ? String(index) : '';
+      });
+    }
+
+    function setPage(id){
+      const sections = $$('.page');
+      const navItems = $$('.nav__item');
+      const nav = $('#nav');
+      const isHome = (id === 'home');
+
+      sections.forEach(s => s.classList.toggle('active', s.id === id));
+      navItems.forEach(b => b.classList.toggle('active', b.dataset.target === id));
+      updateNavOrder(id);
+
+      document.body.classList.toggle('is-home', isHome);
+
+      if(nav){
+        if(!isHome && isMobile()){
+          nav.classList.add('folded');
+          nav.classList.remove('expanded');
+        } else {
+          nav.classList.remove('folded');
+          nav.classList.remove('expanded');
+        }
+      }
+
+      if(location.hash.replace('#','') !== id){
+        history.replaceState(null, '', '#'+id);
+      }
+
+      currentPage = id;
+
+      if(isHome){
+        startRain(true);
+      } else {
+        stopRain();
+      }
+
+      document.dispatchEvent(new Event('pagechange'));
+    }
+
+    function initNav(){
+      const nav = $('#nav');
+      const navItems = $$('.nav__item');
+      const homeBack = $('#homeBack');
+      const mnav = $('#mnav');
+
+      navItems.forEach(btn => {
+        if(btn.closest('#mhead')) return;
+        btn.addEventListener('click', () => {
+          const target = btn.dataset.target;
+          const onHome = document.body.classList.contains('is-home');
+          if(isMobile()){
+            if(onHome){
+              setPage(target);
+              return;
+            }
+            if(btn.classList.contains('active')){
+              if(nav) nav.classList.toggle('expanded');
+              return;
+            }
+            if(nav) nav.classList.remove('expanded');
+            setPage(target);
+          } else {
+            if(!onHome && btn.classList.contains('active')){
+              if(nav) nav.classList.toggle('expanded');
+              return;
+            }
+            if(nav) nav.classList.remove('expanded');
+            setPage(target);
+          }
+        });
+      });
+
+      if(nav){
+        nav.addEventListener('mouseenter', ()=>{
+          if(!isMobile() && document.body.classList.contains('is-home')){
+            nav.classList.add('expanded');
+          }
+        });
+        nav.addEventListener('mouseleave', ()=>{
+          if(!isMobile() && document.body.classList.contains('is-home')){
+            nav.classList.remove('expanded');
+          }
+        });
+      }
+
+      const closeMnav = ()=>{
+        if(!mnav) return;
+        mnav.classList.remove('open');
+        mnav.setAttribute('aria-hidden','true');
+        document.body.style.overflow = '';
+      };
+
+      if(homeBack){
+        homeBack.addEventListener('click', () => {
+          const onHome = document.body.classList.contains('is-home');
+          if(isMobile()){
+            if(onHome){
+              if(mnav && mnav.classList.contains('open')){
+                closeMnav();
+              } else if(mnav){
+                mnav.classList.add('open');
+                mnav.setAttribute('aria-hidden','false');
+                document.body.style.overflow = 'hidden';
+              }
+            } else {
+              setPage('home');
+            }
+            return;
+          }
+          if(onHome){
+            if(mnav && mnav.classList.contains('open')){
+              closeMnav();
+            } else if(mnav){
+              mnav.classList.add('open');
+              mnav.setAttribute('aria-hidden','false');
+              document.body.style.overflow = 'hidden';
+            }
+          } else {
+            setPage('home');
+          }
+        });
+      }
+
+      if(mnav){
+        mnav.addEventListener('click', (e)=>{
+          if(e.target === mnav) closeMnav();
+        });
+        mnav.querySelectorAll('.mnav__btn').forEach(btn=>{
+          btn.addEventListener('click', ()=>{
+            setPage(btn.dataset.target);
+            closeMnav();
+          });
+        });
+      }
+    }
+
+    /* Sequence animation (The Old Man and the Sea) */
+    function initAnimSeq(){
+      const animTimers = new Set();
+      function stopAnimSeq(){
+        animTimers.forEach(id => clearInterval(id));
+        animTimers.clear();
+      }
+      function startAnimSeq(root){
+        const scope = root || document;
+        $$('.anim-seq', scope).forEach(img=>{
+          const list = (img.dataset.frames || '').split(',').map(s=>s.trim()).filter(Boolean);
+          if(!list.length) return;
+          let i = 0;
+          img.src = list[0];
+          const iv = Math.max(100, +(img.dataset.interval || 500));
+          const id = setInterval(()=>{
+            i = (i+1) % list.length;
+            img.src = list[i];
+          }, iv);
+          animTimers.add(id);
+        });
+      }
+      document.addEventListener('pagechange', ()=>{
+        stopAnimSeq();
+        if(!document.body.classList.contains('is-home')){
+          const active = $('.page.active');
+          if(active && active.id === 'pictures'){
+            startAnimSeq(active);
+          }
+        }
+      });
+      const active = $('.page.active');
+      if(active && active.id === 'pictures'){
+        startAnimSeq(active);
+      }
+    }
+
+    /* Viewer: desktop only */
+    function initViewer(){
+      const viewer = $('#viewer');
+      const viewerImg = $('#viewerImg');
+      const viewerVid = $('#viewerVid');
+      const viewerPrev = $('#viewerPrev');
+      const viewerNext = $('#viewerNext');
+      const viewerClose = $('#viewerClose');
+      const viewerScroll = $('#viewerScroll');
+      const viewerFrame = $('#viewerFrame');
+
+      let vGallery = null;
+      let vIndex = -1;
+      let pinchStartDistance = null;
+      let pinchStartScale = 1;
+      let gestureStartScale = 1;
+      let viewerScale = 1;
+      let touchStartX = null;
+      let touchStartY = null;
+      let touchMoved = false;
+
+      function srcFromMediaEl(node){
+        const img = node.querySelector('img');
+        if(img && (img.currentSrc || img.src)) return img.currentSrc || img.src;
+        const vid = node.querySelector('video');
+        if(vid && (vid.currentSrc || vid.src)) return vid.currentSrc || vid.src;
+        const svg = node.querySelector('svg');
+        if(svg){
+          const s = new XMLSerializer().serializeToString(svg);
+          const withNs = s.includes('xmlns') ? s : s.replace('<svg','<svg xmlns="http://www.w3.org/2000/svg"');
+          return 'data:image/svg+xml;utf8,' + encodeURIComponent(withNs);
+        }
+        return '';
+      }
+
+      function showItem(gallery, index){
+        vGallery = gallery;
+        vIndex = index;
+        const items = Array.from(vGallery.querySelectorAll('.media'));
+        if(!items.length) return;
+        if(vIndex < 0) vIndex = 0;
+        if(vIndex >= items.length) vIndex = items.length - 1;
+        const item = items[vIndex];
+        const src = srcFromMediaEl(item);
+        if(!src) return;
+
+        const hasVideo = !!item.querySelector('video');
+
+        if(hasVideo && viewerVid){
+          if(viewerImg) viewerImg.style.display = 'none';
+          viewerVid.style.display = 'block';
+          viewerVid.src = src;
+        } else if(viewerImg){
+          viewerImg.style.display = 'block';
+          viewerImg.style.width = '';
+          viewerImg.style.height = '';
+          viewerImg.src = src;
+          if(viewerVid){
+            try { viewerVid.pause(); } catch(e){}
+            viewerVid.removeAttribute('src');
+            viewerVid.style.display = 'none';
+          }
+        }
+
+        viewerScale = 1;
+        if(viewer){
+          viewer.classList.add('open');
+          viewer.classList.remove('zoomed', 'is-scrollable', 'is-scrollable-x', 'is-scrollable-y');
+          viewer.setAttribute('aria-hidden','false');
+          document.body.style.overflow = 'hidden';
+        }
+        if(viewerScroll){
+          viewerScroll.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+        }
+      }
+
+      function closeViewer(){
+        if(viewer){
+          viewer.classList.remove('open');
+          viewer.classList.remove('zoomed', 'is-scrollable', 'is-scrollable-x', 'is-scrollable-y');
+          viewer.setAttribute('aria-hidden','true');
+        }
+        document.body.style.overflow = '';
+        if(viewerVid){
+          try { viewerVid.pause(); } catch(e){}
+          viewerVid.removeAttribute('src');
+          viewerVid.style.display = 'none';
+        }
+        viewerScale = 1;
+        if(viewerImg){
+          viewerImg.removeAttribute('src');
+          viewerImg.style.display = 'block';
+          viewerImg.style.width = '';
+          viewerImg.style.height = '';
+        }
+        vGallery = null;
+        vIndex = -1;
+      }
+
+      function navViewer(dir){
+        if(!vGallery) return;
+        const items = Array.from(vGallery.querySelectorAll('.media'));
+        vIndex = (vIndex + dir + items.length) % items.length;
+        showItem(vGallery, vIndex);
+      }
+
+      if(viewerPrev) viewerPrev.addEventListener('click', ()=> navViewer(-1));
+      if(viewerNext) viewerNext.addEventListener('click', ()=> navViewer(1));
+      if(viewerClose) viewerClose.addEventListener('click', closeViewer);
+      if(viewer) viewer.addEventListener('click', e => {
+        if(e.target === viewer) closeViewer();
+      });
+
+      function clamp(n, min, max){
+        return Math.max(min, Math.min(max, n));
+      }
+
+      function imageFitSize(){
+        if(!viewerImg || !viewerFrame || !viewerImg.naturalWidth || !viewerImg.naturalHeight) return null;
+        const maxW = viewerFrame.clientWidth || window.innerWidth;
+        const maxH = viewerFrame.clientHeight || window.innerHeight;
+        const ratio = Math.min(1, maxW / viewerImg.naturalWidth, maxH / viewerImg.naturalHeight);
+        return {
+          width: viewerImg.naturalWidth * ratio,
+          height: viewerImg.naturalHeight * ratio
+        };
+      }
+
+      function applyViewerScale(){
+        if(!viewer || !viewerImg) return;
+        if(viewerScale <= 1.02){
+          viewerScale = 1;
+          viewer.classList.remove('zoomed', 'is-scrollable', 'is-scrollable-x', 'is-scrollable-y');
+          viewerImg.style.width = '';
+          viewerImg.style.height = '';
+          if(viewerScroll){
+            viewerScroll.scrollTo({ left: 0, top: 0, behavior: 'auto' });
+          }
+          return;
+        }
+        const fit = imageFitSize();
+        if(!fit){
+          viewerImg.addEventListener('load', applyViewerScale, { once: true });
+          return;
+        }
+        const scaledWidth = fit.width * viewerScale;
+        const scaledHeight = fit.height * viewerScale;
+        const scrollableX = scaledWidth > viewerFrame.clientWidth;
+        const scrollableY = scaledHeight > viewerFrame.clientHeight;
+        const scrollable = scrollableX || scrollableY;
+        viewer.classList.add('zoomed');
+        viewer.classList.toggle('is-scrollable', scrollable);
+        viewer.classList.toggle('is-scrollable-x', scrollableX);
+        viewer.classList.toggle('is-scrollable-y', scrollableY);
+        viewerImg.style.width = scaledWidth + 'px';
+        viewerImg.style.height = 'auto';
+        if(viewerScroll){
+          requestAnimationFrame(() => {
+            viewerScroll.scrollTo({
+              left: scrollableX ? Math.max(0, (viewerScroll.scrollWidth - viewerScroll.clientWidth) / 2) : 0,
+              top: scrollableY ? Math.max(0, (viewerScroll.scrollHeight - viewerScroll.clientHeight) / 2) : 0,
+              behavior: 'auto'
+            });
+          });
+        }
+      }
+
+      function setViewerScale(scale){
+        viewerScale = clamp(scale, 1, 5);
+        applyViewerScale();
+      }
+
+      function setViewerZoom(zoomed){
+        setViewerScale(zoomed ? 2.25 : 1);
+      }
+
+      if(viewer){
+        viewer.addEventListener('wheel', e => {
+          if(!viewer.classList.contains('open')) return;
+          if(!(e.ctrlKey || e.metaKey)) return;
+          e.preventDefault();
+          setViewerScale(viewerScale * Math.exp(-e.deltaY * 0.01));
+        }, { passive: false, capture: true });
+
+        viewer.addEventListener('gesturestart', e => {
+          if(!viewer.classList.contains('open')) return;
+          e.preventDefault();
+          gestureStartScale = viewerScale;
+        }, { passive: false });
+
+        viewer.addEventListener('gesturechange', e => {
+          if(!viewer.classList.contains('open')) return;
+          e.preventDefault();
+          setViewerScale(gestureStartScale * e.scale);
+        }, { passive: false });
+      }
+
+      function resetViewerZoom(){
+        setViewerZoom(false);
+      }
+
+      function touchDistance(touches){
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.hypot(dx, dy);
+      }
+
+      if(viewerFrame){
+        viewerFrame.addEventListener('touchstart', e => {
+          touchMoved = false;
+          if(e.touches.length === 1){
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+          } else if(e.touches.length === 2){
+            touchStartX = null;
+            touchStartY = null;
+            pinchStartDistance = touchDistance(e.touches);
+            pinchStartScale = viewerScale;
+          }
+        }, { passive: true });
+
+        viewerFrame.addEventListener('touchmove', e => {
+          if(e.touches.length === 2 && pinchStartDistance !== null && viewer){
+            e.preventDefault();
+            touchMoved = true;
+            const ratio = touchDistance(e.touches) / pinchStartDistance;
+            setViewerScale(pinchStartScale * ratio);
+            return;
+          }
+          if(e.touches.length === 1 && touchStartX !== null && touchStartY !== null){
+            const dx = e.touches[0].clientX - touchStartX;
+            const dy = e.touches[0].clientY - touchStartY;
+            if(Math.abs(dx) > 8 || Math.abs(dy) > 8) touchMoved = true;
+          }
+        }, { passive: false });
+
+        viewerFrame.addEventListener('touchend', e => {
+          if(e.touches.length < 2) pinchStartDistance = null;
+          if(e.changedTouches.length && touchStartX !== null && touchStartY !== null){
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            if(Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy) * 1.4){
+              navViewer(dx < 0 ? 1 : -1);
+              touchMoved = true;
+            }
+          }
+          if(e.touches.length === 0){
+            touchStartX = null;
+            touchStartY = null;
+          }
+        });
+
+        viewerFrame.addEventListener('click', e => {
+          if(!viewer.classList.contains('open')) return;
+          if(e.target === viewerClose || (viewerClose && e.target.closest('#viewerClose'))) return;
+          if(e.target === viewerImg && !isMobile()){
+            setViewerZoom(!viewer.classList.contains('zoomed'));
+            return;
+          }
+          const r = viewerFrame.getBoundingClientRect();
+          const x = e.clientX - r.left;
+          if(x < r.width / 2) navViewer(-1);
+          else navViewer(1);
+        });
+      }
+
+      document.addEventListener('click', e => {
+        const media = e.target.closest('.media');
+        if(!media) return;
+        if(media.matches('a[href]') || media.closest('a[href]')) return;
+        if(media.querySelector('iframe')) return; // leave YouTube embeds alone
+        const gal = media.closest('[data-gallery]');
+        if(!gal) return;
+        const items = Array.from(gal.querySelectorAll('.media'));
+        const idx = items.indexOf(media);
+        if(idx === -1) return;
+        showItem(gal, idx);
+      });
+    }
+
+    function initRainSound(){
+      const audio = $('#rainAudio');
+      const toggle = $('#rainSoundToggle');
+      if(!audio || !toggle) return;
+
+      audio.volume = 0.35;
+      let muted = localStorage.getItem('rainSoundMuted') === 'true';
+
+      const syncButton = () => {
+        toggle.classList.toggle('is-muted', muted);
+        toggle.setAttribute('aria-pressed', muted ? 'false' : 'true');
+        toggle.setAttribute('aria-label', muted ? 'Turn rain sound on' : 'Turn rain sound off');
+      };
+
+      const playRain = () => {
+        if(muted) return;
+        audio.play().catch(() => {});
+      };
+
+      const stopRainSound = () => {
+        try { audio.pause(); } catch(e) {}
+      };
+
+      toggle.addEventListener('click', () => {
+        muted = !muted;
+        localStorage.setItem('rainSoundMuted', muted ? 'true' : 'false');
+        syncButton();
+        if(muted) stopRainSound();
+        else playRain();
+      });
+
+      document.addEventListener('pointerdown', playRain, { once: true });
+      syncButton();
+      playRain();
+    }
+
+    function initPageFromHash(){
+      const target = (location.hash || '#home').replace('#','');
+      const allowed = ['home','pictures','things','edtech','about'];
+      const page = allowed.includes(target) ? target : 'home';
+      setPage(page);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      // start rain immediately
+      startRain(true);
+
+      initNav();
+      initAnimSeq();
+      initViewer();
+      initRainSound();
+      initPageFromHash();
+
+      window.addEventListener('resize', () => {
+        clearTimeout(window.__rsTO);
+        window.__rsTO = setTimeout(() => {
+          if(document.body.classList.contains('is-home')) startRain(true);
+        }, 180);
+      });
+    });
+  </script>
+</body>
+</html>
