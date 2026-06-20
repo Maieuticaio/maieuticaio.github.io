@@ -266,11 +266,22 @@
     /* ====== Data ====== */
     const SPEAKER_SVG = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9h4l5-4v14l-5-4H4z" stroke="black" fill="none"/><path d="M16 8a5 5 0 0 1 0 8" stroke="black" fill="none"/><path d="M18 6a8 8 0 0 1 0 12" stroke="black" fill="none"/></svg>';
 
-    const INITIAL_WORDS = [ ['maieutica (n)','майевтика'] ];
+    const INITIAL_WORDS = [
+      ['би', 'я'],
+      ['ши', 'ты'],
+      ['энэ', 'это'],
+      ['гэр', 'дом'],
+      ['һайн', 'хороший, хорошо'],
+      ['байна', 'есть, находится'],
+      ['ошоно', 'идет, поедет'],
+      ['ерэнэ', 'приходит, придет'],
+      ['хэлэнэ', 'говорит, скажет'],
+      ['хүсэнэ', 'хочет']
+    ];
     const WORDS = INITIAL_WORDS.slice();
     let LAST_IMPORTED = []; // words recently added via import dialog
     let RETRY_QUEUE = []; // short-term queue for mistaken words: {w,t,delay}
-    const VOCAB_KEY = 'vocabList';
+    const VOCAB_KEY = 'vocabListBuryatV1';
     function saveVocab(){ try { localStorage.setItem(VOCAB_KEY, JSON.stringify(WORDS)); } catch(_){} }
     function loadVocab(){
       try{
@@ -289,7 +300,7 @@
     }
 
     /* ====== okStore ====== */
-    const OK_KEY='vocabOk';
+    const OK_KEY='vocabOkBuryatV1';
     const okStore = (()=>{
       const key = (w)=> (w||'').trim().toLowerCase();
       const load = ()=>{ try { return JSON.parse(localStorage.getItem(OK_KEY)||'{}'); } catch(_) { return {}; } };
